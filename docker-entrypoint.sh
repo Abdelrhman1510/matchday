@@ -17,4 +17,4 @@ php artisan db:seed --force 2>/dev/null || true
 
 PORT_NUM=$((${PORT:-8000}))
 echo "==> Starting server on port ${PORT_NUM}..."
-exec php -S 0.0.0.0:${PORT_NUM} -t public public/index.php
+exec php -S 0.0.0.0:${PORT_NUM} -t public public/router.php
