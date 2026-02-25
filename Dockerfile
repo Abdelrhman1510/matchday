@@ -36,12 +36,10 @@ RUN npm install && npm run build
 # Symlink storage
 RUN php artisan storage:link 2>/dev/null || true
 
+# Copy and set up entrypoint
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 8000
 
-# At runtime: cache config (env vars available), migrate, seed, serve
-CMD php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache \
-    && php artisan migrate --force \
-    && php artisan db:seed --force 2>/dev/null; \
-    php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+CMD ["/usr/local/bin/docker-entrypoint.sh"]
