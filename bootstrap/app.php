@@ -27,7 +27,6 @@ return Application::configure(basePath: dirname(__DIR__))
         // Global middleware stack
         $middleware->use([
             \App\Http\Middleware\SecurityHeadersMiddleware::class,
-            \App\Http\Middleware\ForceHttpsMiddleware::class,
             \App\Http\Middleware\RequestLogMiddleware::class,
             \App\Http\Middleware\ApplyPlatformSettings::class,
         ]);
