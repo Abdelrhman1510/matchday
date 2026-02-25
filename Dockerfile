@@ -1,9 +1,10 @@
 FROM php:8.3-cli-bookworm
 
-# System dependencies
+# System dependencies (libonig-dev required by mbstring)
 RUN apt-get update && apt-get install -y \
     git curl zip unzip \
     libpng-dev libxml2-dev libzip-dev libicu-dev \
+    libonig-dev libjpeg-dev libfreetype6-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Node.js 20
