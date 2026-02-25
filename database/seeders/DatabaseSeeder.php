@@ -24,6 +24,8 @@ class DatabaseSeeder extends Seeder
             TeamSeeder::class,                    // No dependencies
             AchievementSeeder::class,             // No dependencies
             SubscriptionPlanSeeder::class,        // No dependencies
+            FaqSeeder::class,                     // No dependencies
+            PageSeeder::class,                    // No dependencies
             UserSeeder::class,                    // No dependencies (creates fan profiles)
             PlatformAdminSeeder::class,           // Create platform admin user
             CafeSeeder::class,                    // Depends on: User (creates branches, hours, amenities)
@@ -114,6 +116,8 @@ class DatabaseSeeder extends Seeder
         $this->command->line('💬 Chat: Chat rooms with messages for live matches');
         $this->command->line('🔔 Notifications: 10+ sample notifications');
         $this->command->line('🏅 Achievements: 7 achievements available');
+        $this->command->line('❓ FAQs: seeded FAQ entries');
+        $this->command->line('📄 Pages: Privacy Policy, Terms, Cookie Policy, etc.');
         $this->command->line('⭐ Loyalty: Loyalty cards for all fans');
         $this->command->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         $this->command->newLine();
