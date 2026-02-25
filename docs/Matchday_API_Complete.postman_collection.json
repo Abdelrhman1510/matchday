@@ -1,0 +1,5598 @@
+{
+	"info": {
+		"_postman_id": "matchday-api-complete-2026",
+		"name": "MatchDay API - Complete Collection",
+		"description": "Complete API collection for MatchDay platform with automatic token handling.\n\n**Setup Instructions:**\n1. Import the environment file: Matchday_API.postman_environment.json\n2. Run 'Auth > Login' to get access token\n3. Token will be saved automatically to environment\n4. All authenticated endpoints will use token automatically\n\n**Features:**\n- 163 endpoints organized by feature (includes 85 Cafe Admin endpoints)\n- Automatic token management\n- Real sample data in requests\n- Pre-configured environment variables\n\n**New Endpoints (14):**\n- Rebook Match (1) & Enter Fan Room (1)\n- Support System (3): Contact, Report Issue, My Tickets\n- FAQs (1)\n- Legal Pages (5): Privacy, Terms, Data Usage, Cookie, Generic\n- App Config (2): Version, Config\n- Auth/Me: Now includes needs_team_selection and onboarding_complete flags\n\n**Cafe Admin (85 endpoints)**\n- Cafe Owner Management (20)\n- Seating Management (9)\n- Match Management (9)\n- Booking Management (9)\n- Occupancy Tracking (4)\n- Staff Management (8)\n- Offers Management (7)\n- Dashboard (3)\n- Analytics (7)\n- Subscription & Billing (9)\n\n**Cafe Admin - Basic Management (20 endpoints)**\n- Complete cafe owner management system\n- Multi-step onboarding flow (cafe → branch → staff)\n- Multi-step branch creation with progress tracking\n- Multi-size image uploads (original, medium, thumbnail)\n- Cached branch overview (5 min) for performance\n- Session-based current branch switching\n- Permission-based access using Spatie (manage-cafe-profile)\n- Ownership verification on all operations\n\n**Staff Management (8 endpoints)**\n- Invite staff with role-based permissions (admin/manager/staff)\n- Dynamic permission assignment via Spatie\n- Signed invitation URLs with 7-day expiry\n- Full staff CRUD operations\n- Resend invitations for pending staff\n- Public invitation acceptance endpoint\n- Get roles and available permissions\n- UI helper flags (status badges, permission counts)\n\n**Offers Management (7 endpoints)**\n- Complete CRUD for promotional offers\n- Multi-size image uploads (original, medium, thumbnail)\n- Status management (active/draft/expired)\n- Filter by status with usage tracking\n- Scheduled auto-expiration (daily at midnight)\n- Permission-based access (manage-offers)\n- UI helper flags (is_expiring_soon, days_remaining)\n\n**Subscription & Billing (9 endpoints)**\n- Complete subscription lifecycle management\n- Multi-tier pricing (Starter $49, Pro $99, Elite $199)\n- Automatic renewal processing (daily at 6am)\n- Transaction history with filtering and CSV export\n- Billing summary and analytics\n- Payment method management\n- Permission-based access (manage-subscription)\n- UI helper flags (days_left, status_color, formatted_amount)\n\n**Home & Explore (4 endpoints)**\n- Personalized home feed for authenticated users\n- Aggregated explore page data (public + enhanced for auth)\n- Location-based nearby cafes with distance calculation\n- Smart caching (5 minutes) for optimal performance\n\n**Search & Offers (5 endpoints)**\n- Global search across cafes, matches, cities\n- Active offers with pagination and filters\n- Offer details with cafe information\n- UI helper flags (is_expiring_soon, days_remaining, is_active)\n\n**Notifications (6 endpoints)**\n- Push notifications with FCM support\n- User-configurable preferences\n- Real-time notifications via database\n- Unread count tracking\n\n**Live Chat (7 endpoints)**\n- Public and cafe-specific chat rooms\n- Real-time messaging with Laravel Reverb\n- Rate limiting (10 messages/minute)\n- Reactions and online user tracking",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.environment.set('token', jsonData.data.token);",
+									"        pm.environment.set('user_id', jsonData.data.user.id);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"phone\": \"1234567890\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"date_of_birth\": \"1995-05-15\",\n    \"gender\": \"male\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register"]
+						},
+						"description": "**UPDATED:** Phone validation stricter\n\n- Phone must be minimum 10 digits\n- Valid: `1234567890`, `+1234567890`, `123-456-7890`\n- Invalid: `123456` (too short)"
+					}
+				},
+				{
+					"name": "Register Cafe Owner",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.environment.set('token', jsonData.data.token);",
+									"        pm.environment.set('user_id', jsonData.data.user.id);",
+									"        console.log('Cafe Owner Token saved: ' + jsonData.data.token);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Cafe Owner\",\n    \"email\": \"owner@matchday.app\",\n    \"phone\": \"+966507654321\",\n    \"password\": \"OwnerPass123!\",\n    \"password_confirmation\": \"OwnerPass123!\",\n    \"cafe_name\": \"Sports View Cafe\",\n    \"business_license\": \"BL-2026-12345\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register/cafe-owner",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register", "cafe-owner"]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.environment.set('token', jsonData.data.token);",
+									"        pm.environment.set('user_id', jsonData.data.user.id);",
+									"        console.log('Token saved: ' + jsonData.data.token);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email_or_phone\": \"ahmed@matchday.app\",\n    \"password\": \"password\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Login with Google",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"google_oauth_token_here\",\n    \"device_name\": \"iPhone 13\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login/google",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login", "google"]
+						}
+					}
+				},
+				{
+					"name": "Login with Apple",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"apple_oauth_token_here\",\n    \"device_name\": \"iPhone 13\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login/apple",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login", "apple"]
+						}
+					}
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"ahmed@matchday.app\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/forgot-password",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "forgot-password"]
+						}
+					}
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"ahmed@matchday.app\",\n    \"otp\": \"123456\",\n    \"password\": \"newpass12\",\n    \"password_confirmation\": \"newpass12\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/reset-password",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "reset-password"]
+						},
+						"description": "**UPDATED:** Password complexity removed\n\n- Now only requires minimum 8 characters\n- No uppercase/lowercase/numbers/symbols required\n- Simpler passwords accepted: `simplepass`, `password123`, etc."
+					}
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/me",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "me"]
+						}
+					}
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.environment.set('token', jsonData.data.token);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/refresh",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "refresh"]
+						}
+					}
+				},
+				{
+					"name": "Verify Email",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"otp\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/verify-email",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "verify-email"]
+						}
+					}
+				},
+				{
+					"name": "Resend Verification OTP",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/resend-verification",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "resend-verification"]
+						}
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "logout"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Teams",
+			"item": [
+				{
+					"name": "List All Teams",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/teams?per_page=20&page=1",
+							"host": ["{{base_url}}"],
+							"path": ["teams"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "20"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Popular Teams",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/teams/popular?limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["teams", "popular"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Search Teams",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/teams/search?q=arsenal",
+							"host": ["{{base_url}}"],
+							"path": ["teams", "search"],
+							"query": [
+								{
+									"key": "q",
+									"value": "arsenal"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Team Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/teams/1",
+							"host": ["{{base_url}}"],
+							"path": ["teams", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Cafes",
+			"item": [
+				{
+					"name": "List All Cafes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cafes?per_page=15&page=1&city=Riyadh",
+							"host": ["{{base_url}}"],
+							"path": ["cafes"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "city",
+									"value": "Riyadh"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Search Cafes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cafes/search?q=sports&city=Riyadh",
+							"host": ["{{base_url}}"],
+							"path": ["cafes", "search"],
+							"query": [
+								{
+									"key": "q",
+									"value": "sports"
+								},
+								{
+									"key": "city",
+									"value": "Riyadh"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Nearby Cafes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cafes/nearby?lat=24.7136&lng=46.6753&radius=5",
+							"host": ["{{base_url}}"],
+							"path": ["cafes", "nearby"],
+							"query": [
+								{
+									"key": "lat",
+									"value": "24.7136",
+									"description": "Latitude (required, -90 to 90)"
+								},
+								{
+									"key": "lng",
+									"value": "46.6753",
+									"description": "Longitude (required, -180 to 180)"
+								},
+								{
+									"key": "radius",
+									"value": "5",
+									"description": "Search radius in km (optional, default: 10, max: 100)"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Cafe Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cafes/1",
+							"host": ["{{base_url}}"],
+							"path": ["cafes", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Cafe Branches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cafes/1/branches",
+							"host": ["{{base_url}}"],
+							"path": ["cafes", "1", "branches"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Branches",
+			"item": [
+				{
+					"name": "Get Branch Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/branches/1",
+							"host": ["{{base_url}}"],
+							"path": ["branches", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Branch Matches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/branches/1/matches?date=2026-02-15",
+							"host": ["{{base_url}}"],
+							"path": ["branches", "1", "matches"],
+							"query": [
+								{
+									"key": "date",
+									"value": "2026-02-15"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Branch Reviews",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/branches/1/reviews?per_page=10",
+							"host": ["{{base_url}}"],
+							"path": ["branches", "1", "reviews"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Branch Review",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rating\": 5,\n    \"comment\": \"Amazing atmosphere! Great screens and comfortable seating. Staff was very friendly.\",\n    \"booking_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/branches/1/reviews",
+							"host": ["{{base_url}}"],
+							"path": ["branches", "1", "reviews"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Matches",
+			"item": [
+				{
+					"name": "List All Matches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches?per_page=20&status=upcoming&league=Premier League",
+							"host": ["{{base_url}}"],
+							"path": ["matches"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "20"
+								},
+								{
+									"key": "status",
+									"value": "upcoming"
+								},
+								{
+									"key": "league",
+									"value": "Premier League"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Live Matches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/live",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "live"]
+						}
+					}
+				},
+				{
+					"name": "Upcoming Matches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/upcoming?days=7",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "upcoming"],
+							"query": [
+								{
+									"key": "days",
+									"value": "7"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Popular Matches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/popular?limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "popular"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Match Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/1",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Match Seating",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/1/seating?branch_id=1",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "1", "seating"],
+							"query": [
+								{
+									"key": "branch_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Toggle Save Match",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/1/save",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "1", "save"]
+						},
+						"description": "Toggle save/unsave a match for the authenticated user.\n\n**Behavior:**\n- If match is NOT saved → saves it (201)\n- If match IS saved → unsaves it (200)\n\n**Response:** { is_saved: true/false }\n\n**Auth:** Required"
+					}
+				},
+				{
+					"name": "List Saved Matches",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/saved",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "saved"]
+						},
+						"description": "List all saved/bookmarked matches for the authenticated user.\n\n**Response:** Array of matches with teams, branch, and cafe info.\n\n**Notes:**\n- Only published matches are returned\n- Ordered by match_date descending\n- Each match includes is_saved: true flag\n\n**Auth:** Required"
+					}
+				}
+			]
+		},
+		{
+			"name": "Bookings",
+			"item": [
+				{
+					"name": "Create Booking",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('booking_id', jsonData.data.id);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"match_id\": 1,\n    \"seat_ids\": [1, 2],\n    \"guests_count\": 2,\n    \"special_requests\": \"Window seat preferred\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bookings",
+							"host": ["{{base_url}}"],
+							"path": ["bookings"]
+						}
+					}
+				},
+				{
+					"name": "List My Bookings",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bookings?per_page=10&status=confirmed",
+							"host": ["{{base_url}}"],
+							"path": ["bookings"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "confirmed"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Booking Details",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bookings/{{booking_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["bookings", "{{booking_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Booking",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"special_requests\": \"Changed to VIP section\",\n    \"guests_count\": 3\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bookings/{{booking_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["bookings", "{{booking_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Cancel Booking (PUT)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reason\": \"Change of plans\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bookings/{{booking_id}}/cancel",
+							"host": ["{{base_url}}"],
+							"path": ["bookings", "{{booking_id}}", "cancel"]
+						},
+						"description": "PUT method for cancelling bookings (POST still works too).\n\n**Changes:**\n- Returns 422 for already cancelled (was 400)\n- Returns 403 for other user's booking (was 404)"
+					}
+				},
+				{
+					"name": "Get Booking Pass",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bookings/{{booking_id}}/pass",
+							"host": ["{{base_url}}"],
+							"path": ["bookings", "{{booking_id}}", "pass"]
+						}
+					}
+				},
+				{
+					"name": "Share Booking",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"method\": \"email\",\n    \"recipient\": \"friend@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bookings/{{booking_id}}/share",
+							"host": ["{{base_url}}"],
+							"path": ["bookings", "{{booking_id}}", "share"]
+						}
+					}
+				},
+				{
+					"name": "Add to Calendar",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"calendar_type\": \"google\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bookings/{{booking_id}}/add-to-calendar",
+							"host": ["{{base_url}}"],
+							"path": ["bookings", "{{booking_id}}", "add-to-calendar"]
+						}
+					}
+				},
+				{
+					"name": "List Booking Players",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bookings/{{booking_id}}/players",
+							"host": ["{{base_url}}"],
+							"path": ["bookings", "{{booking_id}}", "players"]
+						}
+					}
+				},
+				{
+					"name": "Add Booking Player",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Cristiano Ronaldo\",\n    \"position\": \"Forward\",\n    \"jersey_number\": 7\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bookings/{{booking_id}}/players",
+							"host": ["{{base_url}}"],
+							"path": ["bookings", "{{booking_id}}", "players"]
+						},
+						"description": "**NEW FIELD: jersey_number**\n\nAdd a player to a booking with optional jersey number.\n\nRequest:\n```json\n{\n    \"name\": \"Player Name\",\n    \"position\": \"Forward\",\n    \"jersey_number\": 10\n}\n```\n\nResponse includes jersey_number in the player data."
+					}
+				},
+				{
+					"name": "Remove Booking Player",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bookings/{{booking_id}}/players/1",
+							"host": ["{{base_url}}"],
+							"path": ["bookings", "{{booking_id}}", "players", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Payments",
+			"item": [
+				{
+					"name": "Payment Methods",
+					"item": [
+						{
+							"name": "List Payment Methods",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/payment-methods",
+									"host": ["{{base_url}}"],
+									"path": ["payment-methods"]
+								}
+							}
+						},
+						{
+							"name": "Add Payment Method",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    var jsonData = pm.response.json();",
+											"    if (jsonData.data && jsonData.data.id) {",
+											"        pm.environment.set('payment_method_id', jsonData.data.id);",
+											"    }",
+											"}"
+										]
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"type\": \"credit_card\",\n    \"card_last_four\": \"1111\",\n    \"card_holder\": \"Ahmed Hassan\",\n    \"expires_at\": \"2028-12\",\n    \"is_primary\": true\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/payment-methods",
+									"host": ["{{base_url}}"],
+									"path": ["payment-methods"]
+								}
+							}
+						},
+						{
+							"name": "Update Payment Method",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"expiry_month\": \"06\",\n    \"expiry_year\": \"2029\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/payment-methods/{{payment_method_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["payment-methods", "{{payment_method_id}}"]
+								}
+							}
+						},
+						{
+							"name": "Set Primary Payment Method",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/payment-methods/{{payment_method_id}}/set-primary",
+									"host": ["{{base_url}}"],
+									"path": ["payment-methods", "{{payment_method_id}}", "set-primary"]
+								}
+							}
+						},
+						{
+							"name": "Delete Payment Method",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/payment-methods/{{payment_method_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["payment-methods", "{{payment_method_id}}"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Process Payment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"booking_id\": 1,\n    \"payment_method_id\": 1,\n    \"amount\": 150.00,\n    \"currency\": \"SAR\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/payments/process",
+							"host": ["{{base_url}}"],
+							"path": ["payments", "process"]
+						}
+					}
+				},
+				{
+					"name": "Payment History",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/payments/history?per_page=10&status=completed",
+							"host": ["{{base_url}}"],
+							"path": ["payments", "history"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "completed"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Refund Payment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reason\": \"Booking cancelled by customer\",\n    \"amount\": 150.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/payments/1/refund",
+							"host": ["{{base_url}}"],
+							"path": ["payments", "1", "refund"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Saved Cafes",
+			"item": [
+				{
+					"name": "List Saved Cafes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/saved-cafes",
+							"host": ["{{base_url}}"],
+							"path": ["saved-cafes"]
+						}
+					}
+				},
+				{
+					"name": "Save Cafe",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/saved-cafes/1",
+							"host": ["{{base_url}}"],
+							"path": ["saved-cafes", "1"]
+						}
+					}
+				},
+				{
+					"name": "Unsave Cafe",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/saved-cafes/1",
+							"host": ["{{base_url}}"],
+							"path": ["saved-cafes", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Get Authenticated User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/user",
+							"host": ["{{base_url}}"],
+							"path": ["user"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Get Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/profile",
+							"host": ["{{base_url}}"],
+							"path": ["profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Ahmed Hassan Updated\",\n    \"phone\": \"+966501234567\",\n    \"date_of_birth\": \"1990-01-15\",\n    \"gender\": \"male\",\n    \"city\": \"Riyadh\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/profile",
+							"host": ["{{base_url}}"],
+							"path": ["profile"]
+						}
+					}
+				},
+				{
+					"name": "Update Avatar",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/profile/avatar",
+							"host": ["{{base_url}}"],
+							"path": ["profile", "avatar"]
+						}
+					}
+				},
+				{
+					"name": "Update Password",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"current_password\": \"password\",\n    \"password\": \"NewPassword123!\",\n    \"password_confirmation\": \"NewPassword123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/profile/password",
+							"host": ["{{base_url}}"],
+							"path": ["profile", "password"]
+						}
+					}
+				},
+				{
+					"name": "Update Locale",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"locale\": \"ar\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/profile/locale",
+							"host": ["{{base_url}}"],
+							"path": ["profile", "locale"]
+						}
+					}
+				},
+				{
+					"name": "Update Device Token",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"device_token\": \"fcm_token_abc123xyz\",\n    \"device_type\": \"ios\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/profile/device-token",
+							"host": ["{{base_url}}"],
+							"path": ["profile", "device-token"]
+						}
+					}
+				},
+				{
+					"name": "Update Favorite Team",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"favorite_team_id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/profile/favorite-team",
+							"host": ["{{base_url}}"],
+							"path": ["profile", "favorite-team"]
+						}
+					}
+				},
+				{
+					"name": "Get Activity Feed",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/profile/activity",
+							"host": ["{{base_url}}"],
+							"path": ["profile", "activity"]
+						}
+					}
+				},
+				{
+					"name": "Delete Account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/profile",
+							"host": ["{{base_url}}"],
+							"path": ["profile"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Loyalty",
+			"item": [
+				{
+					"name": "Get Loyalty Tiers (Public)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/loyalty/tiers",
+							"host": ["{{base_url}}"],
+							"path": ["loyalty", "tiers"]
+						}
+					}
+				},
+				{
+					"name": "Get Loyalty Card",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/loyalty/card",
+							"host": ["{{base_url}}"],
+							"path": ["loyalty", "card"]
+						}
+					}
+				},
+				{
+					"name": "Get Loyalty Transactions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/loyalty/transactions?per_page=10&type=earned",
+							"host": ["{{base_url}}"],
+							"path": ["loyalty", "transactions"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10"
+								},
+								{
+									"key": "type",
+									"value": "earned",
+									"description": "Filter by type: earned or redeemed"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Achievements",
+			"item": [
+				{
+					"name": "Get All Achievements",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/achievements",
+							"host": ["{{base_url}}"],
+							"path": ["achievements"]
+						}
+					}
+				},
+				{
+					"name": "Get My Achievements",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/achievements/my",
+							"host": ["{{base_url}}"],
+							"path": ["achievements", "my"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Chat",
+			"item": [
+				{
+					"name": "Get Public Chat Room",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/chat/rooms/:matchId",
+							"host": ["{{base_url}}"],
+							"path": ["chat", "rooms", ":matchId"],
+							"variable": [
+								{
+									"key": "matchId",
+									"value": "1",
+									"description": "ID of the match"
+								}
+							]
+						},
+						"description": "Get or create a public chat room for a match. Any authenticated user can access."
+					}
+				},
+				{
+					"name": "Get Cafe Chat Room",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/chat/rooms/:matchId/branch/:branchId",
+							"host": ["{{base_url}}"],
+							"path": ["chat", "rooms", ":matchId", "branch", ":branchId"],
+							"variable": [
+								{
+									"key": "matchId",
+									"value": "1",
+									"description": "ID of the match"
+								},
+								{
+									"key": "branchId",
+									"value": "1",
+									"description": "ID of the branch"
+								}
+							]
+						},
+						"description": "Get or create a cafe-specific chat room. Requires a confirmed booking at that branch for this match."
+					}
+				},
+				{
+					"name": "Send Message",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Great goal! What a match!\",\n    \"type\": \"text\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/chat/rooms/:roomId/messages",
+							"host": ["{{base_url}}"],
+							"path": ["chat", "rooms", ":roomId", "messages"],
+							"variable": [
+								{
+									"key": "roomId",
+									"value": "1",
+									"description": "ID of the chat room"
+								}
+							]
+						},
+						"description": "Send a message to a chat room. Rate limited to 10 messages per minute. Type can be 'text' or 'emoji'. Max 500 characters."
+					}
+				},
+				{
+					"name": "Get Messages",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/chat/rooms/:roomId/messages?page=1",
+							"host": ["{{base_url}}"],
+							"path": ["chat", "rooms", ":roomId", "messages"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (15 messages per page)"
+								}
+							],
+							"variable": [
+								{
+									"key": "roomId",
+									"value": "1",
+									"description": "ID of the chat room"
+								}
+							]
+						},
+						"description": "Get paginated messages from a chat room. Returns 15 messages per page."
+					}
+				},
+				{
+					"name": "Send Reaction",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"emoji\": \"goal\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/chat/rooms/:roomId/reaction",
+							"host": ["{{base_url}}"],
+							"path": ["chat", "rooms", ":roomId", "reaction"],
+							"variable": [
+								{
+									"key": "roomId",
+									"value": "1",
+									"description": "ID of the chat room"
+								}
+							]
+						},
+						"description": "Send a quick reaction emoji. Valid emojis: goal, fire, heart, laugh, clap"
+					}
+				},
+				{
+					"name": "Get Viewers Count",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/chat/rooms/:roomId/viewers",
+							"host": ["{{base_url}}"],
+							"path": ["chat", "rooms", ":roomId", "viewers"],
+							"variable": [
+								{
+									"key": "roomId",
+									"value": "1",
+									"description": "ID of the chat room"
+								}
+							]
+						},
+						"description": "Get the current number of viewers in the chat room."
+					}
+				},
+				{
+					"name": "Get Online Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/chat/rooms/:roomId/online-users",
+							"host": ["{{base_url}}"],
+							"path": ["chat", "rooms", ":roomId", "online-users"],
+							"variable": [
+								{
+									"key": "roomId",
+									"value": "1",
+									"description": "ID of the chat room"
+								}
+							]
+						},
+						"description": "Get list of users currently online in the chat room (requires WebSocket connection)."
+					}
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Get All Notifications",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notifications?page=1",
+							"host": ["{{base_url}}"],
+							"path": ["notifications"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (20 notifications per page)"
+								}
+							]
+						},
+						"description": "Get paginated notifications for the authenticated user. Returns 20 notifications per page ordered by newest first."
+					}
+				},
+				{
+					"name": "Get Unread Count",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notifications/unread-count",
+							"host": ["{{base_url}}"],
+							"path": ["notifications", "unread-count"]
+						},
+						"description": "Get the count of unread notifications for the authenticated user."
+					}
+				},
+				{
+					"name": "Mark Notification as Read",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notifications/:id/read",
+							"host": ["{{base_url}}"],
+							"path": ["notifications", ":id", "read"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{notification_id}}",
+									"description": "Notification UUID - Get this from the 'Get Notifications' endpoint first"
+								}
+							]
+						},
+						"description": "Mark a specific notification as read. NOTE: First run 'Get Notifications' to get a valid notification ID from your account."
+					}
+				},
+				{
+					"name": "Mark All as Read",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notifications/read-all",
+							"host": ["{{base_url}}"],
+							"path": ["notifications", "read-all"]
+						},
+						"description": "Mark all notifications as read for the authenticated user."
+					}
+				},
+				{
+					"name": "Delete Notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notifications/:id",
+							"host": ["{{base_url}}"],
+							"path": ["notifications", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{notification_id}}",
+									"description": "Notification UUID - Get this from the 'Get Notifications' endpoint first"
+								}
+							]
+						},
+						"description": "Delete a specific notification. NOTE: First run 'Get Notifications' to get a valid notification ID from your account."
+					}
+				},
+				{
+					"name": "Update Notification Settings",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"booking_reminders\": true,\n    \"match_updates\": true,\n    \"promotions\": true,\n    \"chat_messages\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/notifications/settings",
+							"host": ["{{base_url}}"],
+							"path": ["notifications", "settings"]
+						},
+						"description": "Update notification preferences for the authenticated user.\n\n**Settings:**\n- booking_reminders: Booking confirmations, cancellations\n- match_updates: Match reminders, score updates\n- promotions: Achievements, points earned\n- chat_messages: Chat notifications\n\nNote: Welcome and staff invitation notifications are always sent regardless of settings."
+					}
+				}
+			]
+		},
+		{
+			"name": "Home & Explore",
+			"item": [
+				{
+					"name": "Get Home Feed",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/home",
+							"host": ["{{base_url}}"],
+							"path": ["home"]
+						},
+						"description": "Get personalized home feed for the authenticated user.\n\n**Returns:**\n- User summary (name, tier, unread notifications)\n- Upcoming booking details\n- Featured cafes\n- Live matches\n- Upcoming matches\n- Popular matches this week\n\n**Cache:** 5 minutes per user"
+					}
+				},
+				{
+					"name": "Get Home Feed (with Location)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/home?lat=24.7136&lng=46.6753",
+							"host": ["{{base_url}}"],
+							"path": ["home"],
+							"query": [
+								{
+									"key": "lat",
+									"value": "24.7136",
+									"description": "Latitude (-90 to 90)"
+								},
+								{
+									"key": "lng",
+									"value": "46.6753",
+									"description": "Longitude (-180 to 180)"
+								}
+							]
+						},
+						"description": "Get home feed with nearby cafes based on user's location.\n\n**Parameters:**\n- lat: User latitude (required, -90 to 90)\n- lng: User longitude (required, -180 to 180)\n\n**Returns:** Same as home feed + nearby cafes within 20km with distance_km field"
+					}
+				},
+				{
+					"name": "Get Explore Data",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/explore",
+							"host": ["{{base_url}}"],
+							"path": ["explore"]
+						},
+						"description": "Get aggregated explore page data (public endpoint - enhanced if authenticated).\n\n**Returns:**\n- Featured cafes (2)\n- Trending cafes (3)\n- Matches today (all)\n- Popular matches (3)\n- Active offers (5)\n\n**Notes:**\n- Public access: Basic data\n- Authenticated: Includes is_saved flags\n\n**Cache:** 5 minutes"
+					}
+				},
+				{
+					"name": "Get Explore (with Location)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/explore?lat=24.7136&lng=46.6753",
+							"host": ["{{base_url}}"],
+							"path": ["explore"],
+							"query": [
+								{
+									"key": "lat",
+									"value": "24.7136",
+									"description": "Latitude (-90 to 90)"
+								},
+								{
+									"key": "lng",
+									"value": "46.6753",
+									"description": "Longitude (-180 to 180)"
+								}
+							]
+						},
+						"description": "Get explore data with nearby cafes based on location.\n\n**Parameters:**\n- lat: User latitude (required if lng provided)\n- lng: User longitude (required if lat provided)\n\n**Returns:** Same as explore + nearby cafes within 20km with:\n- distance_km\n- is_saved (if authenticated)\n- is_open_now"
+					}
+				}
+			]
+		},
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "Global Search",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/search?q=barcelona",
+							"host": ["{{base_url}}"],
+							"path": ["search"],
+							"query": [
+								{
+									"key": "q",
+									"value": "barcelona",
+									"description": "Search query (min 2 characters)"
+								}
+							]
+						},
+						"description": "Global search across cafes, matches, and cities.\n\n**Searches:**\n- Cafes: name, branch names\n- Matches: team names, league\n- Cities: distinct cities from branches\n\n**Returns:** Max 5 results per category\n\n**Requirements:**\n- Query must be at least 2 characters\n- Case-insensitive\n- Partial matches supported"
+					}
+				}
+			]
+		},
+		{
+			"name": "Offers",
+			"item": [
+				{
+					"name": "Get All Offers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/offers?page=1",
+							"host": ["{{base_url}}"],
+							"path": ["offers"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								},
+								{
+									"key": "per_page",
+									"value": "10",
+									"description": "Items per page (default: 10)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all active offers with pagination.\n\n**Response includes:**\n- title, description, discount_percentage\n- valid_from, valid_until\n- cafe_name, cafe_id\n- UI helpers: is_expiring_soon, days_remaining, is_active\n\n**Default:** 10 offers per page"
+					}
+				},
+				{
+					"name": "Get Featured Offers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/offers?featured=1",
+							"host": ["{{base_url}}"],
+							"path": ["offers"],
+							"query": [
+								{
+									"key": "featured",
+									"value": "1",
+									"description": "Filter featured offers only"
+								}
+							]
+						},
+						"description": "Get only featured offers (is_featured = true)."
+					}
+				},
+				{
+					"name": "Get Offers by Cafe",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/offers?cafe_id=1",
+							"host": ["{{base_url}}"],
+							"path": ["offers"],
+							"query": [
+								{
+									"key": "cafe_id",
+									"value": "1",
+									"description": "Filter by specific cafe"
+								}
+							]
+						},
+						"description": "Get offers for a specific cafe."
+					}
+				},
+				{
+					"name": "Get Offer Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/offers/1",
+							"host": ["{{base_url}}"],
+							"path": ["offers", "1"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Offer ID"
+								}
+							]
+						},
+						"description": "Get detailed information about a specific offer.\n\n**Returns:**\n- Full offer details\n- cafe_details object (id, name, logo)\n- UI helpers: is_expiring_soon, days_remaining, is_active\n\n**Errors:**\n- 404: Offer not found\n- 410 Gone: Offer expired"
+					}
+				}
+			]
+		},
+		{
+			"name": "Cafe Admin",
+			"description": "Cafe owner management endpoints. All require 'manage-cafe-profile' permission.\n\n**Features:**\n- 20 endpoints for complete cafe management\n- Multi-step onboarding flow (cafe → branch → staff)\n- Multi-step branch creation (basic → hours → amenities)\n- Multi-size image uploads\n- Cached branch overview (5 min)\n- Session-based current branch switching\n- Ownership verification on all operations",
+			"item": [
+				{
+					"name": "Onboarding & Status",
+					"item": [
+						{
+							"name": "Get Onboarding Status",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/onboarding-status",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "onboarding-status"]
+								},
+								"description": "Get current onboarding progress.\n\n**Returns:**\n- step: 1, 2, 3, or 'complete'\n- cafe_created: boolean\n- has_branches: boolean\n- has_staff: boolean\n\n**Steps:**\n1. Create cafe profile\n2. Add first branch\n3. Add staff members"
+							}
+						}
+					]
+				},
+				{
+					"name": "Cafe Management",
+					"item": [
+						{
+							"name": "Create Cafe",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Downtown Sports Cafe\",\n    \"description\": \"Best sports viewing experience in the city with premium screens and atmosphere\",\n    \"phone\": \"+966501234567\",\n    \"city\": \"Riyadh\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/cafe",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "cafe"]
+								},
+								"description": "Create cafe profile (Step 1 of onboarding).\n\n**Required:**\n- name: string (max 255)\n- description: string (max 1000)\n- phone: string\n- city: string\n\n**Restrictions:**\n- User can only own one cafe\n\n**Returns:**\n- Cafe with UI flags (can_add_branch, status_badge, etc.)"
+							}
+						},
+						{
+							"name": "Update Cafe",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Downtown Sports Cafe & Lounge\",\n    \"description\": \"Updated: Premier sports viewing venue with state-of-the-art facilities\",\n    \"phone\": \"+966501234567\",\n    \"city\": \"Riyadh\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/cafe",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "cafe"]
+								},
+								"description": "Update cafe profile.\n\n**Optional fields:**\n- name, description, phone, city\n\n**Returns:**\n- Updated cafe with UI flags"
+							}
+						},
+						{
+							"name": "Upload Cafe Logo",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "logo",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/cafe/logo",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "cafe", "logo"]
+								},
+								"description": "Upload cafe logo (multi-size generation).\n\n**Sizes Generated:**\n- original: 300x300\n- medium: auto-sized\n- thumbnail: 150x150\n\n**Storage:**\n- Saved as JSON array in database\n\n**Returns:**\n- Cafe with logo URLs array"
+							}
+						},
+						{
+							"name": "Get My Cafe",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/cafe",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "cafe"]
+								},
+								"description": "Get owned cafe profile.\n\n**Returns:**\n- Full cafe details\n- branches_count\n- UI flags (can_add_branch, status_badge, is_premium_active)\n\n**Errors:**\n- 404: No cafe found for this owner"
+							}
+						}
+					]
+				},
+				{
+					"name": "Branch Management",
+					"item": [
+						{
+							"name": "List Branches",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/branches",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "branches"]
+								},
+								"description": "List all branches for owned cafe.\n\n**Returns:**\n- Array of branches\n- active_bookings_count per branch\n- Average rating\n- UI flags (status_badge, can_delete, is_current)"
+							}
+						},
+						{
+							"name": "Create Branch (Step 1: Basic Info)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Downtown Branch\",\n    \"address\": \"King Fahd Road, Al Olaya District, Riyadh 12214, Saudi Arabia\",\n    \"latitude\": 24.7136,\n    \"longitude\": 46.6753,\n    \"total_seats\": 50\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/branches",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "branches"]
+								},
+								"description": "Create new branch (Step 1 of multi-step flow).\n\n**Required:**\n- name: string\n- address: string\n- latitude: float (-90 to 90)\n- longitude: float (-180 to 180)\n- total_seats: integer (min 1)\n\n**Next Steps:**\n2. Configure operating hours\n3. Add amenities\n\n**Returns:**\n- Branch details with setup_complete: false"
+							}
+						},
+						{
+							"name": "Update Branch Hours (Step 2)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"hours\": [\n        {\"day_of_week\": \"Monday\", \"open_time\": \"09:00\", \"close_time\": \"22:00\", \"is_closed\": false},\n        {\"day_of_week\": \"Tuesday\", \"open_time\": \"09:00\", \"close_time\": \"22:00\", \"is_closed\": false},\n        {\"day_of_week\": \"Wednesday\", \"open_time\": \"09:00\", \"close_time\": \"22:00\", \"is_closed\": false},\n        {\"day_of_week\": \"Thursday\", \"open_time\": \"09:00\", \"close_time\": \"22:00\", \"is_closed\": false},\n        {\"day_of_week\": \"Friday\", \"open_time\": \"09:00\", \"close_time\": \"23:00\", \"is_closed\": false},\n        {\"day_of_week\": \"Saturday\", \"open_time\": \"09:00\", \"close_time\": \"23:00\", \"is_closed\": false},\n        {\"day_of_week\": \"Sunday\", \"open_time\": \"10:00\", \"close_time\": \"23:00\", \"is_closed\": false}\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/branches/:id/hours",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "branches", ":id", "hours"],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Branch ID"
+										}
+									]
+								},
+								"description": "Set branch operating hours (Step 2).\n\n**UPDATED:**\n- `day_of_week` is now STRING (was integer)\n- Can send 1-7 days (was required to send all 7)\n- Field names changed: `open_time`/`close_time` (was `opens_at`/`closes_at`)\n- New `is_closed` boolean field\n\n**Required:**\n- hours: array of 1-7 objects\n- day_of_week: String (Monday, Tuesday, etc.)\n- open_time: HH:MM format\n- close_time: HH:MM format\n- is_closed: boolean (optional)\n\n**Returns:**\n- Branch with updated hours"
+							}
+						},
+						{
+							"name": "Add Amenities Bulk (Step 3)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"amenities\": [\n        {\"name\": \"WiFi\", \"icon\": \"wifi\"},\n        {\"name\": \"Parking\", \"icon\": \"parking\"},\n        {\"name\": \"Big Screen\", \"icon\": \"tv\"},\n        {\"name\": \"Air Conditioning\", \"icon\": \"ac\"},\n        {\"name\": \"Smoking Area\", \"icon\": \"smoking\"}\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/branches/:id/amenities/bulk",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "branches", ":id", "amenities", "bulk"],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Branch ID"
+										}
+									]
+								},
+								"description": "Add multiple amenities (Step 3 - completes branch setup).\n\n**Format 1 - By IDs (NEW - returns 200):**\n```json\n{\n    \"amenity_ids\": [1, 2, 3]\n}\n```\n\n**Format 2 - Create new (still works - returns 201):**\n```json\n{\n    \"amenities\": [\n        {\"name\": \"WiFi\", \"icon\": \"wifi\"}\n    ]\n}\n```\n\nBoth formats supported!\n\n**Common Icons:**\n- wifi, parking, tv, ac, smoking, outdoor, vip, food, drinks\n\n**Returns:**\n- Branch with all amenities\n- setup_complete: true (if hours also configured)"
+							}
+						},
+						{
+							"name": "Get Branch Details",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/branches/:id",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "branches", ":id"],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Branch ID"
+										}
+									]
+								},
+								"description": "Get detailed branch information.\n\n**Returns:**\n- Full branch details\n- Operating hours (7 days)\n- Amenities list\n- Setup progress flags\n- UI helpers (can_open, setup_complete)"
+							}
+						},
+						{
+							"name": "Update Branch",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Downtown Branch - Updated\",\n    \"address\": \"New Address, Riyadh\",\n    \"latitude\": 24.7140,\n    \"longitude\": 46.6760,\n    \"total_seats\": 60\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/branches/:id",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "branches", ":id"],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Branch ID"
+										}
+									]
+								},
+								"description": "Update branch information.\n\n**Optional fields:**\n- name, address, latitude, longitude, total_seats\n\n**Returns:**\n- Updated branch details"
+							}
+						},
+						{
+							"name": "Delete Branch",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/branches/:id",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "branches", ":id"],
+									"variable": [
+										{
+											"key": "id",
+											"value": "2",
+											"description": "Branch ID (not the last branch)"
+										}
+									]
+								},
+								"description": "Delete a branch.\n\n**Restrictions:**\n- Cannot delete the last remaining branch\n- Must have at least one active branch\n\n**Errors:**\n- 400: Cannot delete last branch\n- 404: Branch not found or not owned"
+							}
+						},
+						{
+							"name": "Toggle Branch Status",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"is_open\": false\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/branches/:id/status",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "branches", ":id", "status"],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Branch ID"
+										}
+									]
+								},
+								"description": "Open or close a branch.\n\n**Required:**\n- is_open: boolean\n\n**Use Cases:**\n- Temporarily close for maintenance\n- Open after preparation\n- Seasonal operations\n\n**Returns:**\n- Branch with updated status"
+							}
+						},
+						{
+							"name": "Get Branch Setup Progress",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/branches/:id/setup-progress",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "branches", ":id", "setup-progress"],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Branch ID"
+										}
+									]
+								},
+								"description": "Check branch setup completion.\n\n**Returns:**\n- basic_info: boolean (always true after creation)\n- hours_complete: boolean (7 days configured)\n- amenities_added: boolean (at least 1 amenity)\n- completed_steps: integer (0-3)\n- total_steps: 3\n- percentage: float (0-100)\n\n**Use for:**\n- Progress indicators\n- Onboarding checklist\n- Setup validation"
+							}
+						}
+					]
+				},
+				{
+					"name": "Branch Overview",
+					"item": [
+						{
+							"name": "Get Branch Overview (Cached)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/branches/:id/overview",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "branches", ":id", "overview"],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Branch ID"
+										}
+									]
+								},
+								"description": "Get comprehensive branch overview in single call.\n\n**Cached for 5 minutes** for optimal performance.\n\n**Returns:**\n- branch: Full branch details with hours & amenities\n- stats:\n  - today_bookings: integer\n  - today_matches: integer\n  - total_seats: integer\n  - occupied_seats: integer\n  - occupancy_percentage: float\n  - rating: float (0-5)\n  - total_reviews: integer\n- setup_progress: object with completion flags\n- upcoming_matches: array (next 3 matches)\n\n**Performance:**\n- First call: ~200-300ms\n- Cached calls: <50ms\n- Cache invalidation: Auto after 5 minutes"
+							}
+						}
+					]
+				},
+				{
+					"name": "Current Branch",
+					"item": [
+						{
+							"name": "Switch Current Branch",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"branch_id\": 1\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/current-branch",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "current-branch"]
+								},
+								"description": "Switch the current active branch context.\n\n**Required:**\n- branch_id: integer (must be owned by user's cafe)\n\n**Purpose:**\n- Sets session: current_branch_id\n- Used for UI context switching\n- Highlights current branch in lists\n- Default context for operations\n\n**Returns:**\n- Success message\n- Updated session"
+							}
+						}
+					]
+				},
+				{
+					"name": "Branch Amenities",
+					"item": [
+						{
+							"name": "List Branch Amenities",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/branches/:id/amenities",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "branches", ":id", "amenities"],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Branch ID"
+										}
+									]
+								},
+								"description": "Get all amenities for a specific branch.\n\n**Returns:**\n- Array of amenities\n- Each with: id, name, icon\n\n**Common Amenities:**\n- WiFi, Parking, Big Screen TV\n- Air Conditioning, Smoking Area\n- Outdoor Seating, VIP Rooms\n- Food Service, Beverage Bar"
+							}
+						},
+						{
+							"name": "Add Branch Amenity",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Game Consoles\",\n    \"icon\": \"gamepad\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/branches/:id/amenities",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "branches", ":id", "amenities"],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Branch ID"
+										}
+									]
+								},
+								"description": "Add a single amenity to branch.\n\n**Required:**\n- name: string (unique for branch)\n- icon: string\n\n**Icon Suggestions:**\n- wifi, parking, tv, ac, smoking\n- outdoor, vip, food, drinks, gamepad\n- wheelchair, kids, music, stage\n\n**Returns:**\n- Created amenity with ID"
+							}
+						},
+						{
+							"name": "Remove Branch Amenity",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/amenities/:id",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "amenities", ":id"],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Amenity ID (not branch ID)"
+										}
+									]
+								},
+								"description": "Remove an amenity from branch.\n\n**Required:**\n- id: amenity ID (from list or add response)\n\n**Ownership:**\n- Verifies amenity belongs to user's cafe branch\n\n**Returns:**\n- Success message\n\n**Errors:**\n- 404: Amenity not found or not owned"
+							}
+						}
+					]
+				},
+				{
+					"name": "Seating Management",
+					"item": [
+						{
+							"name": "List Branch Sections",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/branches/:id/sections",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"branches",
+										":id",
+										"sections"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "8",
+											"description": "Branch ID"
+										}
+									]
+								},
+								"description": "List all seating sections for a branch with occupied/available seat counts and active booking info.\n\n**Response includes:**\n- Section details with type, extra cost, screen size\n- Seat counts (total, available, occupied)\n- Active bookings count\n- UI flags: can_delete, has_active_bookings, is_full\n- Summary totals"
+							}
+						},
+						{
+							"name": "Create Section",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"VIP Lounge\",\n    \"type\": \"vip\",\n    \"total_seats\": 10,\n    \"extra_cost\": 50.00,\n    \"icon\": \"crown\",\n    \"screen_size\": \"65 inch\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/branches/:id/sections",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"branches",
+										":id",
+										"sections"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "8",
+											"description": "Branch ID"
+										}
+									]
+								},
+								"description": "Create a new seating section with auto-generated seat labels.\n\n**Type options:** main_screen, vip, premium, standard\n**Auto-label prefixes:** M (main_screen), V (vip), P (premium), S (standard)\n\nExample: Creating VIP section with 10 seats generates labels V1, V2, ... V10"
+							}
+						},
+						{
+							"name": "Update Section",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"VIP Premium Lounge\",\n    \"extra_cost\": 75.00,\n    \"screen_size\": \"75 inch\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/sections/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"sections",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Section ID"
+										}
+									]
+								},
+								"description": "Update a seating section. All fields are optional.\n\nIf total_seats is increased, new seats are auto-generated.\nIf type is changed, seat labels are re-prefixed automatically."
+							}
+						},
+						{
+							"name": "Delete Section",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/sections/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"sections",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Section ID"
+										}
+									]
+								},
+								"description": "Delete a seating section and all its seats.\n\n**Blocked if active bookings exist** (returns 409 Conflict).\nOnly sections with no confirmed/pending bookings can be deleted."
+							}
+						},
+						{
+							"name": "List Section Seats",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/sections/:id/seats",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"sections",
+										":id",
+										"seats"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Section ID"
+										}
+									]
+								},
+								"description": "List all seats in a section with status and booking info.\n\n**Seat statuses:** available, unavailable, booked\n**UI flags:** can_delete, has_active_booking\n\nIncludes summary with total/available/occupied/booked counts."
+							}
+						},
+						{
+							"name": "Bulk Add Seats",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"count\": 5,\n    \"prefix\": \"V\",\n    \"start_from\": 11\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/sections/:id/seats",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"sections",
+										":id",
+										"seats"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Section ID"
+										}
+									]
+								},
+								"description": "Bulk add seats to an existing section.\n\n**Parameters:**\n- count (required): Number of seats to add (1-200)\n- prefix (optional): Custom label prefix (defaults to type prefix)\n- start_from (optional): Starting number (defaults to next available)\n- table_number (optional): Assign table number to all new seats"
+							}
+						},
+						{
+							"name": "Update Seat",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"is_available\": false,\n    \"table_number\": \"T3\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/seats/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"seats",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Seat ID"
+										}
+									]
+								},
+								"description": "Update a single seat's properties.\n\n**Updatable fields:**\n- label: Seat label (max 10 chars)\n- table_number: Table assignment\n- is_available: Toggle availability"
+							}
+						},
+						{
+							"name": "Delete Seat",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/seats/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"seats",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Seat ID"
+										}
+									]
+								},
+								"description": "Delete a single seat.\n\n**Blocked if seat has an active booking** (returns 409 Conflict).\nSection total_seats is automatically decremented."
+							}
+						},
+						{
+							"name": "Bulk Create Sections (Branch Setup)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"sections\": [\n        {\n            \"name\": \"Main Screen Area\",\n            \"type\": \"main_screen\",\n            \"total_seats\": 30,\n            \"extra_cost\": 0,\n            \"icon\": \"tv\",\n            \"screen_size\": \"85 inch\"\n        },\n        {\n            \"name\": \"VIP Section\",\n            \"type\": \"vip\",\n            \"total_seats\": 10,\n            \"extra_cost\": 100,\n            \"icon\": \"crown\",\n            \"screen_size\": \"55 inch\"\n        },\n        {\n            \"name\": \"Standard Area\",\n            \"type\": \"standard\",\n            \"total_seats\": 20,\n            \"extra_cost\": 0,\n            \"icon\": \"chair\"\n        }\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/branches/:id/sections/bulk",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"branches",
+										":id",
+										"sections",
+										"bulk"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "8",
+											"description": "Branch ID"
+										}
+									]
+								},
+								"description": "Bulk create multiple sections with auto-generated seats in one request.\n\n**Designed for Branch Setup Step 4.**\nEach section auto-generates seats with type-based prefixes.\n\nMax 20 sections per request, max 500 seats per section."
+							}
+						}
+					]
+				},
+				{
+					"name": "Match Management",
+					"item": [
+						{
+							"name": "List Matches",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/matches?status=upcoming",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"matches"
+									],
+									"query": [
+										{
+											"key": "status",
+											"value": "upcoming",
+											"description": "Filter: upcoming, live, finished, cancelled"
+										},
+										{
+											"key": "branch_id",
+											"value": "8",
+											"description": "Filter by branch ID",
+											"disabled": true
+										},
+										{
+											"key": "per_page",
+											"value": "15",
+											"description": "Items per page",
+											"disabled": true
+										}
+									]
+								},
+								"description": "List all matches for your cafe's branches.\n\n**Filters:** status, branch_id, per_page\n**Permission:** manage-matches\n\nIncludes: booking_count, revenue, seats_available, field_name, UI flags."
+							}
+						},
+						{
+							"name": "Create Match",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"branch_id\": 8,\n    \"home_team_id\": 1,\n    \"away_team_id\": 2,\n    \"league\": \"Premier League\",\n    \"match_date\": \"2026-03-15\",\n    \"kick_off\": \"20:00\",\n    \"seats_available\": 50,\n    \"price_per_seat\": 25.00,\n    \"duration_minutes\": 90,\n    \"booking_opens_at\": \"2026-03-10T10:00:00\",\n    \"booking_closes_at\": \"2026-03-15T19:00:00\",\n    \"field_name\": \"Field A\",\n    \"venue_name\": \"Etihad Stadium\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/matches",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"matches"
+									]
+								},
+								"description": "Create a new match (unpublished by default).\n\n**Validation:**\n- home_team_id ≠ away_team_id\n- match_date must be today or future\n- All team IDs must exist\n\n**Permission:** manage-matches"
+							}
+						},
+						{
+							"name": "Get Match Detail",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/matches/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"matches",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Match ID"
+										}
+									]
+								},
+								"description": "Full match detail with booking_stats, revenue, booking_timing.\n\n**booking_stats:** total_booked, capacity_pct, checked_in, arrived_pct, pending, pending_pct, available, remaining_pct\n**revenue:** total, bookings_count, average_per_booking\n\n**Permission:** manage-matches"
+							}
+						},
+						{
+							"name": "Update Match",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"seats_available\": 60,\n    \"price_per_seat\": 30.00,\n    \"ticket_price\": 75,\n    \"field_name\": \"Field B\",\n    \"venue_name\": \"Old Trafford\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/matches/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"matches",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Match ID"
+										}
+									]
+								},
+								"description": "Update a match. Only works for upcoming matches.\n\n**NEW FIELD:** `ticket_price` - Can be different from `price_per_seat` (use case: early bird pricing, promotions).\n\nAll fields optional. Returns 409 if match is live/finished.\n\n**Permission:** manage-matches"
+							}
+						},
+						{
+							"name": "Cancel Match",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/matches/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"matches",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Match ID"
+										}
+									]
+								},
+								"description": "Cancel a match. Notifies all bookers, refunds confirmed bookings, releases seats.\n\nReturns: bookings_cancelled, bookings_refunded, users_notified.\n\n**Permission:** manage-matches"
+							}
+						},
+						{
+							"name": "Publish Match",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/matches/:id/publish",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"matches",
+										":id",
+										"publish"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Match ID"
+										}
+									]
+								},
+								"description": "Publish a match (set is_published=true).\n\nFires MatchPublished event.\n\n**Permission:** manage-matches"
+							}
+						},
+						{
+							"name": "Update Score",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"home_score\": 2,\n    \"away_score\": 1\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/matches/:id/score",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"matches",
+										":id",
+										"score"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Match ID"
+										}
+									]
+								},
+								"description": "Update match score. Only for live or finished matches.\n\nBroadcasts MatchScoreUpdated event.\n\n**Permission:** manage-matches"
+							}
+						},
+						{
+							"name": "Update Status",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"status\": \"live\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/matches/:id/status",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"matches",
+										":id",
+										"status"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Match ID"
+										}
+									]
+								},
+								"description": "Update match status with strict transition validation.\n\n**Valid transitions:** upcoming → live → finished (no skipping)\n\nWhen going live, score auto-initializes to 0-0.\n\n**Permission:** manage-matches"
+							}
+						},
+						{
+							"name": "Send Reminder",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/matches/:id/reminder",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cafe-admin",
+										"matches",
+										":id",
+										"reminder"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Match ID"
+										}
+									]
+								},
+								"description": "Send push notification reminder to all bookers.\n\n**Rate limited:** 1 reminder per match per day.\nReturns 429 if already sent today.\n\n**Permission:** manage-matches"
+							}
+						}
+					]
+				},
+				{
+					"name": "Booking Management",
+					"item": [
+						{
+							"name": "List Bookings",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/bookings?status=confirmed",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "bookings"],
+									"query": [
+										{ "key": "status", "value": "confirmed", "description": "Filter: confirmed, pending, cancelled, checked_in" },
+										{ "key": "match_id", "value": "1", "description": "Filter by match ID", "disabled": true },
+										{ "key": "date", "value": "2026-03-15", "description": "Filter by match date", "disabled": true },
+										{ "key": "per_page", "value": "15", "disabled": true }
+									]
+								},
+								"description": "List bookings for your cafe. Includes customer, match, seats, payment.\n\n**Filters:** status, match_id, date\n**UI flags:** is_vip, is_returning, can_check_in, can_cancel\n\n**Permission:** view-bookings"
+							}
+						},
+						{
+							"name": "Booking Detail",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/bookings/:id",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "bookings", ":id"],
+									"variable": [{ "key": "id", "value": "1", "description": "Booking ID" }]
+								},
+								"description": "Full booking detail with: customer, seat_numbers array, QR code, payment_summary { seat_price_unit, seat_count, seat_total, service_fee, total, payment_method_display }.\n\n**Permission:** view-bookings"
+							}
+						},
+						{
+							"name": "Check-In Booking",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "POST",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/bookings/:id/check-in",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "bookings", ":id", "check-in"],
+									"variable": [{ "key": "id", "value": "1", "description": "Booking ID" }]
+								},
+								"description": "Check in a customer. Sets status=checked_in with timestamp.\n\n**Validates:** booking must be confirmed, match must be today or live.\n\n**Permission:** check-in-customers"
+							}
+						},
+						{
+							"name": "Cancel Booking",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "POST",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/bookings/:id/cancel",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "bookings", ":id", "cancel"],
+									"variable": [{ "key": "id", "value": "1", "description": "Booking ID" }]
+								},
+								"description": "Admin cancel booking with refund + release seats.\n\nReturns: seats_released, refunded.\n\n**Permission:** manage-bookings"
+							}
+						},
+						{
+							"name": "Today's Summary",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/bookings/today-summary",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "bookings", "today-summary"]
+								},
+								"description": "Today's booking summary: { total, active, pending, checked_in }.\n\n**Permission:** view-bookings"
+							}
+						}
+					]
+				},
+				{
+					"name": "QR Scan",
+					"item": [
+						{
+							"name": "Scan QR Code (text)",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "POST",
+								"header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }],
+								"body": { "mode": "raw", "raw": "{\n    \"qr_data\": \"BOOK-ABC123\"\n}" },
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/scan-qr",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "scan-qr"]
+								},
+								"description": "**UPDATED:** Improved QR scanning\n\n**Changes:**\n- Accepts both `qr_code` and `qr_data` fields\n- Automatically performs check-in on scan\n- Returns `check_in_time` in response\n- Invalid QR returns 422 (was 404)\n- Booking code format: BOOK-XXXXXX\n\n**Request (either field works):**\n```json\n{\n    \"qr_data\": \"BOOK-ABC123\"\n}\n```\n\n**Permission:** scan-qr"
+							}
+						},
+						{
+							"name": "Scan QR Code (image upload)",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "POST",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"body": {
+									"mode": "formdata",
+									"formdata": [{ "key": "image", "type": "file", "src": "", "description": "QR code image (jpeg, png, jpg, gif, bmp, max 5MB)" }]
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/scan-qr/upload",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "scan-qr", "upload"]
+								},
+								"description": "Upload QR code image to decode and find booking.\n\nRequires QR decode library (khanamiryan/qrcode-detector-decoder).\n\n**Permission:** scan-qr"
+							}
+						},
+						{
+							"name": "Recent Scans",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/scan-qr/recent",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "scan-qr", "recent"]
+								},
+								"description": "Last 10 recently scanned bookings.\n\nReturns: [{ booking_code, scanned_at, result, status }]\n\n**Permission:** scan-qr"
+							}
+						},
+						{
+							"name": "Scan Stats",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/scan-qr/stats",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "scan-qr", "stats"]
+								},
+								"description": "Today's scan statistics: { today_scans, success_rate, avg_speed_seconds }.\n\n**Permission:** scan-qr"
+							}
+						}
+					]
+				},
+				{
+					"name": "Occupancy Tracking",
+					"item": [
+						{
+							"name": "Get Occupancy Dashboard",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/occupancy",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "occupancy"]
+								},
+								"description": "Get comprehensive occupancy dashboard with real-time metrics calculated from checked-in bookings.\n\n**Returns:**\n- occupied_percentage: Current occupancy rate\n- current_guests: Number of checked-in guests\n- capacity: Total branch capacity\n- available: Available space\n- reserved: Reserved seats count\n- peak_times_today: Top 3 peak hour slots\n- avg_stay_time: Average guest stay duration\n- today_total_visitors: Total visitors today\n- trend_percentage: Today vs yesterday comparison\n- sections: Per-section breakdown with icons\n\n**Caching:** 2 minutes\n**Permission:** view-occupancy"
+							}
+						},
+						{
+							"name": "Update Branch Capacity",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "PUT",
+								"header": [
+									{ "key": "Accept", "value": "application/json" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"total_capacity\": 200\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/occupancy/capacity",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "occupancy", "capacity"]
+								},
+								"description": "Update branch total capacity (total_seats).\n\n**Request:**\n- total_capacity: integer (min: 1)\n\n**Features:**\n- Updates branch.total_seats\n- Automatically busts occupancy caches\n- Validates minimum 1 seat\n\n**Permission:** manage-cafe-profile"
+							}
+						},
+						{
+							"name": "Get Historical Peak Times",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/occupancy/peak-times",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "occupancy", "peak-times"]
+								},
+								"description": "Get historical peak times analysis for the last 7 days.\n\n**Returns:**\n- Array of hourly slots with:\n  - time_range: Hour range (e.g., \"11:00 - 12:00\")\n  - avg_guests: Average guest count for that hour\n  - percentage: Percentage of capacity\n\n**Analysis:**\n- Hourly breakdown across last 7 days\n- Identifies busiest time slots\n- Helps with staffing planning\n\n**Caching:** 5 minutes\n**Permission:** view-occupancy"
+							}
+						},
+						{
+							"name": "Get Section Occupancy",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/occupancy/sections",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "occupancy", "sections"]
+								},
+								"description": "Get per-section occupancy breakdown with current rates.\n\n**Returns:**\n- Array of sections with:\n  - id: Section ID\n  - name: Section name\n  - occupied: Number of occupied seats\n  - total: Total seats in section\n  - percentage: Occupancy percentage\n  - icon: UI icon (vip→star, premium→premium, standard→screen, lounge→lounge, dining→dining)\n\n**Use Cases:**\n- Visual heatmap of section occupancy\n- Identify which sections are busiest\n- Guide customer seating decisions\n\n**Caching:** 2 minutes\n**Permission:** view-occupancy"
+							}
+						}
+					]
+				},
+				{
+					"name": "Staff Management",
+					"item": [
+						{
+							"name": "List All Staff",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/staff",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "staff"]
+								},
+								"description": "List all staff members with roles, permissions, and invitation status.\n\n**Returns:**\n- Array of staff with:\n  - id, cafe_id, role (admin/manager/staff)\n  - invitation_status (pending/accepted/rejected)\n  - user: id, name, email, avatar\n  - invited_by: id, name\n  - permissions: Array of permission names\n  - status_badge: UI badge text\n  - role_label: Formatted role name\n  - can_resend_invite: boolean\n  - permissions_count: integer\n- meta: total, pending, accepted counts\n\n**Permission:** manage-staff\n**Features:** Spatie permission integration, UI helper flags"
+							}
+						},
+						{
+							"name": "Invite Staff Member",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "POST",
+								"header": [
+									{ "key": "Accept", "value": "application/json" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"John Manager\",\n    \"email\": \"john@example.com\",\n    \"role\": \"manager\",\n    \"permissions\": [\n        \"manage-bookings\",\n        \"view-bookings\",\n        \"scan-qr\",\n        \"check-in-customers\",\n        \"view-occupancy\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/staff",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "staff"]
+								},
+								"description": "Invite a new staff member to your cafe.\n\n**Request:**\n- name: string (required)\n- email: string (required, email format)\n- role: string (required, one of: admin, manager, staff)\n- permissions: array (optional, overrides role defaults)\n\n**Role Default Permissions:**\n- admin (12): manage-bookings, view-bookings, view-analytics, manage-matches, scan-qr, check-in-customers, view-occupancy, manage-staff, manage-seating, manage-branches, manage-offers, manage-menu\n- manager (7): manage-bookings, view-bookings, view-analytics, manage-matches, scan-qr, check-in-customers, view-occupancy\n- staff (3): view-bookings, scan-qr, check-in-customers\n\n**Features:**\n- Auto-creates user if email doesn't exist\n- Links existing user to cafe\n- Assigns permissions via Spatie\n- Sends invitation notification with signed URL (7-day expiry)\n- Status set to 'pending' until accepted\n\n**Permission:** manage-staff"
+							}
+						},
+						{
+							"name": "Get Staff Detail",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/staff/:id",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "staff", ":id"],
+									"variable": [{ "key": "id", "value": "1", "description": "Staff member ID" }]
+								},
+								"description": "Get detailed information about a specific staff member.\n\n**Returns:**\n- Full staff member details\n- Complete permissions list\n- User information\n- Invited by information\n- Cafe details (when loaded)\n- UI helper flags\n\n**Permission:** manage-staff"
+							}
+						},
+						{
+							"name": "Update Staff",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "PUT",
+								"header": [
+									{ "key": "Accept", "value": "application/json" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"role\": \"admin\",\n    \"permissions\": [\n        \"manage-bookings\",\n        \"view-bookings\",\n        \"manage-matches\",\n        \"view-analytics\",\n        \"manage-staff\",\n        \"scan-qr\",\n        \"check-in-customers\"\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/staff/:id",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "staff", ":id"],
+									"variable": [{ "key": "id", "value": "1", "description": "Staff member ID" }]
+								},
+								"description": "Update staff member's role and/or permissions.\n\n**Request:**\n- role: string (optional, one of: admin, manager, staff)\n- permissions: array (optional, list of permission names)\n\n**Behavior:**\n- If only role provided: Applies default permissions for that role\n- If only permissions provided: Updates permissions, keeps current role\n- If both provided: Updates both\n\n**Features:**\n- Syncs permissions via Spatie\n- Validates permissions exist\n- Ownership verification\n\n**Permission:** manage-staff"
+							}
+						},
+						{
+							"name": "Remove Staff",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "DELETE",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/staff/:id",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "staff", ":id"],
+									"variable": [{ "key": "id", "value": "1", "description": "Staff member ID" }]
+								},
+								"description": "Remove staff member from your cafe.\n\n**Actions:**\n- Soft deletes staff member record\n- Revokes all cafe-related permissions\n- Preserves user account\n\n**Revoked Permissions:**\nmanage-bookings, view-bookings, manage-matches, view-analytics, manage-offers, manage-menu, manage-branches, manage-seating, scan-qr, check-in-customers, view-occupancy, manage-staff\n\n**Permission:** manage-staff"
+							}
+						},
+						{
+							"name": "Resend Invitation",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "POST",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/staff/:id/resend-invite",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "staff", ":id", "resend-invite"],
+									"variable": [{ "key": "id", "value": "1", "description": "Staff member ID" }]
+								},
+								"description": "Resend invitation email to pending staff member.\n\n**Requirements:**\n- Invitation status must be 'pending'\n- Cannot resend to accepted invitations\n\n**Features:**\n- Generates new signed URL (7-day expiry)\n- Sends fresh notification\n- Uses StaffInvitationNotification\n\n**Permission:** manage-staff"
+							}
+						},
+						{
+							"name": "Get Roles & Permissions",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/roles-permissions",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "roles-permissions"]
+								},
+								"description": "Get all available roles with their default permissions.\n\n**Use Case:** Staff invitation form dropdown\n\n**Returns:**\n- roles: Array with value, label, description, default_permissions\n  - admin: 12 permissions\n  - manager: 7 permissions\n  - staff: 3 permissions\n- available_permissions: Array with value, label for all permissions\n\n**Available Permissions:**\nmanage-bookings, view-bookings, manage-matches, view-analytics, manage-offers, manage-menu, manage-branches, manage-seating, scan-qr, check-in-customers, view-occupancy, manage-staff\n\n**Permission:** manage-staff"
+							}
+						},
+						{
+							"name": "Accept Staff Invitation (Public)",
+							"request": {
+								"method": "POST",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/auth/staff/accept-invite/:token",
+									"host": ["{{base_url}}"],
+									"path": ["auth", "staff", "accept-invite", ":token"],
+									"variable": [{ "key": "token", "value": "eyJzdGFmZl9tZW1iZXJfaWQiOjEsImNhZmVfaWQiOjF9", "description": "Signed invitation token from email" }]
+								},
+								"description": "Accept staff invitation via signed URL (Public endpoint).\n\n**Authentication:** None required - validated by signed token\n\n**Process:**\n- Decodes invitation token\n- Validates staff member exists\n- Checks invitation not already accepted\n- Updates status to 'accepted'\n\n**Token Format:**\nBase64 encoded JSON: {staff_member_id, cafe_id}\n\n**Returns:**\n- Staff member details\n- Message: 'Staff invitation accepted successfully. You can now log in.'\n\n**Note:** After acceptance, staff can login with their email/password"
+							}
+						}
+					]
+				},
+				{
+					"name": "Offers Management",
+					"description": "Cafe owner offers management endpoints.\n\n**Permission Required:** manage-offers\n\n**Features:**\n- CRUD operations for offers\n- Multi-size image uploads (original, medium, thumbnail)\n- Status management (active/draft/expired)\n- Usage tracking\n- Scheduled expiration (daily at midnight)\n\n**7 Endpoints:**\n1. GET /offers - List with status filter\n2. POST /offers - Create offer (defaults to draft)\n3. GET /offers/{id} - Get offer details\n4. PUT /offers/{id} - Update offer\n5. DELETE /offers/{id} - Soft delete\n6. POST /offers/{id}/upload-image - Multi-size image upload\n7. PUT /offers/{id}/status - Toggle active/draft",
+					"item": [
+						{
+							"name": "List Offers",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/offers?status=active",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "offers"],
+									"query": [{ "key": "status", "value": "active", "description": "Optional: active, draft, expired" }]
+								},
+								"description": "Get all offers for authenticated owner's cafe.\n\n**Optional Filters:**\n- status: active, draft, expired\n\n**Includes:** usage_count\n\n**Returns:** Array of offers with UI flags\n- is_expiring_soon (within 3 days)\n- days_remaining\n- is_active\n- type_label\n\n**Permission:** manage-offers"
+							}
+						},
+						{
+							"name": "Create offer",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "POST",
+								"header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"30% Match Day Special\",\n  \"description\": \"Get 30% off on all bookings for Champions League matches. Valid for groups of 4 or more.\",\n  \"type\": \"percentage\",\n  \"discount_percent\": 30,\n  \"original_price\": 160.00,\n  \"offer_price\": 112.00,\n  \"valid_until\": \"2026-05-15\",\n  \"available_for\": \"all\",\n  \"terms\": \"Valid for groups of 4+ guests only. Cannot be combined with other offers.\",\n  \"is_featured\": true\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/offers",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "offers"]
+								},
+								"description": "Create new offer (defaults to 'draft' status).\n\n**Required Fields:**\n- title (max 255)\n- description\n- type: percentage, bogo, free_item\n- available_for: all, weekend, prime_time\n\n**Optional Fields:**\n- discount_percent (1-100)\n- original_price, offer_price\n- valid_until (date after today)\n- terms\n- is_featured\n\n**Status:** Defaults to 'draft'\n\n**Permission:** manage-offers"
+							}
+						},
+						{
+							"name": "Get Offer Detail",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/offers/:id",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "offers", ":id"],
+									"variable": [{ "key": "id", "value": "1", "description": "Offer ID" }]
+								},
+								"description": "Get offer details including usage stats.\n\n**Returns:**\n- Full offer details\n- usage_count\n- UI helper flags:\n  - is_expiring_soon\n  - days_remaining\n  - is_active\n  - type_label\n\n**Permission:** manage-offers"
+							}
+						},
+						{
+							"name": "Update Offer",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "PUT",
+								"header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"discount_percent\": 40,\n  \"offer_price\": 96.00\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/offers/:id",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "offers", ":id"],
+									"variable": [{ "key": "id", "value": "1", "description": "Offer ID" }]
+								},
+								"description": "Update offer details.\n\n**All fields optional:**\n- title, description, type\n- discount_percent, original_price, offer_price\n- valid_until, available_for\n- terms, is_featured\n\n**Note:** Status updated via separate endpoint\n\n**Permission:** manage-offers"
+							}
+						},
+						{
+							"name": "Delete Offer",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "DELETE",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/offers/:id",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "offers", ":id"],
+									"variable": [{ "key": "id", "value": "1", "description": "Offer ID" }]
+								},
+								"description": "Delete offer (soft delete).\n\n**Process:**\n- Soft deletes offer record\n- Deletes all image sizes (original, medium, thumbnail)\n- Clears offer cache\n\n**Note:** Deletes associated images from storage\n\n**Permission:** manage-offers"
+							}
+						},
+						{
+							"name": "Upload Offer Image",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "POST",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"body": {
+									"mode": "formdata",
+									"formdata": [{ "key": "image", "type": "file", "src": [] }]
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/offers/:id/upload-image",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "offers", ":id", "upload-image"],
+									"variable": [{ "key": "id", "value": "1", "description": "Offer ID" }]
+								},
+								"description": "Upload offer image with multi-size generation.\n\n**Validation:**\n- Required: image field\n- Type: jpg, jpeg, png, webp\n- Max size: 5MB\n\n**Generated Sizes:**\n- original: Full resolution\n- medium: 300x300px\n- thumbnail: 150x150px\n\n**Storage:** Stored as JSON array in database\n\n**Note:** Deletes old image if exists\n\n**Permission:** manage-offers"
+							}
+						},
+						{
+							"name": "Update Offer Status",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "PUT",
+								"header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"status\": \"active\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/offers/:id/status",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "offers", ":id", "status"],
+									"variable": [{ "key": "id", "value": "1", "description": "Offer ID" }]
+								},
+								"description": "Toggle offer status between active and draft.\n\n**Allowed Values:**\n- active\n- draft\n\n**Note:** 'expired' status is set automatically by scheduled command\n\n**Scheduled Command:**\n- Runs daily at midnight\n- Command: php artisan offers:expire\n- Sets status='expired' for offers past valid_until\n\n**Permission:** manage-offers"
+							}
+						}
+					]
+				},
+				{
+					"name": "Dashboard",
+					"description": "Dashboard overview endpoints for cafe owners.\n\n**Permission Required:** view-bookings\n\n**Features:**\n- Today's overview with quick metrics\n- Upcoming matches with occupancy\n- Recent bookings list\n- Quick action flags (can_scan_qr, can_manage_matches)\n\n**3 Endpoints:**\n1. GET /dashboard - Dashboard overview\n2. GET /dashboard/upcoming-matches - Upcoming matches list\n3. GET /dashboard/recent-bookings - Recent bookings list",
+					"item": [
+						{
+							"name": "Dashboard Overview",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/dashboard",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "dashboard"]
+								},
+								"description": "Get dashboard overview for authenticated cafe owner.\n\n**Returns:**\n- today_date: Today's date\n- todays_matches: Today's matches with live status\n- todays_bookings_count: Count of today's bookings\n- current_occupancy_percentage: Real-time occupancy\n- quick_actions: Available actions (can_scan_qr, can_manage_matches)\n\n**Cache:** 15 minutes TTL\n\n**Permission:** view-bookings"
+							}
+						},
+						{
+							"name": "Upcoming Matches",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/dashboard/upcoming-matches",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "dashboard", "upcoming-matches"]
+								},
+								"description": "Get next 5 upcoming matches with booking counts.\n\n**Returns:**\n- Array of upcoming matches\n- Each match includes:\n  - Match details (teams, date, competition)\n  - is_live: Boolean flag\n  - bookings_count: Total bookings\n  - occupancy_percentage: Calculated occupancy\n\n**Cache:** 15 minutes TTL\n\n**Permission:** view-bookings"
+							}
+						},
+						{
+							"name": "Recent Bookings",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/dashboard/recent-bookings",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "dashboard", "recent-bookings"]
+								},
+								"description": "Get last 10 bookings for authenticated cafe owner.\n\n**Returns:**\n- Array of recent bookings\n- Each booking includes:\n  - customer: User details (name, email, phone)\n  - match: Match details\n  - status: Booking status with badge color\n  - guests: Number of guests\n  - created_at: Booking timestamp\n\n**Cache:** 15 minutes TTL\n\n**Permission:** view-bookings"
+							}
+						}
+					]
+				},
+				{
+					"name": "Analytics",
+					"description": "Analytics endpoints with period-based comparisons for cafe owners.\n\n**Permission Required:** view-analytics (except subscription which requires manage-subscription)\n\n**Features:**\n- Period-based filtering (this_week, this_month, last_month, last_3_months, custom)\n- Week offset navigation (-1 previous, 0 current, 1 next)\n- Comparison with previous period\n- Chart data for graphs\n- Customer segmentation\n\n**Query Parameters:**\n- period: this_week, this_month, last_month, last_3_months\n- week_offset: -1, 0, 1 (for week navigation)\n- start_date: YYYY-MM-DD (for custom period)\n- end_date: YYYY-MM-DD (for custom period)\n- limit: Number of results (for matches endpoint)\n\n**7 Endpoints:**\n1. GET /analytics/overview - 4 metrics with comparison\n2. GET /analytics/bookings - Daily bookings chart data\n3. GET /analytics/revenue - Daily revenue chart data\n4. GET /analytics/peak-hours - Hourly distribution (0-23)\n5. GET /analytics/customers - New vs returning customers\n6. GET /analytics/matches - Best performing matches\n7. GET /analytics/subscription - Last 12 months subscription stats",
+					"item": [
+						{
+							"name": "Analytics Overview",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/analytics/overview?period=this_week",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "analytics", "overview"],
+									"query": [
+										{ "key": "period", "value": "this_week", "description": "this_week, this_month, last_month, last_3_months" },
+										{ "key": "week_offset", "value": "0", "description": "Optional: -1 (previous), 0 (current), 1 (next)", "disabled": true },
+										{ "key": "start_date", "value": "2024-01-01", "description": "Optional: Custom start date (YYYY-MM-DD)", "disabled": true },
+										{ "key": "end_date", "value": "2024-01-31", "description": "Optional: Custom end date (YYYY-MM-DD)", "disabled": true }
+									]
+								},
+								"description": "Get analytics overview with 4 key metrics and period comparison.\n\n**Returns:**\n- period_label: Human-readable period (e.g., 'Jan 1 - Jan 7, 2024')\n- metrics:\n  - bookings: Count with change % vs previous period\n  - revenue: Total with change % vs previous period\n  - new_customers: Count with change % vs previous period\n  - avg_rating: Average rating with change % vs previous period\n\n**Comparison:**\n- change: Percentage string (+12.5%, -5.2%, 0%)\n- trend: up, down, neutral\n\n**Cache:** 15 minutes TTL\n\n**Permission:** view-analytics"
+							}
+						},
+						{
+							"name": "Bookings Chart",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/analytics/bookings?period=this_month",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "analytics", "bookings"],
+									"query": [
+										{ "key": "period", "value": "this_month", "description": "this_week, this_month, last_month, last_3_months" },
+										{ "key": "week_offset", "value": "0", "description": "Optional: -1, 0, 1", "disabled": true },
+										{ "key": "start_date", "value": "2024-01-01", "description": "Optional: Custom start (YYYY-MM-DD)", "disabled": true },
+										{ "key": "end_date", "value": "2024-01-31", "description": "Optional: Custom end (YYYY-MM-DD)", "disabled": true }
+									]
+								},
+								"description": "Get daily bookings count for chart visualization.\n\n**Returns:**\n- period_label: Human-readable period\n- chart_data: Array of daily data points\n  - date: YYYY-MM-DD\n  - count: Number of bookings\n\n**Use Case:** Line/bar chart showing booking trends\n\n**Cache:** 15 minutes TTL\n\n**Permission:** view-analytics"
+							}
+						},
+						{
+							"name": "Revenue Chart",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/analytics/revenue?period=this_month",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "analytics", "revenue"],
+									"query": [
+										{ "key": "period", "value": "this_month", "description": "this_week, this_month, last_month, last_3_months" },
+										{ "key": "week_offset", "value": "0", "description": "Optional: -1, 0, 1", "disabled": true },
+										{ "key": "start_date", "value": "2024-01-01", "description": "Optional: Custom start (YYYY-MM-DD)", "disabled": true },
+										{ "key": "end_date", "value": "2024-01-31", "description": "Optional: Custom end (YYYY-MM-DD)", "disabled": true }
+									]
+								},
+								"description": "Get daily revenue amounts for chart visualization.\n\n**Returns:**\n- period_label: Human-readable period\n- chart_data: Array of daily data points\n  - date: YYYY-MM-DD\n  - amount: Revenue amount (decimal)\n\n**Use Case:** Line/bar chart showing revenue trends\n\n**Cache:** 15 minutes TTL\n\n**Permission:** view-analytics"
+							}
+						},
+						{
+							"name": "Peak Hours",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/analytics/peak-hours?period=this_week",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "analytics", "peak-hours"],
+									"query": [
+										{ "key": "period", "value": "this_week", "description": "this_week, this_month, last_month, last_3_months" },
+										{ "key": "week_offset", "value": "0", "description": "Optional: -1, 0, 1", "disabled": true },
+										{ "key": "start_date", "value": "2024-01-01", "description": "Optional: Custom start (YYYY-MM-DD)", "disabled": true },
+										{ "key": "end_date", "value": "2024-01-31", "description": "Optional: Custom end (YYYY-MM-DD)", "disabled": true }
+									]
+								},
+								"description": "Get hourly distribution of bookings for peak hours analysis.\n\n**Returns:**\n- period_label: Human-readable period\n- peak_hours: Array of 24 hourly data points (0-23)\n  - hour: 0-23 (24-hour format)\n  - count: Number of bookings in that hour\n\n**Use Case:** Heatmap or bar chart showing busiest hours\n\n**Cache:** 15 minutes TTL\n\n**Permission:** view-analytics"
+							}
+						},
+						{
+							"name": "Customer Analytics",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/analytics/customers?period=this_month",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "analytics", "customers"],
+									"query": [
+										{ "key": "period", "value": "this_month", "description": "this_week, this_month, last_month, last_3_months" },
+										{ "key": "week_offset", "value": "0", "description": "Optional: -1, 0, 1", "disabled": true },
+										{ "key": "start_date", "value": "2024-01-01", "description": "Optional: Custom start (YYYY-MM-DD)", "disabled": true },
+										{ "key": "end_date", "value": "2024-01-31", "description": "Optional: Custom end (YYYY-MM-DD)", "disabled": true }
+									]
+								},
+								"description": "Get customer segmentation (new vs returning customers).\n\n**Returns:**\n- period_label: Human-readable period\n- customers:\n  - new: Count of new customers\n  - returning: Count of returning customers\n  - new_percentage: % of new customers\n  - returning_percentage: % of returning customers\n\n**Calculation:**\n- New: First booking at this cafe in the period\n- Returning: Had bookings before the period\n\n**Use Case:** Pie/donut chart showing customer retention\n\n**Cache:** 15 minutes TTL\n\n**Permission:** view-analytics"
+							}
+						},
+						{
+							"name": "Best Performing Matches",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/analytics/matches?period=this_month&limit=10",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "analytics", "matches"],
+									"query": [
+										{ "key": "period", "value": "this_month", "description": "this_week, this_month, last_month, last_3_months" },
+										{ "key": "limit", "value": "10", "description": "Number of matches to return (default: 10)" },
+										{ "key": "week_offset", "value": "0", "description": "Optional: -1, 0, 1", "disabled": true },
+										{ "key": "start_date", "value": "2024-01-01", "description": "Optional: Custom start (YYYY-MM-DD)", "disabled": true },
+										{ "key": "end_date", "value": "2024-01-31", "description": "Optional: Custom end (YYYY-MM-DD)", "disabled": true }
+									]
+								},
+								"description": "Get best performing matches ranked by revenue.\n\n**Returns:**\n- period_label: Human-readable period\n- matches: Array of matches\n  - Match details (teams, date, competition)\n  - bookings_count: Total bookings\n  - total_revenue: Total revenue generated\n  - avg_revenue_per_booking: Average revenue per booking\n\n**Sorting:** By total_revenue DESC\n\n**Use Case:** Table showing top revenue-generating matches\n\n**Cache:** 15 minutes TTL\n\n**Permission:** view-analytics"
+							}
+						},
+						{
+							"name": "Subscription Analytics",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/analytics/subscription",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "analytics", "subscription"]
+								},
+								"description": "Get subscription-level analytics for last 12 months.\n\n**Returns:**\n- last_12_months: Array of 12 monthly data points\n  - month: YYYY-MM\n  - month_label: Human-readable (e.g., 'Jan 2024')\n  - bookings_count: Total bookings\n  - revenue: Total revenue\n  - avg_per_booking: Average revenue per booking\n\n**Sorting:** Oldest to newest month\n\n**Use Case:** Line chart showing yearly trends\n\n**Cache:** 15 minutes TTL\n\n**Permission:** manage-subscription"
+							}
+						}
+					]
+				},
+				{
+					"name": "Subscription & Billing",
+					"description": "Subscription and billing management for cafe owners.\n\n**Permission Required:** manage-subscription (except plans endpoint which is public)\n\n**Features:**\n- Subscription lifecycle management (view, upgrade, cancel, auto-renew)\n- Transaction history with filtering and pagination\n- Billing summary and analytics\n- CSV export for accounting\n- Payment method management\n- Automatic renewal processing (daily at 6:00 AM)\n\n**Subscription Plans:**\n- Starter: $49/month - 50 bookings, basic analytics\n- Pro: $99/month - 200 bookings, advanced analytics, custom branding\n- Elite: $199/month - Unlimited bookings, AI insights, 24/7 support\n\n**9 Endpoints:**\n1. GET /subscription - Current subscription with days_left\n2. GET /subscription/plans - All plans (Public - No Auth)\n3. POST /subscription/upgrade - Upgrade to new plan\n4. POST /subscription/cancel - Cancel at period end\n5. PUT /subscription/auto-renew - Toggle auto-renewal\n6. GET /billing - Transaction history (paginated)\n7. GET /billing/summary - Monthly billing summary\n8. GET /billing/export - CSV export\n9. PUT /billing/payment-method - Update payment method",
+					"item": [
+						{
+							"name": "Get Current Subscription",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/subscription",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "subscription"]
+								},
+								"description": "Get current subscription with features, expiry, days_left, and auto_renew status.\n\n**Returns:**\n- id: Subscription ID\n- plan: Full plan details (name, price, features, limits)\n- status: active, cancelled, expired\n- starts_at: ISO 8601 timestamp\n- expires_at: ISO 8601 timestamp\n- days_left: Calculated days remaining (integer)\n- auto_renew: Boolean flag\n- payment_method: Card details (type, last 4 digits)\n\n**Use Case:** Display subscription status on settings page\n\n**Permission:** manage-subscription"
+							}
+						},
+						{
+							"name": "Get All Plans (Public)",
+							"request": {
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/subscription/plans",
+									"host": ["{{base_url}}"],
+									"path": ["subscription", "plans"]
+								},
+								"description": "Get all subscription plans comparison - PUBLIC endpoint (no auth required).\n\n**Returns:**\n- Array of plans (Starter $49, Pro $99, Elite $199)\n- Each plan includes:\n  - id, name, slug, price, currency\n  - features: Array of feature descriptions\n  - max_bookings: Booking limit (null for unlimited)\n  - has_analytics, has_branding, has_priority_support\n  - is_most_popular: Boolean (Pro plan)\n  - display_price: Formatted price string\n  - bookings_label: Formatted booking limit\n\n**Use Case:** Pricing page/comparison table\n\n**Permission:** None (Public endpoint)\n**Cache:** 1 hour TTL"
+							}
+						},
+						{
+							"name": "Upgrade Subscription",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "POST",
+								"header": [
+									{ "key": "Accept", "value": "application/json" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"plan_id\": 2,\n    \"payment_method_id\": 1\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/subscription/upgrade",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "subscription", "upgrade"]
+								},
+								"description": "Upgrade or change subscription plan.\n\n**Request:**\n- plan_id: integer (required, must exist in subscription_plans)\n- payment_method_id: integer (required, must belong to user)\n\n**Process:**\n1. Validates plan and payment method\n2. Cancels existing active subscription\n3. Creates payment record (status: paid)\n4. Creates new subscription (1 month duration)\n5. Updates cafe.subscription_plan\n6. Clears subscription cache\n\n**Returns:**\n- subscription: New subscription details\n- payment: Payment confirmation (id, amount, status, gateway_ref)\n\n**Permission:** manage-subscription"
+							}
+						},
+						{
+							"name": "Cancel Subscription",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "POST",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/subscription/cancel",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "subscription", "cancel"]
+								},
+								"description": "Cancel subscription at period end (doesn't expire immediately).\n\n**Process:**\n- Sets auto_renew to false\n- Subscription remains active until expires_at date\n- No immediate service interruption\n- Can be re-enabled via auto-renew toggle\n\n**Note:** Does NOT immediately expire the subscription. User retains access until period end.\n\n**Permission:** manage-subscription"
+							}
+						},
+						{
+							"name": "Toggle Auto-Renew",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "PUT",
+								"header": [
+									{ "key": "Accept", "value": "application/json" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"auto_renew\": true\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/subscription/auto-renew",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "subscription", "auto-renew"]
+								},
+								"description": "Toggle automatic renewal setting.\n\n**Request:**\n- auto_renew: boolean (required)\n\n**Process:**\n- Updates subscription.auto_renew flag\n- If true: Subscription will auto-renew 1 day before expiry\n- If false: Subscription expires naturally\n- Clears subscription cache\n\n**Auto-Renewal:**\n- Scheduled command runs daily at 6:00 AM\n- Processes subscriptions expiring within 1 day\n- Creates payment and extends subscription by 1 month\n- On failure: Marks as expired and disables auto-renew\n\n**Permission:** manage-subscription"
+							}
+						},
+						{
+							"name": "Get Transaction History",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/billing?period=all_time&type=subscription",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "billing"],
+									"query": [
+										{ "key": "period", "value": "all_time", "description": "all_time, this_month, last_3_months" },
+										{ "key": "type", "value": "subscription", "description": "booking, subscription, cafe_order (optional)" }
+									]
+								},
+								"description": "Get transaction history with filters and pagination.\n\n**Query Parameters:**\n- period (optional): all_time, this_month, last_3_months\n- type (optional): booking, subscription, cafe_order\n\n**Returns:**\n- data: Array of transactions (15 per page)\n  - id, title, subtitle, type, status (PAID/PENDING/FAILED)\n  - amount, currency, date, time, gateway_ref\n  - UI helpers: is_paid, is_pending, is_failed, is_refunded\n  - formatted_amount, formatted_date, status_color\n- meta: Pagination info (current_page, total, per_page, etc.)\n\n**Transaction Titles:**\n- Subscription: 'Subscription Payment'\n- Booking: 'Booking Payment' with match details\n- Cafe Order: 'Cafe Order Payment'\n\n**Permission:** manage-subscription"
+							}
+						},
+						{
+							"name": "Get Billing Summary",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/billing/summary",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "billing", "summary"]
+								},
+								"description": "Get billing summary for current month.\n\n**Returns:**\n- total_spent_this_month: Sum of all paid transactions\n- total_transactions: Count of transactions\n- currency: SAR\n\n**Calculation Period:** Current month (start to end)\n\n**Use Case:** Dashboard billing widget\n\n**Cache:** 15 minutes TTL\n**Permission:** manage-subscription"
+							}
+						},
+						{
+							"name": "Export Billing History (CSV)",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "GET",
+								"header": [{ "key": "Accept", "value": "application/json" }],
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/billing/export?period=last_3_months",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "billing", "export"],
+									"query": [
+										{ "key": "period", "value": "last_3_months", "description": "all_time, this_month, last_3_months (optional)" },
+										{ "key": "type", "value": "", "description": "booking, subscription, cafe_order (optional)", "disabled": true }
+									]
+								},
+								"description": "Export billing history as CSV file download.\n\n**Query Parameters:**\n- period (optional): all_time, this_month, last_3_months\n- type (optional): booking, subscription, cafe_order\n\n**CSV Columns:**\n- ID, Title, Subtitle, Type, Status\n- Amount, Currency, Date, Time, Gateway Reference\n\n**Response:**\n- Content-Type: text/csv\n- Content-Disposition: attachment\n- Filename: billing_history_YYYY-MM-DD_HHMMSS.csv\n\n**Use Case:** Accounting/bookkeeping export\n\n**Permission:** manage-subscription"
+							}
+						},
+						{
+							"name": "Update Payment Method",
+							"request": {
+								"auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+								"method": "PUT",
+								"header": [
+									{ "key": "Accept", "value": "application/json" },
+									{ "key": "Content-Type", "value": "application/json" }
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"payment_method_id\": 2\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/cafe-admin/billing/payment-method",
+									"host": ["{{base_url}}"],
+									"path": ["cafe-admin", "billing", "payment-method"]
+								},
+								"description": "Update default billing payment method.\n\n**Request:**\n- payment_method_id: integer (required, must belong to user)\n\n**Process:**\n1. Sets all user's payment methods to non-primary\n2. Sets selected method as primary\n3. Updates active subscription's payment_method_id\n4. Future auto-renewals will use this method\n\n**Use Case:** Change billing card for subscriptions\n\n**Permission:** manage-subscription"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Rebook & Fan Room",
+			"item": [
+				{
+					"name": "Rebook Match",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{token}}", "type": "string"}]
+						},
+						"method": "POST",
+						"header": [
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": {
+							"raw": "{{base_url}}/bookings/1/rebook",
+							"host": ["{{base_url}}"],
+							"path": ["bookings", "1", "rebook"]
+						},
+						"description": "Find next upcoming match with same teams for quick rebooking.\n\n**Response:**\n- If exact rematch found: { suggested_match, branch }\n- If no exact match: { suggested_match: null, similar_matches: [...] }\n\n**Auth:** Required"
+					}
+				},
+				{
+					"name": "Enter Fan Room",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{token}}", "type": "string"}]
+						},
+						"method": "POST",
+						"header": [
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": {
+							"raw": "{{base_url}}/bookings/1/enter-fan-room",
+							"host": ["{{base_url}}"],
+							"path": ["bookings", "1", "enter-fan-room"]
+						},
+						"description": "Enter or create fan room chat for a live match booking.\n\n**Requirements:**\n- Booking must be confirmed or checked_in\n- Match must be live (is_live = true)\n\n**Response:** { chat_room_id }\n\n**Auth:** Required"
+					}
+				}
+			]
+		},
+		{
+			"name": "Support",
+			"item": [
+				{
+					"name": "Submit Contact Ticket",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{token}}", "type": "string"}]
+						},
+						"method": "POST",
+						"header": [
+							{"key": "Accept", "value": "application/json"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"subject\": \"Booking issue\",\n    \"message\": \"I cannot find my booking confirmation email. My booking code is BK-12345.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/support/contact",
+							"host": ["{{base_url}}"],
+							"path": ["support", "contact"]
+						},
+						"description": "Submit a contact/support message.\n\n**Request:**\n- subject: string (required, max 255)\n- message: string (required, max 5000)\n\n**Auth:** Required"
+					}
+				},
+				{
+					"name": "Report Issue",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{token}}", "type": "string"}]
+						},
+						"method": "POST",
+						"header": [
+							{"key": "Accept", "value": "application/json"}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "title", "value": "App crash on booking", "type": "text"},
+								{"key": "description", "value": "The app crashes when I try to confirm a booking on the payment step.", "type": "text"},
+								{"key": "screenshot", "type": "file", "src": "", "description": "Optional screenshot (image, max 5MB)"}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/support/report-issue",
+							"host": ["{{base_url}}"],
+							"path": ["support", "report-issue"]
+						},
+						"description": "Report an issue with optional screenshot upload.\n\n**Request:**\n- title: string (required, max 255)\n- description: string (required, max 5000)\n- screenshot: file (optional, image, max 5MB)\n\n**Response:** Ticket with multi-size screenshot URLs { original, medium, thumbnail }\n\n**Auth:** Required"
+					}
+				},
+				{
+					"name": "My Tickets",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [{"key": "token", "value": "{{token}}", "type": "string"}]
+						},
+						"method": "GET",
+						"header": [
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": {
+							"raw": "{{base_url}}/support/my-tickets",
+							"host": ["{{base_url}}"],
+							"path": ["support", "my-tickets"]
+						},
+						"description": "List all support tickets for the authenticated user, ordered by newest first.\n\n**Auth:** Required"
+					}
+				}
+			]
+		},
+		{
+			"name": "FAQs",
+			"item": [
+				{
+					"name": "List FAQs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": {
+							"raw": "{{base_url}}/faqs",
+							"host": ["{{base_url}}"],
+							"path": ["faqs"]
+						},
+						"description": "List all active FAQs ordered by sort_order.\n\n**Response:** Array of FAQs with id, question, answer, category, sort_order.\n\n**Auth:** Not required (public)"
+					}
+				}
+			]
+		},
+		{
+			"name": "Legal Pages",
+			"item": [
+				{
+					"name": "Get Privacy Policy",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": {
+							"raw": "{{base_url}}/pages/privacy-policy",
+							"host": ["{{base_url}}"],
+							"path": ["pages", "privacy-policy"]
+						},
+						"description": "Get privacy policy page content.\n\n**Auth:** Not required (public)"
+					}
+				},
+				{
+					"name": "Get Terms & Conditions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": {
+							"raw": "{{base_url}}/pages/terms-conditions",
+							"host": ["{{base_url}}"],
+							"path": ["pages", "terms-conditions"]
+						},
+						"description": "Get terms and conditions page content.\n\n**Auth:** Not required (public)"
+					}
+				},
+				{
+					"name": "Get Data Usage Policy",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": {
+							"raw": "{{base_url}}/pages/data-usage",
+							"host": ["{{base_url}}"],
+							"path": ["pages", "data-usage"]
+						},
+						"description": "Get data usage policy page content.\n\n**Auth:** Not required (public)"
+					}
+				},
+				{
+					"name": "Get Cookie Policy",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": {
+							"raw": "{{base_url}}/pages/cookie-policy",
+							"host": ["{{base_url}}"],
+							"path": ["pages", "cookie-policy"]
+						},
+						"description": "Get cookie policy page content.\n\n**Auth:** Not required (public)"
+					}
+				},
+				{
+					"name": "Get Page by Slug",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": {
+							"raw": "{{base_url}}/pages/:slug",
+							"host": ["{{base_url}}"],
+							"path": ["pages", ":slug"],
+							"variable": [
+								{"key": "slug", "value": "privacy-policy", "description": "Page slug (privacy-policy, terms-conditions, data-usage, cookie-policy)"}
+							]
+						},
+						"description": "Get any legal/info page by its slug.\n\n**Available slugs:** privacy-policy, terms-conditions, data-usage, cookie-policy\n\n**Auth:** Not required (public)"
+					}
+				}
+			]
+		},
+		{
+			"name": "App Config",
+			"item": [
+				{
+					"name": "Get App Version",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": {
+							"raw": "{{base_url}}/app/version",
+							"host": ["{{base_url}}"],
+							"path": ["app", "version"]
+						},
+						"description": "Get app version information for update checking.\n\n**Response:**\n- current_version: \"1.0.0\"\n- min_version: \"1.0.0\"\n- force_update: false\n\n**Auth:** Not required (public)"
+					}
+				},
+				{
+					"name": "Get App Config",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Accept", "value": "application/json"}
+						],
+						"url": {
+							"raw": "{{base_url}}/app/config",
+							"host": ["{{base_url}}"],
+							"path": ["app", "config"]
+						},
+						"description": "Get app configuration settings.\n\n**Response:**\n- maintenance_mode: false\n- support_email: \"support@matchday.app\"\n- support_phone: \"+966500000000\"\n- terms_url, privacy_url\n- default_currency: \"SAR\"\n\n**Auth:** Not required (public)"
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// No pre-request script needed - token is handled by environment variable"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script to log responses",
+					"if (pm.response.code !== 200 && pm.response.code !== 201) {",
+					"    console.log('Response Status:', pm.response.code);",
+					"    console.log('Response:', pm.response.text());",
+					"}"
+				]
+			}
+		}
+	]
+}

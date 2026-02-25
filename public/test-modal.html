@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Delete Modal</title>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #0f172a; color: white; }
+        .modal { position: fixed; inset: 0; z-index: 50; display: none; }
+        .modal.show { display: block; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); }
+        .modal-content { 
+            position: relative; 
+            max-width: 500px; 
+            margin: 100px auto; 
+            background: #1e293b; 
+            border: 2px solid #dc2626;
+            border-radius: 12px; 
+            padding: 20px;
+            z-index: 51;
+        }
+        button { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold;
+        }
+        .btn-delete { background: #dc2626; color: white; }
+        .btn-close { background: #475569; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Modal Test</h1>
+    
+    <div x-data="{ showModal: false }">
+        <button @click="showModal = true" class="btn-delete">
+            Open Delete Modal (Alpine.js)
+        </button>
+        
+        <!-- Modal -->
+        <div x-show="showModal" class="modal show" style="display: block;" x-cloak>
+            <div class="overlay" @click="showModal = false"></div>
+            <div class="modal-content">
+                <h2>Delete Confirmation</h2>
+                <p>Are you sure you want to delete this item?</p>
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button @click="showModal = false" class="btn-close">Cancel</button>
+                    <button class="btn-delete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <hr style="margin: 40px 0;">
+    
+    <div>
+        <button onclick="document.getElementById('plainModal').style.display='block'" class="btn-delete">
+            Open Plain Modal (No Alpine)
+        </button>
+        
+        <!-- Plain Modal -->
+        <div id="plainModal" class="modal">
+            <div class="overlay" onclick="document.getElementById('plainModal').style.display='none'"></div>
+            <div class="modal-content">
+                <h2>Delete Confirmation (Plain JS)</h2>
+                <p>Are you sure you want to delete this item?</p>
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button onclick="document.getElementById('plainModal').style.display='none'" class="btn-close">Cancel</button>
+                    <button class="btn-delete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</body>
+</html>

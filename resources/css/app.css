@@ -1,0 +1,38 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../../vendor/livewire/livewire/src/Features/SupportPageComponents/BladeDirectives/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    
+    /* Platform Design Tokens */
+    --color-platform-bg: #0f172a;
+    --color-platform-sidebar: #0f172a;
+    --color-platform-card: #1e293b;
+    --color-platform-card-alt: #0c1425;
+    --color-platform-accent: #c8ff00;
+    --color-platform-text-primary: #e2e8f0;
+    --color-platform-text-secondary: #94a3b8;
+}
+
+@layer utilities {
+    @keyframes shimmer {
+        0% {
+            background-position: -468px 0;
+        }
+        100% {
+            background-position: 468px 0;
+        }
+    }
+
+    .animate-shimmer {
+        background: linear-gradient(to right, #1e164e 8%, #2d2465 18%, #1e164e 33%);
+        background-size: 800px 104px;
+        animation: shimmer 1.5s linear infinite forwards;
+    }
+}

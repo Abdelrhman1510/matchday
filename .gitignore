@@ -1,0 +1,47 @@
+*.log
+.DS_Store
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+Homestead.json
+Homestead.yaml
+Thumbs.db
+
+# Development-only scripts (never commit to repo)
+*.ps1
+test-*.php
+check-*.php
+debug-*.php
+grant-*.php
+generate-*.php
+seed-*.php
+send-test-*.php
+create-test-*.php
+get-*-token.php
+delete-*.php
+
+# Test output / scratch files
+test_*.txt
+test-*.txt
+test-results.*
+*.cache
+
+# Postman backups (keep only /docs/ versions)
+*.postman_collection.backup.json
+Matchday_API_Updates.postman_collection.json
