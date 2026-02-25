@@ -31,7 +31,7 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Install Node dependencies and build assets
-RUN npm ci && npm run build
+RUN npm install && npm run build
 
 # Symlink storage
 RUN php artisan storage:link 2>/dev/null || true
