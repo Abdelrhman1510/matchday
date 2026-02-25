@@ -56,11 +56,12 @@ Route::get('/cafes/{id}', [PublicCafeController::class, 'show'])->name('public.c
 |--------------------------------------------------------------------------
 */
 Route::prefix('platform')->name('platform.')->group(function () {
-    // Authentication routes (guest only)
-    Route::middleware('guest')->group(function () {
-        Route::get('/login', [PlatformAuthController::class, 'showLogin'])->name('login');
-        Route::post('/login', [PlatformAuthController::class, 'login']);
-    });
+    // Authentication routes — no 'guest' middleware here because Laravel's default
+    // RedirectIfAuthenticated redirects to route('home') which resolves to the API
+    // /api/v1/home endpoint. The showLogin() controller handles the authenticated
+    // redirect to platform.dashboard itself.
+    Route::get('/login', [PlatformAuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [PlatformAuthController::class, 'login']);
 
     // Logout route (authenticated only)
     Route::post('/logout', [PlatformAuthController::class, 'logout'])
