@@ -15,5 +15,6 @@ php artisan migrate --force 2>&1 || echo "WARNING: migrate failed (DB not connec
 echo "==> Seeding database..."
 php artisan db:seed --force 2>/dev/null || true
 
-echo "==> Starting server on port ${PORT:-8000}..."
-exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+PORT_NUM=$((${PORT:-8000}))
+echo "==> Starting server on port ${PORT_NUM}..."
+exec php -S 0.0.0.0:${PORT_NUM} -t public public/index.php
