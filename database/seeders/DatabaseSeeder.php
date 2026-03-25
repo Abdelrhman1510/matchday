@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             SubscriptionPlanSeeder::class,        // No dependencies
             FaqSeeder::class,                     // No dependencies
             PageSeeder::class,                    // No dependencies
+            BannerSeeder::class,                  // No dependencies
             UserSeeder::class,                    // No dependencies (creates fan profiles)
             PlatformAdminSeeder::class,           // Create platform admin user
             CafeSeeder::class,                    // Depends on: User (creates branches, hours, amenities)

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Banner;
 use App\Models\Cafe;
 use App\Models\GameMatch;
 use App\Models\Offer;
@@ -15,6 +16,20 @@ class HomeController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
+
+        $banners = Banner::active()
+            ->orderBy('sort_order')
+            ->limit(5)
+            ->get()
+            ->map(fn($b) => [
+                'id'          => $b->id,
+                'title'       => $b->title,
+                'subtitle'    => $b->subtitle,
+                'image_url'   => $b->image_url,
+                'action_type' => $b->action_type,
+                'action_id'   => $b->action_id,
+                'action_url'  => $b->action_url,
+            ]);
 
         $upcomingMatches = GameMatch::with(['homeTeam', 'awayTeam'])
             ->where('is_published', true)
@@ -57,9 +72,10 @@ class HomeController extends Controller
             'success' => true,
             'message' => 'Home feed retrieved.',
             'data' => [
+                'banners'          => $banners,
                 'upcoming_matches' => $upcomingMatches,
-                'featured_cafes' => $featuredCafes,
-                'active_offers' => $activeOffers,
+                'featured_cafes'   => $featuredCafes,
+                'active_offers'    => $activeOffers,
             ],
         ]);
     }

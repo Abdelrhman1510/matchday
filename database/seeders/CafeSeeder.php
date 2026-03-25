@@ -19,7 +19,7 @@ class CafeSeeder extends Seeder
         $cafe1 = Cafe::create([
             'owner_id' => $cafeOwners[0]->id,
             'name' => 'Champions Sports Lounge',
-            'logo' => 'cafes/champions-logo.png',
+            'logo' => 'https://ui-avatars.com/api/?name=Champions&background=1a1a2e&color=c8ff00&size=200&bold=true&format=png',
             'description' => 'Premium sports viewing experience with state-of-the-art 4K screens and VIP seating. Perfect for enjoying live matches with friends.',
             'phone' => '+966112345678',
             'city' => 'Riyadh',
@@ -65,7 +65,7 @@ class CafeSeeder extends Seeder
         $cafe2 = Cafe::create([
             'owner_id' => $cafeOwners[1]->id,
             'name' => 'Goal Zone Cafe',
-            'logo' => 'cafes/goalzone-logo.png',
+            'logo' => 'https://ui-avatars.com/api/?name=Goal+Zone&background=006400&color=fff&size=200&bold=true&format=png',
             'description' => 'Family-friendly sports cafe with a full menu and comfortable seating. Great atmosphere for all football fans.',
             'phone' => '+966112456789',
             'city' => 'Riyadh',
@@ -100,7 +100,7 @@ class CafeSeeder extends Seeder
         $cafe3 = Cafe::create([
             'owner_id' => $cafeOwners[2]->id,
             'name' => 'Sky Sports Lounge',
-            'logo' => 'cafes/skylounge-logo.png',
+            'logo' => 'https://ui-avatars.com/api/?name=Sky+Sports&background=004170&color=fff&size=200&bold=true&format=png',
             'description' => 'Luxurious rooftop sports lounge with panoramic views and premium service. An unmatched viewing experience.',
             'phone' => '+966112567890',
             'city' => 'Jeddah',

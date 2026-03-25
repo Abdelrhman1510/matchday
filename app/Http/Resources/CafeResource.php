@@ -43,7 +43,9 @@ class CafeResource extends JsonResource
         $result = [
             'id' => $this->id,
             'name' => $this->name,
-            'logo' => $this->logo ? url('storage/' . $this->logo) : null,
+            'logo' => $this->logo
+                ? (str_starts_with($this->logo, 'http') ? $this->logo : url('storage/' . $this->logo))
+                : null,
             'description' => $this->description,
             'phone' => $this->phone,
             'city' => $this->city,
