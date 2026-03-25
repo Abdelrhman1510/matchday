@@ -65,13 +65,13 @@ class MatchSeeder extends Seeder
             'is_published' => true,
         ]);
 
-        // Upcoming Matches (4)
+        // Upcoming Matches (4) — use fixed future dates so they don't expire after re-seeding
         GameMatch::create([
             'branch_id' => $branches[2]->id,
             'home_team_id' => $chelsea->id,
             'away_team_id' => $arsenal->id,
             'league' => 'Premier League',
-            'match_date' => now()->addDays(1)->toDateString(),
+            'match_date' => now()->addMonths(1)->toDateString(),
             'kick_off' => '20:00',
             'status' => 'upcoming',
             'seats_available' => 24,
@@ -79,7 +79,7 @@ class MatchSeeder extends Seeder
             'duration_minutes' => 90,
             'total_revenue' => 0.00,
             'booking_opens_at' => now(),
-            'booking_closes_at' => now()->addDays(1)->setTimeFromTimeString('19:45'),
+            'booking_closes_at' => now()->addMonths(1)->setTimeFromTimeString('19:45'),
             'is_published' => true,
         ]);
 
@@ -88,7 +88,7 @@ class MatchSeeder extends Seeder
             'home_team_id' => $manCity->id,
             'away_team_id' => $manUtd->id,
             'league' => 'Premier League',
-            'match_date' => now()->addDays(2)->toDateString(),
+            'match_date' => now()->addMonths(1)->addDays(3)->toDateString(),
             'kick_off' => '17:30',
             'status' => 'upcoming',
             'seats_available' => 24,
@@ -96,7 +96,7 @@ class MatchSeeder extends Seeder
             'duration_minutes' => 90,
             'total_revenue' => 0.00,
             'booking_opens_at' => now(),
-            'booking_closes_at' => now()->addDays(2)->setTimeFromTimeString('17:15'),
+            'booking_closes_at' => now()->addMonths(1)->addDays(3)->setTimeFromTimeString('17:15'),
             'is_published' => true,
         ]);
 
@@ -105,7 +105,7 @@ class MatchSeeder extends Seeder
             'home_team_id' => $psg->id,
             'away_team_id' => $bayern->id,
             'league' => 'Champions League',
-            'match_date' => now()->addDays(4)->toDateString(),
+            'match_date' => now()->addMonths(1)->addDays(7)->toDateString(),
             'kick_off' => '22:00',
             'status' => 'upcoming',
             'seats_available' => 24,
@@ -113,7 +113,7 @@ class MatchSeeder extends Seeder
             'duration_minutes' => 90,
             'total_revenue' => 0.00,
             'booking_opens_at' => now(),
-            'booking_closes_at' => now()->addDays(4)->setTimeFromTimeString('21:45'),
+            'booking_closes_at' => now()->addMonths(1)->addDays(7)->setTimeFromTimeString('21:45'),
             'is_published' => true,
         ]);
 
@@ -122,7 +122,7 @@ class MatchSeeder extends Seeder
             'home_team_id' => $juventus->id,
             'away_team_id' => $barcelona->id,
             'league' => 'Champions League',
-            'match_date' => now()->addDays(6)->toDateString(),
+            'match_date' => now()->addMonths(1)->addDays(14)->toDateString(),
             'kick_off' => '22:00',
             'status' => 'upcoming',
             'seats_available' => 24,
@@ -130,7 +130,7 @@ class MatchSeeder extends Seeder
             'duration_minutes' => 90,
             'total_revenue' => 0.00,
             'booking_opens_at' => now(),
-            'booking_closes_at' => now()->addDays(6)->setTimeFromTimeString('21:45'),
+            'booking_closes_at' => now()->addMonths(1)->addDays(14)->setTimeFromTimeString('21:45'),
             'is_published' => true,
         ]);
 

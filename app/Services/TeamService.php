@@ -40,7 +40,7 @@ class TeamService
     public function getPopularTeams(): Collection
     {
         return Cache::remember('popular_teams', 86400, function () {
-            return Team::popular()->get();
+            return Team::popular()->limit(10)->get();
         });
     }
 
