@@ -173,17 +173,21 @@ class ExploreService
 
         return $allMatches->map(function ($match) use ($userBookedMatchIds) {
             $data = [
-                'id' => $match->id,
-                'home_team' => $match->homeTeam->name,
-                'away_team' => $match->awayTeam->name,
-                'kick_off' => $match->kick_off,
-                'league' => $match->league,
-                'status' => $match->status,
-                'cafe_name' => $match->branch->cafe->name,
-                'branch_name' => $match->branch->name,
-                'price_per_seat' => (float) $match->price_per_seat,
+                'id'              => $match->id,
+                'home_team'       => $match->homeTeam->name,
+                'home_team_short' => $match->homeTeam->short_name,
+                'home_team_logo'  => $match->homeTeam->logo,
+                'away_team'       => $match->awayTeam->name,
+                'away_team_short' => $match->awayTeam->short_name,
+                'away_team_logo'  => $match->awayTeam->logo,
+                'kick_off'        => $match->kick_off,
+                'league'          => $match->league,
+                'status'          => $match->status,
+                'cafe_name'       => $match->branch->cafe->name,
+                'branch_name'     => $match->branch->name,
+                'price_per_seat'  => (float) $match->price_per_seat,
                 'seats_available' => $match->seats_available,
-                'is_booked' => in_array($match->id, $userBookedMatchIds),
+                'is_booked'       => in_array($match->id, $userBookedMatchIds),
             ];
 
             // Add scores for live matches
@@ -201,12 +205,12 @@ class ExploreService
         $weekAgo = now()->subWeek();
 
         $popularMatches = GameMatch::with(['homeTeam', 'awayTeam', 'branch.cafe'])
-            ->select('matches.*')
-            ->leftJoin('bookings', 'matches.id', '=', 'bookings.match_id')
+            ->select('game_matches.*')
+            ->leftJoin('bookings', 'game_matches.id', '=', 'bookings.match_id')
             ->where('bookings.created_at', '>=', $weekAgo)
             ->whereIn('bookings.status', ['confirmed', 'pending', 'completed'])
-            ->where('matches.match_date', '>=', now()->toDateString())
-            ->groupBy('matches.id')
+            ->where('game_matches.match_date', '>=', now()->toDateString())
+            ->groupBy('game_matches.id')
             ->selectRaw('COUNT(bookings.id) as booking_count')
             ->orderBy('booking_count', 'desc')
             ->published()
@@ -215,17 +219,21 @@ class ExploreService
 
         return $popularMatches->map(function ($match) use ($userBookedMatchIds) {
             return [
-                'id' => $match->id,
-                'home_team' => $match->homeTeam->name,
-                'away_team' => $match->awayTeam->name,
-                'match_date' => $match->match_date->format('Y-m-d'),
-                'kick_off' => $match->kick_off,
-                'league' => $match->league,
-                'status' => $match->status,
-                'cafe_name' => $match->branch->cafe->name,
-                'price_per_seat' => (float) $match->price_per_seat,
-                'booking_count' => $match->booking_count ?? 0,
-                'is_booked' => in_array($match->id, $userBookedMatchIds),
+                'id'              => $match->id,
+                'home_team'       => $match->homeTeam->name,
+                'home_team_short' => $match->homeTeam->short_name,
+                'home_team_logo'  => $match->homeTeam->logo,
+                'away_team'       => $match->awayTeam->name,
+                'away_team_short' => $match->awayTeam->short_name,
+                'away_team_logo'  => $match->awayTeam->logo,
+                'match_date'      => $match->match_date->format('Y-m-d'),
+                'kick_off'        => $match->kick_off,
+                'league'          => $match->league,
+                'status'          => $match->status,
+                'cafe_name'       => $match->branch->cafe->name,
+                'price_per_seat'  => (float) $match->price_per_seat,
+                'booking_count'   => $match->booking_count ?? 0,
+                'is_booked'       => in_array($match->id, $userBookedMatchIds),
             ];
         })->toArray();
     }
