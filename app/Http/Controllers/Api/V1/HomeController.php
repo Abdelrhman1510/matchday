@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
+use App\Models\Cafe;
 use App\Models\GameMatch;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -43,12 +45,30 @@ class HomeController extends Controller
                 ];
             });
 
+        $lat = $request->query('lat');
+        $lng = $request->query('lng');
+
+        if ($lat && $lng) {
+            $nearbyCafes = Cafe::select('cafes.id', 'cafes.name', 'cafes.logo')
+                ->join('branches', 'branches.cafe_id', '=', 'cafes.id')
+                ->selectRaw('MIN(( 6371 * acos( cos(radians(?)) * cos(radians(branches.latitude)) * cos(radians(branches.longitude) - radians(?)) + sin(radians(?)) * sin(radians(branches.latitude)) ) )) AS distance', [$lat, $lng, $lat])
+                ->groupBy('cafes.id', 'cafes.name', 'cafes.logo')
+                ->orderBy('distance')
+                ->limit(10)
+                ->get()
+                ->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'logo' => $c->logo, 'distance_km' => round($c->distance, 2)]);
+        } else {
+            $nearbyCafes = Cafe::select('id', 'name', 'logo')->limit(10)->get()
+                ->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'logo' => $c->logo, 'distance_km' => null]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Home feed retrieved.',
             'data' => [
                 'banners'          => $banners,
                 'upcoming_matches' => $upcomingMatches,
+                'nearby_cafes'     => $nearbyCafes,
             ],
         ]);
     }
