@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\BranchAmenity;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Branch extends Model
@@ -49,9 +50,9 @@ class Branch extends Model
         return $this->hasMany(BranchHour::class);
     }
 
-    public function amenities(): BelongsToMany
+    public function amenities(): HasMany
     {
-        return $this->belongsToMany(Amenity::class, 'branch_amenity')->withTimestamps();
+        return $this->hasMany(BranchAmenity::class);
     }
 
     public function seatingSections(): HasMany
