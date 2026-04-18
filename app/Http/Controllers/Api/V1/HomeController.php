@@ -58,8 +58,7 @@ class HomeController extends Controller
                 ->get()
                 ->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'logo' => $c->logo, 'distance_km' => round($c->distance, 2)]);
         } else {
-            $nearbyCafes = Cafe::select('id', 'name', 'logo')->limit(10)->get()
-                ->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'logo' => $c->logo, 'distance_km' => null]);
+            $nearbyCafes = [];
         }
 
         return response()->json([
