@@ -89,7 +89,16 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        $updatedUser = $this->profileService->updateAvatar($user, $request->file('avatar'));
+        try {
+            $updatedUser = $this->profileService->updateAvatar($user, $request->file('avatar'));
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => [],
+            ], 422);
+        }
+
         $profile = $this->profileService->getProfile($updatedUser);
 
         return response()->json([

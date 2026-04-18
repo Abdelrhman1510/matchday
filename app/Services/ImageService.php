@@ -31,7 +31,12 @@ class ImageService
 
         // Create image manager with GD driver
         $manager = new ImageManager(new Driver());
-        $image = $manager->read($file->getRealPath());
+
+        try {
+            $image = $manager->read($file->getRealPath());
+        } catch (\Throwable $e) {
+            throw new \InvalidArgumentException('The image could not be processed. Please upload a valid RGB JPEG, PNG, or WEBP file.');
+        }
 
         // Define sizes and paths
         $sizes = [
@@ -44,17 +49,17 @@ class ImageService
 
         foreach ($sizes as $size => $config) {
             $imageCopy = clone $image;
-            
-            // Resize if dimensions specified
+
             if ($config['width'] && $config['height']) {
                 $imageCopy->cover($config['width'], $config['height']);
             }
 
-            // Encode based on mime type
-            $encoded = $this->encodeImage($imageCopy, $mimeType);
-
-            // Store image
-            Storage::disk('public')->put($config['path'], $encoded);
+            try {
+                $encoded = $this->encodeImage($imageCopy, $mimeType);
+                Storage::disk('public')->put($config['path'], $encoded);
+            } catch (\Throwable $e) {
+                throw new \InvalidArgumentException('Failed to process the image. CMYK JPEGs are not supported — please convert to RGB before uploading.');
+            }
 
             // Save path for return
             $paths[$size] = $config['path'];
