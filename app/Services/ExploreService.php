@@ -3,13 +3,10 @@
 namespace App\Services;
 
 use App\Models\Booking;
-use App\Models\Branch;
 use App\Models\BranchHour;
 use App\Models\Cafe;
 use App\Models\GameMatch;
-use App\Models\Offer;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class ExploreService
 {
@@ -34,7 +31,6 @@ class ExploreService
                 'trending_cafes' => $this->getTrendingCafes($savedCafeIds, 5),
                 'matches_today' => $this->getMatchesToday($userBookedMatchIds),
                 'popular_matches' => $this->getPopularMatches($userBookedMatchIds, 5),
-                'active_offers' => $this->getActiveOffers(5),
             ];
         });
     }
@@ -234,38 +230,6 @@ class ExploreService
                 'price_per_seat'  => (float) $match->price_per_seat,
                 'booking_count'   => $match->booking_count ?? 0,
                 'is_booked'       => in_array($match->id, $userBookedMatchIds),
-            ];
-        })->toArray();
-    }
-
-    private function getActiveOffers(int $limit): array
-    {
-        $threeDaysFromNow = now()->addDays(3)->toDateString();
-
-        $offers = Offer::with('cafe')
-            ->active()
-            ->orderByRaw('is_featured DESC')
-            ->orderBy('created_at', 'desc')
-            ->limit($limit)
-            ->get();
-
-        return $offers->map(function ($offer) use ($threeDaysFromNow) {
-            $isExpiringSoon = $offer->valid_until && 
-                              $offer->valid_until->lte($threeDaysFromNow);
-
-            return [
-                'id' => $offer->id,
-                'title' => $offer->title,
-                'description' => $offer->description,
-                'image' => $offer->image,
-                'original_price' => (float) $offer->original_price,
-                'offer_price' => (float) $offer->offer_price,
-                'discount_percent' => $offer->discount_percent,
-                'cafe_name' => $offer->cafe->name,
-                'cafe_id' => $offer->cafe_id,
-                'valid_until' => $offer->valid_until?->format('Y-m-d'),
-                'is_featured' => $offer->is_featured,
-                'is_expiring_soon' => $isExpiringSoon,
             ];
         })->toArray();
     }

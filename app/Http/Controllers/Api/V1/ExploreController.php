@@ -23,6 +23,7 @@ class ExploreController extends Controller
         $lng  = $request->filled('lng') ? (float) $request->lng : null;
 
         $data = $this->exploreService->getExploreData($user, $lat, $lng);
+        unset($data['active_offers']);
 
         return response()->json([
             'success' => true,
