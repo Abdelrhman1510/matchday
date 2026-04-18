@@ -4,10 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
-use App\Models\Cafe;
 use App\Models\GameMatch;
-use App\Models\Offer;
-use App\Models\Team;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -46,36 +43,12 @@ class HomeController extends Controller
                 ];
             });
 
-        $featuredCafes = Cafe::where('is_featured', true)
-            ->limit(10)
-            ->get()
-            ->map(function ($cafe) {
-                return [
-                    'id' => $cafe->id,
-                    'name' => $cafe->name,
-                    'logo' => $cafe->logo,
-                ];
-            });
-
-        $activeOffers = Offer::where('status', 'active')
-            ->limit(10)
-            ->get()
-            ->map(function ($offer) {
-                return [
-                    'id' => $offer->id,
-                    'title' => $offer->title,
-                    'discount' => $offer->discount ?? $offer->discount_value ?? $offer->discount_percent,
-                ];
-            });
-
         return response()->json([
             'success' => true,
             'message' => 'Home feed retrieved.',
             'data' => [
                 'banners'          => $banners,
                 'upcoming_matches' => $upcomingMatches,
-                'featured_cafes'   => $featuredCafes,
-                'active_offers'    => $activeOffers,
             ],
         ]);
     }
