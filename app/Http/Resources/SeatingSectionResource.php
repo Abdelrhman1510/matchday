@@ -16,8 +16,7 @@ class SeatingSectionResource extends JsonResource
     {
         $occupiedSeats = $this->seats()
             ->whereHas('bookings', function ($query) {
-                $query->where('status', 'confirmed')
-                      ->whereDate('booking_date', now()->toDateString());
+                $query->where('status', 'confirmed');
             })
             ->count();
 
