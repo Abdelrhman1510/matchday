@@ -104,9 +104,6 @@ class ProfileService
             $this->imageService->delete($user->avatar);
         }
 
-        // Store the raw file at avatars/ for simple access
-        $file->store('avatars', 'public');
-
         // Upload image with multiple sizes
         $paths = $this->imageService->upload($file, 'avatars');
 

@@ -91,7 +91,7 @@ class ProfileController extends Controller
 
         try {
             $updatedUser = $this->profileService->updateAvatar($user, $request->file('avatar'));
-        } catch (\InvalidArgumentException $e) {
+        } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
