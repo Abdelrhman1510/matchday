@@ -36,16 +36,16 @@ class ImageService
         $sourcePath = $file->getRealPath();
         $tmpPath = null;
         if ($mimeType === 'image/jpeg') {
-            $gd = @imagecreatefromjpeg($sourcePath);
+            $gd = @\imagecreatefromjpeg($sourcePath);
             if ($gd !== false) {
-                $w = imagesx($gd);
-                $h = imagesy($gd);
-                $rgb = imagecreatetruecolor($w, $h);
-                imagecopy($rgb, $gd, 0, 0, 0, 0, $w, $h);
-                imagedestroy($gd);
-                $tmpPath = tempnam(sys_get_temp_dir(), 'img') . '.jpg';
-                imagejpeg($rgb, $tmpPath, 95);
-                imagedestroy($rgb);
+                $w = \imagesx($gd);
+                $h = \imagesy($gd);
+                $rgb = \imagecreatetruecolor($w, $h);
+                \imagecopy($rgb, $gd, 0, 0, 0, 0, $w, $h);
+                \imagedestroy($gd);
+                $tmpPath = \tempnam(\sys_get_temp_dir(), 'img') . '.jpg';
+                \imagejpeg($rgb, $tmpPath, 95);
+                \imagedestroy($rgb);
                 $sourcePath = $tmpPath;
             }
         }
