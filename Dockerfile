@@ -12,9 +12,10 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# PHP extensions (including gd)
-RUN docker-php-ext-install \
-    pdo pdo_mysql mbstring xml bcmath gd zip fileinfo intl
+# PHP extensions (including gd with jpeg/webp support)
+RUN apt-get update && apt-get install -y libwebp-dev && rm -rf /var/lib/apt/lists/*
+RUN docker-php-ext-configure gd --with-jpeg --with-freetype --with-webp \
+    && docker-php-ext-install pdo pdo_mysql mbstring xml bcmath gd zip fileinfo intl
 
 # Redis extension
 RUN pecl install redis && docker-php-ext-enable redis
