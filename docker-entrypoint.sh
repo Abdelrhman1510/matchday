@@ -9,6 +9,11 @@ php artisan route:cache 2>/dev/null || echo "WARNING: route:cache failed"
 echo "==> Caching views..."
 php artisan view:cache 2>/dev/null || echo "WARNING: view:cache failed"
 
+echo "==> Setting up storage..."
+mkdir -p storage/app/public/avatars/original storage/app/public/avatars/medium storage/app/public/avatars/thumbnail
+chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+php artisan storage:link --force 2>/dev/null || true
+
 echo "==> Running migrations..."
 php artisan migrate --force 2>&1 || echo "WARNING: migrate failed (DB not connected?)"
 
