@@ -42,7 +42,7 @@ class MatchResource extends JsonResource
                     'id' => $this->homeTeam->id,
                     'name' => $this->homeTeam->name,
                     'short_name' => $this->homeTeam->short_name,
-                    'logo' => $this->homeTeam->logo ? url('storage/' . $this->homeTeam->logo) : null,
+                    'logo' => $this->homeTeam->logo ? (str_starts_with($this->homeTeam->logo, 'http') ? $this->homeTeam->logo : url('storage/' . $this->homeTeam->logo)) : null,
                 ];
             }),
             'away_team' => $this->when($this->relationLoaded('awayTeam'), function () {
@@ -50,7 +50,7 @@ class MatchResource extends JsonResource
                     'id' => $this->awayTeam->id,
                     'name' => $this->awayTeam->name,
                     'short_name' => $this->awayTeam->short_name,
-                    'logo' => $this->awayTeam->logo ? url('storage/' . $this->awayTeam->logo) : null,
+                    'logo' => $this->awayTeam->logo ? (str_starts_with($this->awayTeam->logo, 'http') ? $this->awayTeam->logo : url('storage/' . $this->awayTeam->logo)) : null,
                 ];
             }),
             'home_score' => $this->home_score,
