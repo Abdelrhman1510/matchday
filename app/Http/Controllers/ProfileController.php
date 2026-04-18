@@ -95,7 +95,7 @@ class ProfileController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
-                'errors' => [],
+                'errors' => ['avatar' => [$e->getMessage()]],
             ], 422);
         }
 

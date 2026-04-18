@@ -32,10 +32,29 @@ class ImageService
         // Create image manager with GD driver
         $manager = new ImageManager(new Driver());
 
+        // GD cannot read CMYK JPEGs — convert to RGB first via raw GD
+        $sourcePath = $file->getRealPath();
+        $tmpPath = null;
+        if ($mimeType === 'image/jpeg') {
+            $gd = @imagecreatefromjpeg($sourcePath);
+            if ($gd !== false) {
+                $w = imagesx($gd);
+                $h = imagesy($gd);
+                $rgb = imagecreatetruecolor($w, $h);
+                imagecopy($rgb, $gd, 0, 0, 0, 0, $w, $h);
+                imagedestroy($gd);
+                $tmpPath = tempnam(sys_get_temp_dir(), 'img') . '.jpg';
+                imagejpeg($rgb, $tmpPath, 95);
+                imagedestroy($rgb);
+                $sourcePath = $tmpPath;
+            }
+        }
+
         try {
-            $image = $manager->read($file->getRealPath());
+            $image = $manager->read($sourcePath);
         } catch (\Throwable $e) {
-            throw new \InvalidArgumentException('The image could not be processed. Please upload a valid RGB JPEG, PNG, or WEBP file.');
+            if ($tmpPath && file_exists($tmpPath)) unlink($tmpPath);
+            throw new \InvalidArgumentException('The image could not be processed. Please upload a valid JPEG, PNG, or WEBP file.');
         }
 
         // Define sizes and paths
@@ -58,12 +77,14 @@ class ImageService
                 $encoded = $this->encodeImage($imageCopy, $mimeType);
                 Storage::disk('public')->put($config['path'], $encoded);
             } catch (\Throwable $e) {
-                throw new \InvalidArgumentException('Failed to process the image. CMYK JPEGs are not supported — please convert to RGB before uploading.');
+                if ($tmpPath && file_exists($tmpPath)) unlink($tmpPath);
+                throw new \InvalidArgumentException('Failed to save the image. Please try again with a different file.');
             }
 
-            // Save path for return
             $paths[$size] = $config['path'];
         }
+
+        if ($tmpPath && file_exists($tmpPath)) unlink($tmpPath);
 
         return $paths;
     }
