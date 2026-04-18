@@ -44,7 +44,9 @@ class BranchDetailResource extends JsonResource
                 $logo = null;
                 if ($this->cafe->logo) {
                     if (is_array($this->cafe->logo)) {
-                        $logo = $this->cafe->logo; // Already an array of sizes
+                        $logo = $this->cafe->logo;
+                    } elseif (str_starts_with($this->cafe->logo, 'http')) {
+                        $logo = $this->cafe->logo;
                     } else {
                         $logo = url('storage/' . $this->cafe->logo);
                     }
