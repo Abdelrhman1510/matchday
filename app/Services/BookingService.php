@@ -128,10 +128,10 @@ class BookingService
             'generated_at' => now()->toIso8601String(),
         ]);
 
-        // Generate QR code as base64 PNG
-        $qrCode = base64_encode(QrCode::format('png')->size(300)->generate($qrData));
+        // Generate QR code as SVG (no Imagick/GD required)
+        $qrCode = base64_encode(QrCode::format('svg')->size(300)->generate($qrData));
 
-        return "data:image/png;base64,{$qrCode}";
+        return "data:image/svg+xml;base64,{$qrCode}";
     }
 
     /**
