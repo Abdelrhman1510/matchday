@@ -33,6 +33,7 @@ class ExploreController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Explore data retrieved.',
+            '_debug_user_id' => $user?->id,
             'data'    => $data,
         ]);
     }
