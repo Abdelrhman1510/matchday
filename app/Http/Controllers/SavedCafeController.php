@@ -6,6 +6,7 @@ use App\Http\Resources\SavedCafeResource;
 use App\Services\SavedCafeService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class SavedCafeController extends Controller
 {
@@ -40,7 +41,9 @@ class SavedCafeController extends Controller
      */
     public function store(Request $request, int $cafeId): JsonResponse
     {
-        $result = $this->savedCafeService->saveCafe($request->user()->id, $cafeId);
+        $user = $request->user();
+        $result = $this->savedCafeService->saveCafe($user->id, $cafeId);
+        Cache::forget("explore_data_user_{$user->id}_no_location");
 
         if (!$result['success']) {
             return response()->json([
@@ -62,7 +65,9 @@ class SavedCafeController extends Controller
      */
     public function destroy(Request $request, int $cafeId): JsonResponse
     {
-        $result = $this->savedCafeService->unsaveCafe($request->user()->id, $cafeId);
+        $user = $request->user();
+        Cache::forget("explore_data_user_{$user->id}_no_location");
+        $result = $this->savedCafeService->unsaveCafe($user->id, $cafeId);
 
         if (!$result['success']) {
             return response()->json([
