@@ -18,7 +18,7 @@ class ExploreController extends Controller
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
-        $user = $request->user(); // null if unauthenticated (public route)
+        $user = auth('sanctum')->user();
         $lat  = $request->filled('lat') ? (float) $request->lat : null;
         $lng  = $request->filled('lng') ? (float) $request->lng : null;
 
