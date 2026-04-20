@@ -16,23 +16,43 @@ class ExploreService
      */
     public function getExploreData($user = null, ?float $lat = null, ?float $lng = null): array
     {
-        $cacheKey = 'explore_v2_' . ($user ? "user_{$user->id}_" : 'public_') . ($lat ? "{$lat}_{$lng}" : 'no_location');
-        
-        return Cache::remember($cacheKey, 300, function () use ($user, $lat, $lng) {
-            $savedCafeIds = $user ? $user->savedCafes()->pluck('cafes.id')->toArray() : [];
-            $userBookedMatchIds = $user ? Booking::where('user_id', $user->id)
-                ->whereIn('status', ['confirmed', 'pending'])
-                ->pluck('match_id')
-                ->toArray() : [];
+        // User-specific flags are always computed fresh — never cached
+        $savedCafeIds = $user ? $user->savedCafes()->pluck('cafes.id')->toArray() : [];
+        $userBookedMatchIds = $user ? Booking::where('user_id', $user->id)
+            ->whereIn('status', ['confirmed', 'pending'])
+            ->pluck('match_id')
+            ->toArray() : [];
 
+        $cacheKey = 'explore_v2_public_' . ($lat ? "{$lat}_{$lng}" : 'no_location');
+
+        $data = Cache::remember($cacheKey, 300, function () use ($lat, $lng) {
             return [
-                'featured_cafes' => $this->getFeaturedCafes($savedCafeIds, $lat, $lng, 5),
-                'nearby_cafes' => ($lat && $lng) ? $this->getNearbyCafes($lat, $lng, $savedCafeIds, 5) : [],
-                'trending_cafes' => $this->getTrendingCafes($savedCafeIds, 5),
-                'matches_today' => $this->getMatchesToday($userBookedMatchIds),
-                'popular_matches' => $this->getPopularMatches($userBookedMatchIds, 5),
+                'featured_cafes' => $this->getFeaturedCafes([], $lat, $lng, 5),
+                'nearby_cafes' => ($lat && $lng) ? $this->getNearbyCafes($lat, $lng, [], 5) : [],
+                'trending_cafes' => $this->getTrendingCafes([], 5),
+                'matches_today' => $this->getMatchesToday([]),
+                'popular_matches' => $this->getPopularMatches([], 5),
             ];
         });
+
+        // Overlay per-user flags on the cached structural data
+        foreach ($data['featured_cafes'] as &$cafe) {
+            $cafe['is_saved'] = in_array($cafe['id'], $savedCafeIds);
+        }
+        foreach ($data['nearby_cafes'] as &$cafe) {
+            $cafe['is_saved'] = in_array($cafe['id'], $savedCafeIds);
+        }
+        foreach ($data['trending_cafes'] as &$cafe) {
+            $cafe['is_saved'] = in_array($cafe['id'], $savedCafeIds);
+        }
+        foreach ($data['matches_today'] as &$match) {
+            $match['is_booked'] = in_array($match['id'], $userBookedMatchIds);
+        }
+        foreach ($data['popular_matches'] as &$match) {
+            $match['is_booked'] = in_array($match['id'], $userBookedMatchIds);
+        }
+
+        return $data;
     }
 
     private function getFeaturedCafes(array $savedCafeIds, ?float $lat, ?float $lng, int $limit): array
