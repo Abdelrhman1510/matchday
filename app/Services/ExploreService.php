@@ -16,7 +16,7 @@ class ExploreService
      */
     public function getExploreData($user = null, ?float $lat = null, ?float $lng = null): array
     {
-        $cacheKey = 'explore_data_' . ($user ? "user_{$user->id}_" : 'public_') . ($lat ? "{$lat}_{$lng}" : 'no_location');
+        $cacheKey = 'explore_v2_' . ($user ? "user_{$user->id}_" : 'public_') . ($lat ? "{$lat}_{$lng}" : 'no_location');
         
         return Cache::remember($cacheKey, 300, function () use ($user, $lat, $lng) {
             $savedCafeIds = $user ? $user->savedCafes()->pluck('cafes.id')->toArray() : [];
