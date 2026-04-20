@@ -18,7 +18,12 @@ class ExploreController extends Controller
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
-        $user = auth('sanctum')->user();
+        $bearerToken = $request->bearerToken();
+        $user = null;
+        if ($bearerToken) {
+            $token = \Laravel\Sanctum\PersonalAccessToken::findToken($bearerToken);
+            $user = $token?->tokenable;
+        }
         $lat  = $request->filled('lat') ? (float) $request->lat : null;
         $lng  = $request->filled('lng') ? (float) $request->lng : null;
 
