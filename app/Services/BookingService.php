@@ -33,6 +33,19 @@ class BookingService
                 ->whereIn('id', $data['seat_ids'])
                 ->get();
 
+            // Reject seats already booked for this match
+            $alreadyBooked = DB::table('booking_seats')
+                ->join('bookings', 'booking_seats.booking_id', '=', 'bookings.id')
+                ->where('bookings.match_id', $match->id)
+                ->whereIn('bookings.status', ['confirmed', 'checked_in'])
+                ->whereIn('booking_seats.seat_id', $data['seat_ids'])
+                ->pluck('booking_seats.seat_id')
+                ->toArray();
+
+            if (!empty($alreadyBooked)) {
+                throw new \Exception('One or more selected seats are already booked for this match.');
+            }
+
             // Calculate costs
             $costs = $this->calculateBookingCosts($match, $seats);
 

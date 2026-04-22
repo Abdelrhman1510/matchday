@@ -170,11 +170,12 @@ class MatchService
                 'extra_cost' => (float) $section->extra_cost,
                 'icon' => $section->icon,
                 'seats' => $section->seats->map(function ($seat) use ($bookedSeatIds) {
+                    $bookedForMatch = in_array($seat->id, $bookedSeatIds);
                     return [
                         'id' => $seat->id,
                         'label' => $seat->label,
-                        'is_available' => $seat->is_available,
-                        'is_booked_for_this_match' => in_array($seat->id, $bookedSeatIds),
+                        'is_available' => $seat->is_available && !$bookedForMatch,
+                        'is_booked_for_this_match' => $bookedForMatch,
                     ];
                 }),
             ];

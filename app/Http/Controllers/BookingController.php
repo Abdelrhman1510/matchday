@@ -58,10 +58,12 @@ class BookingController extends Controller
                 'data' => new BookingDetailResource($booking),
             ], Response::HTTP_CREATED);
         } catch (\Exception $e) {
+            $isUserError = str_contains($e->getMessage(), 'already booked')
+                || str_contains($e->getMessage(), 'not available');
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create booking: ' . $e->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                'message' => $e->getMessage(),
+            ], $isUserError ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
