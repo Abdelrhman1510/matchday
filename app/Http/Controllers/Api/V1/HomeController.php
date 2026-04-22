@@ -51,6 +51,7 @@ class HomeController extends Controller
         if ($lat && $lng) {
             $nearbyCafes = Cafe::select('cafes.id', 'cafes.name', 'cafes.logo')
                 ->join('branches', 'branches.cafe_id', '=', 'cafes.id')
+                ->withActiveSubscription()
                 ->selectRaw('MIN(( 6371 * acos( cos(radians(?)) * cos(radians(branches.latitude)) * cos(radians(branches.longitude) - radians(?)) + sin(radians(?)) * sin(radians(branches.latitude)) ) )) AS distance', [$lat, $lng, $lat])
                 ->groupBy('cafes.id', 'cafes.name', 'cafes.logo')
                 ->orderBy('distance')
@@ -91,7 +92,7 @@ class HomeController extends Controller
                 ];
             });
 
-        $nearbyCafes = Cafe::limit(10)->get()->map(function ($cafe) {
+        $nearbyCafes = Cafe::withActiveSubscription()->limit(10)->get()->map(function ($cafe) {
             return [
                 'id' => $cafe->id,
                 'name' => $cafe->name,

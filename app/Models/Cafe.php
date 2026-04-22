@@ -76,6 +76,13 @@ class Cafe extends Model
     }
 
     // Scopes
+    public function scopeWithActiveSubscription($query)
+    {
+        return $query->whereHas('subscriptions', function ($q) {
+            $q->where('status', 'active')->where('expires_at', '>', now());
+        });
+    }
+
     public function scopePremium($query)
     {
         return $query->where('is_premium', true);

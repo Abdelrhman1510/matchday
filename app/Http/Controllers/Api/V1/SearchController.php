@@ -51,6 +51,7 @@ class SearchController extends Controller
         // Search cafes
         if (!$type || $type === 'cafes') {
             $cafes = Cafe::where('name', 'like', $likeTerm)
+                ->withActiveSubscription()
                 ->limit(10)
                 ->get()
                 ->map(function ($cafe) {

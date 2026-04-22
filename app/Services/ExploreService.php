@@ -60,6 +60,7 @@ class ExploreService
         $cafes = Cafe::with(['branches' => function ($query) {
                 $query->where('is_open', true);
             }])
+            ->withActiveSubscription()
             ->premium()
             ->highRated(4.0)
             ->orderBy('avg_rating', 'desc')
@@ -101,11 +102,12 @@ class ExploreService
     {
         $cafes = Cafe::select('cafes.*')
             ->join('branches', 'cafes.id', '=', 'branches.cafe_id')
-            ->selectRaw('branches.id as branch_id, branches.name as branch_name, branches.address, 
+            ->selectRaw('branches.id as branch_id, branches.name as branch_name, branches.address,
                 branches.latitude, branches.longitude,
-                (6371 * acos(cos(radians(?)) * cos(radians(branches.latitude)) * 
-                cos(radians(branches.longitude) - radians(?)) + sin(radians(?)) * 
+                (6371 * acos(cos(radians(?)) * cos(radians(branches.latitude)) *
+                cos(radians(branches.longitude) - radians(?)) + sin(radians(?)) *
                 sin(radians(branches.latitude)))) AS distance_km', [$lat, $lng, $lat])
+            ->withActiveSubscription()
             ->where('branches.is_open', true)
             ->having('distance_km', '<', 20)
             ->orderBy('distance_km')
@@ -142,6 +144,7 @@ class ExploreService
             return Cafe::select('cafes.*')
                 ->join('branches', 'cafes.id', '=', 'branches.cafe_id')
                 ->join('bookings', 'branches.id', '=', 'bookings.branch_id')
+                ->withActiveSubscription()
                 ->where('bookings.created_at', '>=', $weekAgo)
                 ->whereIn('bookings.status', ['confirmed', 'pending', 'completed'])
                 ->groupBy('cafes.id')
