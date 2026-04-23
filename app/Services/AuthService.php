@@ -446,14 +446,8 @@ class AuthService
         $user = User::where('email', $email)->first();
 
         if ($user) {
-            // Generate 6-digit OTP
             $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-            
-            // Store OTP in cache for 10 minutes
-            $cacheKey = "password_reset_otp:{$email}";
-            Cache::put($cacheKey, $otp, now()->addMinutes(10));
-            
-            // Send OTP via email
+            Cache::put("otp:{$user->email}", $otp, now()->addMinutes(10));
             $user->notify(new PasswordResetOtp($otp, $user->name, $user->email));
         }
 
@@ -482,9 +476,7 @@ class AuthService
             ]);
         }
 
-        // Verify OTP
-        $cacheKey = "password_reset_otp:{$email}";
-        $storedOtp = Cache::get($cacheKey);
+        $storedOtp = Cache::get("otp:{$user->email}");
 
         if (!$storedOtp || $storedOtp !== $otp) {
             throw ValidationException::withMessages([
@@ -492,12 +484,10 @@ class AuthService
             ]);
         }
 
-        // Update password
         $user->password = Hash::make($password);
         $user->save();
 
-        // Clear OTP from cache
-        Cache::forget($cacheKey);
+        Cache::forget("otp:{$user->email}");
 
         // Revoke all existing tokens for security
         $user->tokens()->delete();
@@ -523,14 +513,8 @@ class AuthService
             ]);
         }
 
-        // Generate 6-digit OTP
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        
-        // Store OTP in cache for 10 minutes
-        $cacheKey = "email_verification_otp:{$user->id}";
-        Cache::put($cacheKey, $otp, now()->addMinutes(10));
-        
-        // Send OTP via email
+        Cache::put("otp:{$user->email}", $otp, now()->addMinutes(10));
         $user->notify(new EmailVerificationOtp($otp, $user->name, $user->email));
 
         return [
@@ -555,9 +539,7 @@ class AuthService
             ]);
         }
 
-        // Verify OTP
-        $cacheKey = "email_verification_otp:{$user->id}";
-        $storedOtp = Cache::get($cacheKey);
+        $storedOtp = Cache::get("otp:{$user->email}");
 
         if (!$storedOtp || $storedOtp !== $otp) {
             throw ValidationException::withMessages([
@@ -565,12 +547,10 @@ class AuthService
             ]);
         }
 
-        // Mark email as verified
         $user->email_verified_at = now();
         $user->save();
 
-        // Clear OTP from cache
-        Cache::forget($cacheKey);
+        Cache::forget("otp:{$user->email}");
 
         return [
             'message' => 'Email has been verified successfully.',
