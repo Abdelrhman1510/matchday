@@ -506,13 +506,6 @@ class AuthService
      */
     public function sendEmailVerificationOtp(User $user): array
     {
-        // Check if email is already verified
-        if ($user->email_verified_at) {
-            throw ValidationException::withMessages([
-                'email' => ['Email is already verified.'],
-            ]);
-        }
-
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         Cache::put("otp:{$user->email}", $otp, now()->addMinutes(10));
         $user->notify(new EmailVerificationOtp($otp, $user->name, $user->email));
