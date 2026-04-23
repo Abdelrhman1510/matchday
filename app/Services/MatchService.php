@@ -156,7 +156,7 @@ class MatchService
         $bookedSeatIds = DB::table('booking_seats')
             ->join('bookings', 'booking_seats.booking_id', '=', 'bookings.id')
             ->where('bookings.match_id', $matchId)
-            ->whereIn('bookings.status', ['confirmed', 'checked_in'])
+            ->whereIn('bookings.status', ['confirmed', 'checked_in', 'pending'])
             ->pluck('booking_seats.seat_id')
             ->toArray();
 

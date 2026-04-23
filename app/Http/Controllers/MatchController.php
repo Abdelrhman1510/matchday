@@ -177,6 +177,7 @@ class MatchController extends Controller
                         'id' => $seat['id'],
                         'label' => $seat['label'],
                         'is_available' => $seat['is_available'],
+                        'is_booked' => $seat['is_booked_for_this_match'],
                     ];
                 })->toArray(),
             ];
