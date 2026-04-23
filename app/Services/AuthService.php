@@ -512,6 +512,7 @@ class AuthService
 
         return [
             'message' => 'Verification OTP has been sent to your email.',
+            'otp' => $otp,
         ];
     }
 

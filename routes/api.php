@@ -267,7 +267,6 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('auth')->group(funct
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
     Route::post('/verify-email', [AuthController::class, 'verifyEmail'])->name('auth.verify-email');
     Route::post('/resend-verification', [AuthController::class, 'resendVerificationOtp'])
-        ->middleware('throttle:resend-otp')
         ->name('auth.resend-verification');
 });
 

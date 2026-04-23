@@ -377,7 +377,7 @@ class AuthController extends Controller
             $result = $this->authService->sendEmailVerificationOtp($user);
 
             return $this->successResponse(
-                [],
+                ['_debug_otp' => $result['otp'] ?? null],
                 $result['message'],
                 200
             );
