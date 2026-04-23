@@ -375,7 +375,7 @@ Route::middleware(['auth:sanctum', 'cafe.owner'])->prefix('admin')->name('admin.
     Route::get('/cafes/{cafeId}/onboarding', [CafeAdminController::class, 'getOnboardingStatus'])->name('cafes.onboarding');
 
     // Branch CRUD (nested under cafe)
-    Route::post('/cafes/{cafeId}/branches', [CafeAdminController::class, 'createBranch'])->middleware('subscription')->name('cafes.branches.create');
+    Route::post('/cafes/{cafeId}/branches', [CafeAdminController::class, 'createBranch'])->name('cafes.branches.create');
     Route::get('/cafes/{cafeId}/branches', [CafeAdminController::class, 'listBranches'])->name('cafes.branches.index');
 
     // Branch CRUD (direct)
@@ -481,7 +481,7 @@ Route::middleware(['auth:sanctum', 'cafe.owner'])->prefix('cafe-admin')->name('c
 
     // BRANCH CRUD (Endpoints 6-14)
     Route::get('/branches', [CafeAdminController::class, 'listBranches'])->name('branches.index');
-    Route::post('/branches', [CafeAdminController::class, 'createBranch'])->middleware('subscription')->name('branches.create');
+    Route::post('/branches', [CafeAdminController::class, 'createBranch'])->name('branches.create');
     Route::put('/branches/{id}/hours', [CafeAdminController::class, 'updateBranchHours'])->name('branches.hours');
     Route::post('/branches/{id}/amenities/bulk', [CafeAdminController::class, 'addAmenitiesBulk'])->name('branches.amenities.bulk');
     Route::get('/branches/{id}', [CafeAdminController::class, 'getBranch'])->name('branches.show');
