@@ -323,15 +323,18 @@ class CafeAdminController extends Controller
             ], 404);
         }
 
-        // Subscription enforcement: check branch limit
-        $check = $this->enforcement->canCreateBranch($cafe);
-        if (!$check['allowed']) {
-            return response()->json([
-                'success' => false,
-                'message' => $check['reason'],
-                'limit' => $check['limit'],
-                'current' => $check['current'],
-            ], 403);
+        // Subscription enforcement: check branch limit (skip for first branch)
+        $isFirstBranch = !$cafe->branches()->exists();
+        if (!$isFirstBranch) {
+            $check = $this->enforcement->canCreateBranch($cafe);
+            if (!$check['allowed']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $check['reason'],
+                    'limit' => $check['limit'],
+                    'current' => $check['current'],
+                ], 403);
+            }
         }
 
         $validator = Validator::make($request->all(), [

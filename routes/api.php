@@ -36,10 +36,10 @@ use Illuminate\Support\Facades\Cache;
 
 // TEMP DEBUG: read OTP from cache — remove before production
 Route::get('/debug/otp/{email}', function (string $email) {
-    return response()->json([
-        'password_reset_otp' => Cache::get("password_reset_otp:{$email}"),
-        'email_verification_otp_for_user' => null,
-    ]);
+    $user = \App\Models\User::where('email', $email)->first();
+    $otp = Cache::get("password_reset_otp:{$email}")
+        ?? ($user ? Cache::get("email_verification_otp:{$user->id}") : null);
+    return response()->json(['otp' => $otp]);
 });
 
 /*
