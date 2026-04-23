@@ -30,6 +30,7 @@ class Cafe extends Model
         'total_reviews',
         'subscription_plan',
         'payment_method_id',
+        'current_branch_id',
     ];
 
     protected function casts(): array

@@ -300,7 +300,7 @@ class CafeAdminController extends Controller
             });
 
         // Add current branch ID to request for resource
-        $request->merge(['currentBranchId' => session('current_branch_id')]);
+        $request->merge(['currentBranchId' => $cafe->current_branch_id]);
 
         return response()->json([
             'success' => true,
@@ -870,12 +870,39 @@ class CafeAdminController extends Controller
             ], 404);
         }
 
-        // Store in session
-        session(['current_branch_id' => $branch->id]);
+        $cafe->update(['current_branch_id' => $branch->id]);
 
         return response()->json([
             'success' => true,
             'message' => 'Current branch switched successfully',
+            'data' => new BranchDetailResource($branch),
+        ]);
+    }
+
+    /**
+     * GET /api/v1/cafe-admin/current-branch
+     */
+    public function getCurrentBranch(Request $request)
+    {
+        $cafe = $request->user()->ownedCafes()->first();
+
+        if (!$cafe) {
+            return response()->json(['success' => false, 'message' => 'No cafe found for this owner'], 404);
+        }
+
+        if (!$cafe->current_branch_id) {
+            return response()->json(['success' => false, 'message' => 'No current branch set'], 404);
+        }
+
+        $branch = $cafe->branches()->find($cafe->current_branch_id);
+
+        if (!$branch) {
+            return response()->json(['success' => false, 'message' => 'Current branch not found'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Current branch retrieved',
             'data' => new BranchDetailResource($branch),
         ]);
     }

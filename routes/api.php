@@ -493,7 +493,8 @@ Route::middleware(['auth:sanctum', 'cafe.owner'])->prefix('cafe-admin')->name('c
     // BRANCH OVERVIEW (Endpoint 15)
     Route::get('/branches/{id}/overview', [CafeAdminController::class, 'getBranchOverview'])->name('branches.overview');
 
-    // SWITCH BRANCH (Endpoint 17)
+    // CURRENT BRANCH (Endpoint 17)
+    Route::get('/current-branch', [CafeAdminController::class, 'getCurrentBranch'])->name('current-branch.show');
     Route::put('/current-branch', [CafeAdminController::class, 'switchCurrentBranch'])->name('current-branch.switch');
 
     // AMENITIES (Endpoints 18-20)

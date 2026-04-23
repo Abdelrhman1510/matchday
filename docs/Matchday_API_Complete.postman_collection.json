@@ -259,6 +259,24 @@
 					}
 				},
 				{
+					"name": "[DEBUG] Get OTP from Cache",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/debug/otp/{{email}}",
+							"host": ["{{base_url}}"],
+							"path": ["debug", "otp", "{{email}}"]
+						},
+						"description": "TEMP DEBUG endpoint — returns the current OTP stored in cache for the given email.\n\nUse after calling Forgot Password to retrieve the OTP without needing real email delivery.\n\n**Remove before going to production.**"
+					}
+				},
+				{
 					"name": "Get Current User",
 					"request": {
 						"auth": {
@@ -2728,6 +2746,16 @@
 				{
 					"name": "Get Explore Data",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
