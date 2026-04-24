@@ -533,7 +533,7 @@ class MatchAdminController extends Controller
         }
 
         $match->update([
-            'status' => 'completed',
+            'status' => 'finished',
             'is_live' => false,
         ]);
 

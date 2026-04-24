@@ -78,7 +78,7 @@ class MatchAdminService
                 'venue_name' => $data['venue_name'] ?? null,
                 'is_published' => false,
                 'is_live' => false,
-                'status' => 'draft',
+                'status' => 'upcoming',
                 'home_score' => null,
                 'away_score' => null,
                 'total_revenue' => 0,
@@ -148,7 +148,7 @@ class MatchAdminService
      */
     public function updateMatch(GameMatch $match, array $data): array
     {
-        if (!in_array($match->status, ['upcoming', 'draft'])) {
+        if ($match->status !== 'upcoming') {
             return [
                 'success' => false,
                 'message' => 'Only upcoming matches can be edited.',

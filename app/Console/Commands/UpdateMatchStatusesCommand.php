@@ -33,43 +33,39 @@ class UpdateMatchStatusesCommand extends Command
         $updatedToLive = 0;
         $updatedToFinished = 0;
 
-        // 1. Update matches to 'live' if kick_off has passed and status is 'upcoming'
+        // 1. Upcoming → Live: kick_off time on match_date has passed
         $matchesToGoLive = GameMatch::where('status', 'upcoming')
-            ->where('is_published', true)
-            ->where('kick_off', '<=', now())
+            ->whereNotNull('kick_off')
+            ->whereRaw('TIMESTAMP(match_date, kick_off) <= ?', [now()])
             ->get();
 
         foreach ($matchesToGoLive as $match) {
-            $match->update(['status' => 'live']);
+            $match->update(['status' => 'live', 'is_live' => true]);
             $this->line("  ✓ Match #{$match->id} set to LIVE");
             $updatedToLive++;
 
-            // Clear relevant caches
             Cache::forget("match_{$match->id}");
             Cache::forget("branch_overview_{$match->branch_id}");
-            Cache::tags(['home_feed', 'explore'])->flush();
         }
 
-        // 2. Update matches to 'finished' if kick_off + duration has passed and status is 'live'
+        // 2. Live → Finished: kick_off + duration has passed
         $matchesToFinish = GameMatch::where('status', 'live')
+            ->whereNotNull('kick_off')
+            ->whereRaw('TIMESTAMP(match_date, kick_off) <= ?', [now()->subMinutes(90)])
             ->get()
             ->filter(function ($match) {
-                // Calculate match end time
-                $kickOff = Carbon::parse($match->kick_off);
-                $matchEndTime = $kickOff->copy()->addMinutes($match->duration_minutes ?? 90);
-                return $matchEndTime->isPast();
+                $kickOff = Carbon::parse($match->match_date->format('Y-m-d') . ' ' . $match->kick_off);
+                return $kickOff->copy()->addMinutes($match->duration_minutes ?? 90)->isPast();
             });
 
         foreach ($matchesToFinish as $match) {
-            $match->update(['status' => 'finished']);
+            $match->update(['status' => 'finished', 'is_live' => false]);
             $this->line("  ✓ Match #{$match->id} set to FINISHED");
             $updatedToFinished++;
 
-            // Clear relevant caches
             Cache::forget("match_{$match->id}");
             Cache::forget("branch_overview_{$match->branch_id}");
             Cache::forget("occupancy_realtime_{$match->branch_id}");
-            Cache::tags(['home_feed', 'explore'])->flush();
         }
 
         $this->newLine();
