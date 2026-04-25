@@ -163,7 +163,19 @@ class AnalyticsController extends Controller
         if (!$request->user()->can('view-analytics')) {
             return response()->json(['success' => false, 'message' => 'Permission denied.'], 403);
         }
-        return response()->json(['success' => true, 'message' => 'Peak hours retrieved.', 'data' => ['peak_hours' => []]]);
+
+        $cafe = $request->user()->ownedCafes()->first();
+        if (!$cafe) {
+            return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
+        }
+
+        $data = $this->analyticsService->getPeakHours($cafe);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Peak hours retrieved.',
+            'data' => ['peak_hours' => $data],
+        ]);
     }
 
     /**
@@ -174,18 +186,44 @@ class AnalyticsController extends Controller
         if (!$request->user()->can('view-analytics')) {
             return response()->json(['success' => false, 'message' => 'Permission denied.'], 403);
         }
-        return response()->json(['success' => true, 'message' => 'Customer analytics retrieved.', 'data' => ['period_label' => '', 'customers' => []]]);
+
+        $cafe = $request->user()->ownedCafes()->first();
+        if (!$cafe) {
+            return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
+        }
+
+        $period = $request->query('period', 'this_month');
+        $periodDates = $this->analyticsService->getPeriodDates($period);
+        $data = $this->analyticsService->getCustomerAnalytics($cafe, $periodDates);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Customer analytics retrieved.',
+            'data' => array_merge(['period_label' => $periodDates['label']], $data),
+        ]);
     }
 
     /**
-     * Match analytics
+     * Best performing matches
      */
     public function matches(Request $request): JsonResponse
     {
         if (!$request->user()->can('view-analytics')) {
             return response()->json(['success' => false, 'message' => 'Permission denied.'], 403);
         }
-        return response()->json(['success' => true, 'message' => 'Match analytics retrieved.', 'data' => ['matches' => []]]);
+
+        $cafe = $request->user()->ownedCafes()->first();
+        if (!$cafe) {
+            return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
+        }
+
+        $data = $this->analyticsService->getBestPerformingMatches($cafe);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Best performing matches retrieved.',
+            'data' => ['matches' => $data],
+        ]);
     }
 
     /**
