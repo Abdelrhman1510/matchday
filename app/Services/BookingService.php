@@ -37,7 +37,7 @@ class BookingService
             $alreadyBooked = DB::table('booking_seats')
                 ->join('bookings', 'booking_seats.booking_id', '=', 'bookings.id')
                 ->where('bookings.match_id', $match->id)
-                ->whereIn('bookings.status', ['confirmed', 'checked_in'])
+                ->whereIn('bookings.status', ['pending', 'confirmed', 'checked_in'])
                 ->whereIn('booking_seats.seat_id', $data['seat_ids'])
                 ->pluck('booking_seats.seat_id')
                 ->toArray();
@@ -59,7 +59,7 @@ class BookingService
                 'match_id' => $match->id,
                 'branch_id' => $match->branch_id,
                 'guests_count' => $data['guests_count'] ?? count($data['seat_ids']),
-                'status' => 'confirmed',
+                'status' => 'pending',
                 'special_requests' => $data['special_requests'] ?? null,
                 'subtotal' => $costs['subtotal'],
                 'service_fee' => $costs['service_fee'],

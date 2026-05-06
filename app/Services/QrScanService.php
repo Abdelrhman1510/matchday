@@ -45,22 +45,10 @@ class QrScanService
         // Check status
         if ($booking->status === 'checked_in') {
             $this->logScan($cafe->id, $scannedBy, $booking->id, $qrCode, 'already_checked_in', null, $startTime);
-
-            $booking->load([
-                'user:id,name,phone,avatar',
-                'user.loyaltyCard:id,user_id,tier',
-                'match:id,home_team_id,away_team_id,match_date,kick_off,status',
-                'match.homeTeam:id,name,short_name,logo',
-                'match.awayTeam:id,name,short_name,logo',
-                'seats:id,label,section_id',
-                'seats.section:id,name',
-            ]);
-
             return [
-                'success' => true,
-                'already_checked_in' => true,
-                'message' => 'This booking has already been checked in.',
-                'booking' => $booking,
+                'success' => false,
+                'status' => 409,
+                'message' => 'This QR code has already been used.',
             ];
         }
 

@@ -212,7 +212,14 @@ class ProfileController extends Controller
             ], 422);
         }
 
-        $this->profileService->deleteAccount($user);
+        $result = $this->profileService->deleteAccount($user);
+
+        if (!$result['deleted']) {
+            return response()->json([
+                'success' => false,
+                'message' => $result['reason'],
+            ], 409);
+        }
 
         return response()->json([
             'success' => true,

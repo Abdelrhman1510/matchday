@@ -175,13 +175,27 @@ class ProfileService
     /**
      * Soft delete user account and revoke all tokens
      */
-    public function deleteAccount(User $user): bool
+    public function deleteAccount(User $user): array
     {
-        // Revoke all tokens
-        $user->tokens()->delete();
+        // Cafe owners cannot delete while active bookings exist
+        if ($user->role === 'cafe_owner') {
+            $cafe = $user->ownedCafes()->first();
+            if ($cafe) {
+                $branchIds = $cafe->branches()->pluck('id');
+                $activeBookings = \App\Models\Booking::whereIn('branch_id', $branchIds)
+                    ->whereIn('status', ['pending', 'confirmed', 'checked_in'])
+                    ->exists();
 
-        // Soft delete user
-        return $user->delete();
+                if ($activeBookings) {
+                    return ['deleted' => false, 'reason' => 'Account cannot be deleted while there are active bookings.'];
+                }
+            }
+        }
+
+        $user->tokens()->delete();
+        $user->delete();
+
+        return ['deleted' => true];
     }
 
     /**
