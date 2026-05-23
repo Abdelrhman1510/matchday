@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Platform\PlatformAuthController;
 use App\Http\Controllers\PublicCafeController;
+use App\Http\Controllers\PublicPageController;
 use App\Livewire\Platform\DashboardPage;
 use App\Livewire\Platform\CafesPage;
 use App\Livewire\Platform\CafeDetailPage;
@@ -49,6 +50,11 @@ Route::get('/ws-debug', function () {
 
 // Public Cafe Pages
 Route::get('/cafes/{id}', [PublicCafeController::class, 'show'])->name('public.cafes.show');
+
+// Public Legal Pages (no auth required)
+Route::get('/privacy-policy', [PublicPageController::class, 'privacyPolicy'])->name('public.privacy-policy');
+Route::get('/account-deletion', [PublicPageController::class, 'accountDeletion'])->name('public.account-deletion');
+Route::get('/pages/{slug}', [PublicPageController::class, 'show'])->name('public.pages');
 
 /*
 |--------------------------------------------------------------------------
