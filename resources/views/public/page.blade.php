@@ -102,9 +102,7 @@
             <div class="flex items-center justify-between">
                 <!-- Logo -->
                 <a href="/" class="flex items-center gap-3">
-                    <div class="flex items-center justify-center w-9 h-9 bg-brand-accent text-black rounded-lg font-black text-xl leading-none">
-                        ⚽
-                    </div>
+                    <img src="{{ asset('images/tab3_icon.png') }}" alt="TAB3" class="w-9 h-9 rounded-lg object-cover">
                     <span class="text-2xl font-bungee text-white tracking-wide">TAB3</span>
                 </a>
 
@@ -195,9 +193,7 @@
         <div class="max-w-4xl mx-auto px-6 py-8">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="flex items-center gap-2">
-                    <div class="flex items-center justify-center w-7 h-7 bg-brand-accent text-black rounded font-black text-sm">
-                        ⚽
-                    </div>
+                    <img src="{{ asset('images/tab3_icon.png') }}" alt="TAB3" class="w-7 h-7 rounded object-cover">
                     <span class="font-bungee text-white">TAB3</span>
                 </div>
                 <p class="text-sm text-slate-500">&copy; {{ date('Y') }} TAB3. All rights reserved.</p>
