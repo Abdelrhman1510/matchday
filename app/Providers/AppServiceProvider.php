@@ -36,10 +36,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force HTTPS only when APP_URL is actually https (e.g. once a domain + SSL exist).
-        // While served over a raw http:// IP this stays http so asset()/email image URLs work.
-        if (str_starts_with((string) config('app.url'), 'https://')) {
+        // Derive transport security from APP_URL's scheme, the single source of truth.
+        // While served over a raw http:// IP this stays http so asset()/email image URLs
+        // resolve; once a domain + SSL are in place (APP_URL=https://...) HTTPS is forced
+        // and the session cookie is marked Secure automatically — no code change needed.
+        // Note: APP_ENV stays "production" so error messages remain suppressed regardless.
+        $isHttps = str_starts_with((string) config('app.url'), 'https://');
+        if ($isHttps) {
             URL::forceScheme('https');
+            config(['session.secure' => true]);
         }
 
         $this->configureRateLimiting();
