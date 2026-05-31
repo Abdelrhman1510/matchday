@@ -51,14 +51,12 @@ class PasswordResetOtp extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Password Reset OTP - MatchDay')
-            ->greeting('Hello ' . $this->userName . '!')
-            ->line('You are receiving this email because we received a password reset request for your account.')
-            ->line('Your password reset OTP is:')
-            ->line('**' . $this->otp . '**')
-            ->line('This OTP will expire in 10 minutes.')
-            ->line('If you did not request a password reset, please ignore this email. No further action is required.')
-            ->salutation('Best regards, The MatchDay Team');
+            ->subject('Reset your password — tab3')
+            ->view('emails.auth.reset-otp', [
+                'userName' => $this->userName,
+                'otp' => $this->otp,
+                'expiresInMinutes' => 10,
+            ]);
     }
 
     /**

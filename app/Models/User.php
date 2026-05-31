@@ -35,6 +35,7 @@ class User extends Authenticatable
         'device_token',
         'notification_settings',
         'is_active',
+        'email_verified_at',
     ];
 
     /**

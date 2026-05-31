@@ -34,10 +34,6 @@ use App\Http\Controllers\AppConfigController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Cache;
 
-// TEMP DEBUG: read OTP from cache — remove before production
-Route::get('/debug/otp/{email}', function (string $email) {
-    return response()->json(['otp' => Cache::get("otp:{$email}")]);
-});
 
 /*
 |--------------------------------------------------------------------------

@@ -9,10 +9,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Str;
 use App\Notifications\PasswordResetOtp;
 use App\Notifications\EmailVerificationOtp;
 use Firebase\JWT\JWT;
@@ -29,7 +27,7 @@ class AuthService
      */
     public function register(array $data, string $role = 'fan'): array
     {
-        return DB::transaction(function () use ($data, $role) {
+        $result = DB::transaction(function () use ($data, $role) {
             // Create user
             $user = User::create([
                 'name' => $data['name'],
@@ -67,9 +65,6 @@ class AuthService
             // Create Sanctum token
             $token = $user->createToken('auth_token')->plainTextToken;
 
-            // Send email verification
-            event(new Registered($user));
-
             // Load relationships
             $user->load(['fanProfile', 'loyaltyCard']);
 
@@ -78,6 +73,12 @@ class AuthService
                 'token' => $token,
             ];
         });
+
+        // Send OTP verification email outside the transaction so a mail
+        // failure doesn't roll back the user creation
+        $this->sendEmailVerificationOtp($result['user']);
+
+        return $result;
     }
 
     /**
@@ -145,6 +146,7 @@ class AuthService
                 'name' => $payload['name'] ?? $payload['email'],
                 'sub' => $payload['sub'],
                 'email_verified' => $payload['email_verified'] ?? false,
+                'picture' => $payload['picture'] ?? null,
             ];
 
             // Check if user exists by google_id or email
@@ -159,6 +161,7 @@ class AuthService
                         'name' => $googleUser['name'],
                         'email' => $googleUser['email'],
                         'google_id' => $googleUser['sub'],
+                        'avatar' => $googleUser['picture'] ? ['url' => $googleUser['picture'], 'source' => 'google'] : null,
                         'password' => Hash::make(uniqid()), // Random password for OAuth users
                         'role' => 'fan',
                         'is_active' => true,
@@ -186,9 +189,20 @@ class AuthService
                 });
             }
 
-            // Update google_id if user exists but doesn't have it
+            // Update google_id, avatar, and email_verified_at if user exists but doesn't have them yet
+            $updates = [];
             if (!$user->google_id) {
-                $user->update(['google_id' => $googleUser['sub']]);
+                $updates['google_id'] = $googleUser['sub'];
+            }
+            if (!$user->avatar && $googleUser['picture']) {
+                $updates['avatar'] = ['url' => $googleUser['picture'], 'source' => 'google'];
+            }
+            if (!$user->email_verified_at && $googleUser['email_verified']) {
+                $updates['email_verified_at'] = now();
+            }
+            if (!empty($updates)) {
+                $user->update($updates);
+                $user->refresh();
             }
 
             // Check if user is active
@@ -512,7 +526,6 @@ class AuthService
 
         return [
             'message' => 'Verification OTP has been sent to your email.',
-            'otp' => $otp,
         ];
     }
 

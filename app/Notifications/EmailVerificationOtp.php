@@ -51,14 +51,12 @@ class EmailVerificationOtp extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Email Verification OTP - MatchDay')
-            ->greeting('Hello ' . $this->userName . '!')
-            ->line('Thank you for registering with MatchDay.')
-            ->line('Please verify your email address using the OTP below:')
-            ->line('**' . $this->otp . '**')
-            ->line('This OTP will expire in 10 minutes.')
-            ->line('If you did not create an account, please ignore this email.')
-            ->salutation('Welcome to MatchDay!');
+            ->subject('Verify your email — tab3')
+            ->view('emails.auth.verify-otp', [
+                'userName' => $this->userName,
+                'otp' => $this->otp,
+                'expiresInMinutes' => 10,
+            ]);
     }
 
     /**

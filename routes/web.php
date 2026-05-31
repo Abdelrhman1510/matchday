@@ -43,6 +43,7 @@ Route::get('/ws-test', function () {
     return response()->view('ws-test');
 });
 
+
 // WebSocket debug tester (with detailed logging)
 Route::get('/ws-debug', function () {
     return response()->view('ws-debug');
