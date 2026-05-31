@@ -36,7 +36,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (app()->environment('production')) {
+        // Force HTTPS only when APP_URL is actually https (e.g. once a domain + SSL exist).
+        // While served over a raw http:// IP this stays http so asset()/email image URLs work.
+        if (str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceScheme('https');
         }
 
