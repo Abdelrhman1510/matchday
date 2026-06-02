@@ -228,6 +228,11 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
 // Guest auth routes - 5 requests per minute for login/register
 Route::middleware(['throttle:auth'])->prefix('auth')->name('auth.')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('register');
+    // Verify-first registration (email -> OTP -> profile). No account is created
+    // until the email is proven, which prevents unverified email squatting.
+    Route::post('/register/request-otp', [AuthController::class, 'requestRegistrationOtp'])->name('register.request-otp');
+    Route::post('/register/verify-otp', [AuthController::class, 'verifyRegistrationOtp'])->name('register.verify-otp');
+    Route::post('/register/complete', [AuthController::class, 'completeRegistration'])->name('register.complete');
     Route::post('/register/cafe-owner', [AuthController::class, 'registerCafeOwner'])->name('register.cafe-owner');
     Route::post('/login', [AuthController::class, 'login'])->name('login');
     Route::post('/login/google', [AuthController::class, 'loginWithGoogle'])->name('login.google');

@@ -10,6 +10,9 @@ use App\Http\Requests\CafeOwnerRegisterRequest;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Requests\VerifyEmailRequest;
+use App\Http\Requests\RequestRegistrationOtpRequest;
+use App\Http\Requests\VerifyRegistrationOtpRequest;
+use App\Http\Requests\CompleteRegistrationRequest;
 use App\Http\Resources\UserProfileResource;
 use App\Services\AuthService;
 use App\Traits\ApiResponse;
@@ -49,6 +52,73 @@ class AuthController extends Controller
                 'Registration successful. Please check your email to verify your account.',
                 201
             );
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Verify-first registration — STEP 1: request an OTP for an email.
+     *
+     * @param RequestRegistrationOtpRequest $request
+     * @return JsonResponse
+     */
+    public function requestRegistrationOtp(RequestRegistrationOtpRequest $request): JsonResponse
+    {
+        try {
+            $result = $this->authService->requestRegistrationOtp($request->input('email'));
+
+            return $this->successResponse([], $result['message'], 200);
+        } catch (ValidationException $e) {
+            return $this->errorResponse($e->getMessage(), 422, $e->errors());
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Verify-first registration — STEP 2: verify the OTP for an email.
+     *
+     * @param VerifyRegistrationOtpRequest $request
+     * @return JsonResponse
+     */
+    public function verifyRegistrationOtp(VerifyRegistrationOtpRequest $request): JsonResponse
+    {
+        try {
+            $result = $this->authService->verifyRegistrationOtp(
+                $request->input('email'),
+                $request->input('otp')
+            );
+
+            return $this->successResponse([], $result['message'], 200);
+        } catch (ValidationException $e) {
+            return $this->errorResponse($e->getMessage(), 422, $e->errors());
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Verify-first registration — STEP 3: complete registration with profile data.
+     *
+     * @param CompleteRegistrationRequest $request
+     * @return JsonResponse
+     */
+    public function completeRegistration(CompleteRegistrationRequest $request): JsonResponse
+    {
+        try {
+            $result = $this->authService->completeRegistration($request->validated(), 'fan');
+
+            return $this->successResponse(
+                [
+                    'user' => $result['user'],
+                    'token' => $result['token'],
+                ],
+                'Registration successful.',
+                201
+            );
+        } catch (ValidationException $e) {
+            return $this->errorResponse($e->getMessage(), 422, $e->errors());
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }

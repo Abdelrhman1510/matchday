@@ -1,0 +1,252 @@
+{
+  "info": {
+    "name": "tab3 — Auth",
+    "description": "Full authentication flow for the tab3 API: verify-first registration (email → OTP → profile) and sign-in.\n\nUsage:\n1. Select the 'tab3 — Auth' environment (top-right).\n2. Set {{email}} to a real inbox you can read.\n3. Run 'Register · Step 1' → check inbox for the 6-digit code → put it in {{otp}}.\n4. Run 'Register · Step 2' → then 'Register · Step 3' (auto-saves {{token}}).\n5. 'Get Me' and 'Logout' use {{token}} automatically.\n\nLogin auto-saves {{token}} too.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register · Step 1 · Request OTP",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.code === 200);",
+              "console.log('Check the inbox for', pm.environment.get('email'), '→ put the 6-digit code into the {{otp}} variable, then run Step 2.');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/register/request-otp",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "register", "request-otp"]
+        }
+      }
+    },
+    {
+      "name": "Register · Step 2 · Verify OTP",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.code === 200);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"otp\": \"{{otp}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/register/verify-otp",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "register", "verify-otp"]
+        }
+      }
+    },
+    {
+      "name": "Register · Step 3 · Complete",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 201', () => pm.response.code === 201);",
+              "const json = pm.response.json();",
+              "if (json && json.data && json.data.token) {",
+              "  pm.environment.set('token', json.data.token);",
+              "  console.log('Saved {{token}} — account created and verified.');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"name\": \"{{name}}\",\n  \"password\": \"{{password}}\",\n  \"password_confirmation\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/register/complete",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "register", "complete"]
+        }
+      }
+    },
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.code === 200);",
+              "const json = pm.response.json();",
+              "if (json && json.data && json.data.token) {",
+              "  pm.environment.set('token', json.data.token);",
+              "  console.log('Saved {{token}}.');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email_or_phone\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "Login with Google",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json && json.data && json.data.token) {",
+              "  pm.environment.set('token', json.data.token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"google_token\": \"{{google_token}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login/google",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "login", "google"]
+        }
+      }
+    },
+    {
+      "name": "Get Me (authenticated)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/auth/me",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "me"]
+        }
+      }
+    },
+    {
+      "name": "Forgot Password · Request OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/forgot-password",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "forgot-password"]
+        }
+      }
+    },
+    {
+      "name": "Reset Password",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"otp\": \"{{otp}}\",\n  \"password\": \"{{password}}\",\n  \"password_confirmation\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/reset-password",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "reset-password"]
+        }
+      }
+    },
+    {
+      "name": "Logout (authenticated)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) { pm.environment.set('token', ''); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/auth/logout",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "logout"]
+        }
+      }
+    }
+  ]
+}

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\ValidationException;
 use App\Notifications\PasswordResetOtp;
@@ -77,6 +78,156 @@ class AuthService
         // Send OTP verification email outside the transaction so a mail
         // failure doesn't roll back the user creation
         $this->sendEmailVerificationOtp($result['user']);
+
+        return $result;
+    }
+
+    /**
+     * Verify-first registration — STEP 1: send an OTP to the email.
+     *
+     * No User row is created here. This proves the person actually controls the
+     * inbox before any account exists, which kills "unverified email squatting":
+     * you can't claim an email you can't receive mail for.
+     *
+     * @param string $email
+     * @return array
+     * @throws ValidationException
+     */
+    public function requestRegistrationOtp(string $email): array
+    {
+        // Only block if a fully-verified account already owns this email.
+        $existing = User::where('email', $email)->first();
+        if ($existing && $existing->email_verified_at !== null) {
+            throw ValidationException::withMessages([
+                'email' => ['This email is already registered. Please log in instead.'],
+            ]);
+        }
+
+        $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        Cache::put("reg_otp:{$email}", $otp, now()->addMinutes(10));
+
+        // On-demand notification: send to a raw email address (no User model yet).
+        Notification::route('mail', $email)
+            ->notify(new EmailVerificationOtp($otp, 'there', $email));
+
+        return [
+            'message' => 'A verification code has been sent to your email.',
+        ];
+    }
+
+    /**
+     * Verify-first registration — STEP 2: check the OTP.
+     *
+     * Still no User row. We just record a short-lived "this email is proven" flag
+     * so STEP 3 is allowed. The flag expires so an abandoned signup can't be
+     * completed by someone else much later.
+     *
+     * @param string $email
+     * @param string $otp
+     * @return array
+     * @throws ValidationException
+     */
+    public function verifyRegistrationOtp(string $email, string $otp): array
+    {
+        $storedOtp = Cache::get("reg_otp:{$email}");
+
+        if (!$storedOtp || $storedOtp !== $otp) {
+            throw ValidationException::withMessages([
+                'otp' => ['Invalid or expired verification code.'],
+            ]);
+        }
+
+        Cache::forget("reg_otp:{$email}");
+        Cache::put("reg_verified:{$email}", true, now()->addMinutes(30));
+
+        return [
+            'message' => 'Email verified. Please complete your registration.',
+        ];
+    }
+
+    /**
+     * Verify-first registration — STEP 3: create the account.
+     *
+     * Only reachable if STEP 2's proof flag exists. The account is born already
+     * verified (email_verified_at set), so there is no follow-up verification step.
+     * If a legacy unverified row exists for this email, it is claimed in place —
+     * which also cleans up old squatted accounts.
+     *
+     * @param array $data
+     * @param string $role
+     * @return array
+     * @throws ValidationException
+     */
+    public function completeRegistration(array $data, string $role = 'fan'): array
+    {
+        $email = $data['email'];
+
+        if (!Cache::get("reg_verified:{$email}")) {
+            throw ValidationException::withMessages([
+                'email' => ['Please verify your email before completing registration.'],
+            ]);
+        }
+
+        $result = DB::transaction(function () use ($data, $email, $role) {
+            $existing = User::where('email', $email)->first();
+
+            if ($existing && $existing->email_verified_at !== null) {
+                // A real account appeared in the meantime — don't overwrite it.
+                throw ValidationException::withMessages([
+                    'email' => ['This email is already registered. Please log in instead.'],
+                ]);
+            }
+
+            if ($existing) {
+                // Claim a legacy unverified row in place.
+                $user = $existing;
+                $user->name = $data['name'];
+                $user->phone = $data['phone'] ?? $user->phone;
+                $user->password = Hash::make($data['password']);
+                $user->role = $role;
+                $user->is_active = true;
+                $user->email_verified_at = now();
+                $user->save();
+            } else {
+                $user = User::create([
+                    'name' => $data['name'],
+                    'email' => $email,
+                    'phone' => $data['phone'] ?? null,
+                    'password' => Hash::make($data['password']),
+                    'role' => $role,
+                    'is_active' => true,
+                    'email_verified_at' => now(),
+                ]);
+            }
+
+            if ($role === 'fan') {
+                FanProfile::firstOrCreate(
+                    ['user_id' => $user->id],
+                    ['member_since' => now(), 'total_bookings' => 0, 'is_verified' => false]
+                );
+
+                LoyaltyCard::firstOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'card_number' => $this->generateLoyaltyCardNumber(),
+                        'points' => 0,
+                        'tier' => 'bronze',
+                        'issued_date' => now(),
+                    ]
+                );
+            }
+
+            $token = $user->createToken('auth_token')->plainTextToken;
+            $user->load(['fanProfile', 'loyaltyCard']);
+
+            return [
+                'user' => $user,
+                'token' => $token,
+            ];
+        });
+
+        // Proof consumed — clear it so the flag can't be reused.
+        Cache::forget("reg_verified:{$email}");
 
         return $result;
     }
