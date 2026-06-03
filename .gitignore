@@ -45,3 +45,4 @@ test-results.*
 # Postman backups (keep only /docs/ versions)
 *.postman_collection.backup.json
 Matchday_API_Updates.postman_collection.json
+/public/test-google-signin.html
