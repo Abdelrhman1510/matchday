@@ -20,6 +20,11 @@ use Firebase\JWT\JWK;
 class AuthService
 {
     /**
+     * Maximum wrong OTP guesses allowed before the code is invalidated.
+     */
+    private const MAX_OTP_ATTEMPTS = 5;
+
+    /**
      * Register a new user with the specified role
      *
      * @param array $data
@@ -131,13 +136,38 @@ class AuthService
     {
         $storedOtp = Cache::get("reg_otp:{$email}");
 
-        if (!$storedOtp || $storedOtp !== $otp) {
+        if (!$storedOtp) {
             throw ValidationException::withMessages([
-                'otp' => ['Invalid or expired verification code.'],
+                'otp' => ['Invalid or expired verification code. Please request a new one.'],
+            ]);
+        }
+
+        if ($storedOtp !== $otp) {
+            // Brute-force guard: a 6-digit code is only 1,000,000 combinations, so we
+            // cap wrong guesses per OTP. After the limit, the code is burned and the
+            // user must request a fresh one (which is itself rate-limited at the route).
+            $attempts = (int) Cache::get("reg_otp_attempts:{$email}", 0) + 1;
+
+            if ($attempts >= self::MAX_OTP_ATTEMPTS) {
+                Cache::forget("reg_otp:{$email}");
+                Cache::forget("reg_otp_attempts:{$email}");
+
+                throw ValidationException::withMessages([
+                    'otp' => ['Too many incorrect attempts. Please request a new verification code.'],
+                ]);
+            }
+
+            // Track attempts only as long as the OTP itself is valid (10 min).
+            Cache::put("reg_otp_attempts:{$email}", $attempts, now()->addMinutes(10));
+
+            $remaining = self::MAX_OTP_ATTEMPTS - $attempts;
+            throw ValidationException::withMessages([
+                'otp' => ["Invalid verification code. {$remaining} attempt(s) remaining."],
             ]);
         }
 
         Cache::forget("reg_otp:{$email}");
+        Cache::forget("reg_otp_attempts:{$email}");
         Cache::put("reg_verified:{$email}", true, now()->addMinutes(30));
 
         return [

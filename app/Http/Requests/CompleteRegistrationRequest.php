@@ -15,6 +15,17 @@ class CompleteRegistrationRequest extends FormRequest
     }
 
     /**
+     * Normalize the email before validation so it matches the verified-flag and
+     * any legacy row keyed on the same address.
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('email')) {
+            $this->merge(['email' => strtolower(trim((string) $this->input('email')))]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
