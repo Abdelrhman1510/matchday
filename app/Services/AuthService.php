@@ -311,9 +311,14 @@ class AuthService
     public function loginWithGoogle(string $googleToken): array
     {
         try {
+            // A Google ID token is a JWT (base64url segments + dots) and never contains
+            // whitespace. Strip any spaces/newlines that sneak in via copy-paste so a
+            // valid token isn't rejected with "Wrong number of segments".
+            $googleToken = preg_replace('/\s+/', '', $googleToken);
+
             // Initialize Google Client
             $client = new \Google_Client(['client_id' => config('services.google.client_id')]);
-            
+
             // Verify the ID token
             $payload = $client->verifyIdToken($googleToken);
             
