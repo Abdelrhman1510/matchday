@@ -233,6 +233,8 @@ Route::middleware(['throttle:auth'])->prefix('auth')->name('auth.')->group(funct
     Route::post('/register/request-otp', [AuthController::class, 'requestRegistrationOtp'])->name('register.request-otp');
     Route::post('/register/verify-otp', [AuthController::class, 'verifyRegistrationOtp'])->name('register.verify-otp');
     Route::post('/register/complete', [AuthController::class, 'completeRegistration'])->name('register.complete');
+    // Cafe owner shares request-otp + verify-otp; only the final complete step differs.
+    Route::post('/register/cafe-owner/complete', [AuthController::class, 'completeCafeOwnerRegistration'])->name('register.cafe-owner.complete');
     Route::post('/register/cafe-owner', [AuthController::class, 'registerCafeOwner'])->name('register.cafe-owner');
     Route::post('/login', [AuthController::class, 'login'])->name('login');
     Route::post('/login/google', [AuthController::class, 'loginWithGoogle'])->name('login.google');

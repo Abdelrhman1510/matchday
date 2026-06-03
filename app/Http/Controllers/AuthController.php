@@ -125,6 +125,35 @@ class AuthController extends Controller
     }
 
     /**
+     * Verify-first registration — STEP 3 (cafe owner variant): complete as a cafe owner.
+     *
+     * Shares STEP 1 (request-otp) and STEP 2 (verify-otp) with the fan flow; only the
+     * final step differs, creating the account with the cafe_owner role.
+     *
+     * @param CompleteRegistrationRequest $request
+     * @return JsonResponse
+     */
+    public function completeCafeOwnerRegistration(CompleteRegistrationRequest $request): JsonResponse
+    {
+        try {
+            $result = $this->authService->completeRegistration($request->validated(), 'cafe_owner');
+
+            return $this->successResponse(
+                [
+                    'user' => $result['user'],
+                    'token' => $result['token'],
+                ],
+                'Cafe owner registration successful.',
+                201
+            );
+        } catch (ValidationException $e) {
+            return $this->errorResponse($e->getMessage(), 422, $e->errors());
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
      * Register a new cafe owner
      *
      * @param CafeOwnerRegisterRequest $request
