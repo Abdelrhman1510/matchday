@@ -12,7 +12,6 @@ use App\Services\ProfileService;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
@@ -197,20 +196,9 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'password' => ['required', 'string'],
-        ]);
-
+        // No password required: the Sanctum token already authenticates the user,
+        // and OAuth (Google/Apple) users have no password to confirm with.
         $user = $request->user();
-
-        // Verify password before deletion
-        if (!Hash::check($validated['password'], $user->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid password',
-                'errors' => ['password' => ['The provided password is incorrect.']],
-            ], 422);
-        }
 
         $result = $this->profileService->deleteAccount($user);
 
