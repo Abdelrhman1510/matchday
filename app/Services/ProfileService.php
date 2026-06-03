@@ -30,14 +30,25 @@ class ProfileService
             'loyaltyCard',
         ]);
 
-        // Format avatar with multi-size URLs
+        // Format avatar with multi-size URLs. Two possible shapes:
+        //  - Uploaded:  ['original' => path, 'medium' => path, 'thumbnail' => path]
+        //  - External (e.g. Google):  ['url' => 'https://...', 'source' => 'google']
         $avatar = null;
         if ($user->avatar && is_array($user->avatar)) {
-            $avatar = [
-                'original' => url('storage/' . $user->avatar['original']),
-                'medium' => url('storage/' . $user->avatar['medium']),
-                'thumbnail' => url('storage/' . $user->avatar['thumbnail']),
-            ];
+            if (isset($user->avatar['url'])) {
+                // External avatar is already a full URL; use it for every size.
+                $avatar = [
+                    'original' => $user->avatar['url'],
+                    'medium' => $user->avatar['url'],
+                    'thumbnail' => $user->avatar['url'],
+                ];
+            } elseif (isset($user->avatar['original'])) {
+                $avatar = [
+                    'original' => url('storage/' . $user->avatar['original']),
+                    'medium' => url('storage/' . ($user->avatar['medium'] ?? $user->avatar['original'])),
+                    'thumbnail' => url('storage/' . ($user->avatar['thumbnail'] ?? $user->avatar['original'])),
+                ];
+            }
         }
 
         return [

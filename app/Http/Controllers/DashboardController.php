@@ -207,14 +207,19 @@ class DashboardController extends Controller
                 ->limit(10)
                 ->get()
                 ->map(function ($booking) {
-                    // Format avatar
+                    // Format avatar (handles uploaded + external/Google shapes)
                     $avatar = null;
-                    if ($booking->user->avatar && is_array($booking->user->avatar)) {
-                        $avatar = [
-                            'original' => url('storage/' . $booking->user->avatar['original']),
-                            'medium' => url('storage/' . $booking->user->avatar['medium']),
-                            'thumbnail' => url('storage/' . $booking->user->avatar['thumbnail']),
-                        ];
+                    $av = $booking->user->avatar;
+                    if ($av && is_array($av)) {
+                        if (isset($av['url'])) {
+                            $avatar = ['original' => $av['url'], 'medium' => $av['url'], 'thumbnail' => $av['url']];
+                        } elseif (isset($av['original'])) {
+                            $avatar = [
+                                'original' => url('storage/' . $av['original']),
+                                'medium' => url('storage/' . ($av['medium'] ?? $av['original'])),
+                                'thumbnail' => url('storage/' . ($av['thumbnail'] ?? $av['original'])),
+                            ];
+                        }
                     }
 
                     return [

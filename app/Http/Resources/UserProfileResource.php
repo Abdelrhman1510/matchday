@@ -14,14 +14,23 @@ class UserProfileResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // Format avatar with multi-size URLs
+        // Format avatar with multi-size URLs. Handles uploaded (original/medium/
+        // thumbnail paths) and external (Google) avatars stored as ['url' => ...].
         $avatar = null;
         if ($this->avatar && is_array($this->avatar)) {
-            $avatar = [
-                'original' => url('storage/' . $this->avatar['original']),
-                'medium' => url('storage/' . $this->avatar['medium']),
-                'thumbnail' => url('storage/' . $this->avatar['thumbnail']),
-            ];
+            if (isset($this->avatar['url'])) {
+                $avatar = [
+                    'original' => $this->avatar['url'],
+                    'medium' => $this->avatar['url'],
+                    'thumbnail' => $this->avatar['url'],
+                ];
+            } elseif (isset($this->avatar['original'])) {
+                $avatar = [
+                    'original' => url('storage/' . $this->avatar['original']),
+                    'medium' => url('storage/' . ($this->avatar['medium'] ?? $this->avatar['original'])),
+                    'thumbnail' => url('storage/' . ($this->avatar['thumbnail'] ?? $this->avatar['original'])),
+                ];
+            }
         }
 
         return [
