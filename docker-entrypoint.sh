@@ -26,6 +26,10 @@ else
     echo "    DB already has ${USER_COUNT} users — skipping seed."
 fi
 
+echo "==> Ensuring roles + platform admin (idempotent)..."
+php artisan db:seed --class=RolesAndPermissionsSeeder --force 2>&1 || echo "WARNING: roles seed failed"
+php artisan db:seed --class=PlatformAdminSeeder --force 2>&1 || echo "WARNING: platform admin seed failed"
+
 PORT_NUM=$((${PORT:-8000}))
 echo "==> Starting server on port ${PORT_NUM}..."
 exec php -S 0.0.0.0:${PORT_NUM} -t public public/router.php

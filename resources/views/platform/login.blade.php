@@ -25,8 +25,8 @@
             <div class="bg-[#1e293b] border border-slate-700 rounded-2xl shadow-2xl p-8">
                 <!-- Header -->
                 <div class="text-center mb-8">
-                    <div class="inline-flex items-center justify-center w-16 h-16 bg-[#c8ff00]/10 rounded-2xl mb-4">
-                        <span class="text-4xl">⚽</span>
+                    <div class="inline-flex items-center justify-center mb-4">
+                        <img src="{{ asset('images/tab3_icon.png') }}" alt="tab3" class="w-20 h-20 object-contain">
                     </div>
                     <h1 class="text-2xl font-bold text-white uppercase tracking-wide mb-2">PLATFORM LOGIN</h1>
                     <p class="text-slate-400 text-sm">Access your platform dashboard</p>
@@ -91,7 +91,7 @@
                     </div>
 
                     <!-- Remember Me -->
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center">
                         <label class="flex items-center">
                             <input 
                                 type="checkbox" 
@@ -100,9 +100,6 @@
                             >
                             <span class="ml-2 text-sm text-slate-400">Remember me</span>
                         </label>
-                        <a href="#" class="text-sm text-[#c8ff00] hover:text-[#d4ff33] transition-colors">
-                            Forgot password?
-                        </a>
                     </div>
 
                     <!-- Submit Button -->
