@@ -202,65 +202,9 @@
         @endif
     </div>
 
-    {{-- CURRENCY & LANGUAGE side by side --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {{-- CURRENCY SETTINGS --}}
-        <div class="bg-[#0e0735] border border-[#1e164e] rounded-xl p-6">
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h2 class="text-base font-black font-bungee text-white uppercase tracking-wider">
-                        {{ __('platform.settings.currency') }}
-                    </h2>
-                    <p class="text-xs text-slate-400 mt-1">{{ __('platform.settings.currency_subtitle') }}</p>
-                </div>
-                <div class="w-9 h-9 bg-[#1a0e40] border border-[#1e164e] rounded-xl flex items-center justify-center">
-                    <span class="text-[#c8ff00] font-black text-base">£</span>
-                </div>
-            </div>
-
-            <div class="space-y-4">
-                <div>
-                    <label
-                        class="block text-xs font-medium text-slate-400 uppercase tracking-widest mb-2">{{ __('platform.settings.default_currency') }}</label>
-                    <select wire:model.live="default_currency"
-                        class="w-full px-4 py-2.5 bg-[#0a0524] border border-[#1e164e] rounded-lg text-white text-sm focus:border-[#c8ff00] outline-none transition-colors">
-                        <option value="SAR">SAR — Saudi Riyal</option>
-                        <option value="GBP">GBP — British Pound (£)</option>
-                        <option value="USD">USD — US Dollar</option>
-                        <option value="EUR">EUR — Euro</option>
-                        <option value="AED">AED — UAE Dirham</option>
-                    </select>
-                </div>
-
-                <div class="flex items-center justify-between p-4 bg-[#0a0524] border border-[#1e164e] rounded-lg">
-                    <div>
-                        <div class="text-sm font-medium text-white">{{ __('platform.settings.multi_currency') }}</div>
-                        <div class="text-xs text-slate-400">{{ __('platform.settings.multi_currency_desc') }}</div>
-                    </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" wire:model.live="multi_currency" class="sr-only peer">
-                        <div
-                            class="w-11 h-6 bg-[#1a0e40] border border-[#1e164e] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#c8ff00]">
-                        </div>
-                    </label>
-                </div>
-
-                <div class="flex items-center justify-between p-4 bg-[#0a0524] border border-[#1e164e] rounded-lg">
-                    <div>
-                        <div class="text-sm font-medium text-white">{{ __('platform.settings.auto_conversion') }}</div>
-                        <div class="text-xs text-slate-400">{{ __('platform.settings.auto_conversion_desc') }}</div>
-                    </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" wire:model.live="auto_conversion" class="sr-only peer">
-                        <div
-                            class="w-11 h-6 bg-[#1a0e40] border border-[#1e164e] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#c8ff00]">
-                        </div>
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        {{-- LANGUAGE & REGION --}}
+    {{-- LANGUAGE --}}
+    <div class="grid grid-cols-1 gap-6">
+        {{-- PLATFORM LANGUAGE --}}
         <div class="bg-[#0e0735] border border-[#1e164e] rounded-xl p-6">
             <div class="flex items-center justify-between mb-6">
                 <div>
@@ -289,32 +233,6 @@
                         <option value="fr">French (Français)</option>
                         <option value="es">Spanish (Español)</option>
                     </select>
-                </div>
-
-                <div>
-                    <label
-                        class="block text-xs font-medium text-slate-400 uppercase tracking-widest mb-2">{{ __('platform.settings.timezone') }}</label>
-                    <select wire:model.live="timezone"
-                        class="w-full px-4 py-2.5 bg-[#0a0524] border border-[#1e164e] rounded-lg text-white text-sm focus:border-[#c8ff00] outline-none transition-colors">
-                        <option value="Asia/Riyadh">AST — Riyadh (GMT+3)</option>
-                        <option value="Europe/London">GMT — London (GMT+0)</option>
-                        <option value="America/New_York">EST — New York (GMT-5)</option>
-                        <option value="Asia/Dubai">GST — Dubai (GMT+4)</option>
-                        <option value="Europe/Paris">CET — Paris (GMT+1)</option>
-                    </select>
-                </div>
-
-                <div class="flex items-center justify-between p-4 bg-[#0a0524] border border-[#1e164e] rounded-lg">
-                    <div>
-                        <div class="text-sm font-medium text-white">{{ __('platform.settings.multi_language') }}</div>
-                        <div class="text-xs text-slate-400">{{ __('platform.settings.multi_language_desc') }}</div>
-                    </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" wire:model.live="multi_language" class="sr-only peer">
-                        <div
-                            class="w-11 h-6 bg-[#1a0e40] border border-[#1e164e] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#c8ff00]">
-                        </div>
-                    </label>
                 </div>
             </div>
         </div>
