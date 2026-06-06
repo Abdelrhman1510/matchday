@@ -106,14 +106,12 @@
             <!-- Logo -->
             <div class="p-6 border-b border-custom">
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-col gap-1">
                         <img src="{{ asset('images/tab3-logo.png') }}" alt="tab3"
-                            class="h-9 w-auto max-w-[150px] object-contain" />
-                        <div>
-                            <p class="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">
-                                {{ __('platform.nav.admin_panel') }}
-                            </p>
-                        </div>
+                            class="h-14 w-auto max-w-[180px] object-contain" />
+                        <p class="text-[10px] text-slate-400 uppercase tracking-wider">
+                            {{ __('platform.nav.admin_panel') }}
+                        </p>
                     </div>
                     <!-- Close sidebar button -->
                     <button @click="sidebarOpen = false"
