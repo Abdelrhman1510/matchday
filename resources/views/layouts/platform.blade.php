@@ -107,12 +107,9 @@
             <div class="p-6 border-b border-custom">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div
-                            class="flex items-center justify-center w-8 h-8 bg-[#c8ff00] text-black rounded font-black text-xl leading-none">
-                            ⚽
-                        </div>
+                        <img src="{{ asset('images/tab3-logo.png') }}" alt="tab3"
+                            class="h-9 w-auto max-w-[150px] object-contain" />
                         <div>
-                            <h1 class="text-xl font-bold text-white font-bungee leading-none mt-1">FOOTCAFE</h1>
                             <p class="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">
                                 {{ __('platform.nav.admin_panel') }}
                             </p>

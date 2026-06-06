@@ -26,7 +26,7 @@
                 <!-- Header -->
                 <div class="text-center mb-8">
                     <div class="inline-flex items-center justify-center mb-4">
-                        <img src="{{ asset('images/tab3_icon.png') }}" alt="tab3" class="w-20 h-20 object-contain">
+                        <img src="{{ asset('images/tab3-logo.png') }}" alt="tab3" class="h-16 w-auto max-w-[200px] object-contain">
                     </div>
                     <h1 class="text-2xl font-bold text-white uppercase tracking-wide mb-2">PLATFORM LOGIN</h1>
                     <p class="text-slate-400 text-sm">Access your platform dashboard</p>
