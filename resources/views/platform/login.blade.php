@@ -25,11 +25,9 @@
             <div class="bg-[#1e293b] border border-slate-700 rounded-2xl shadow-2xl p-8">
                 <!-- Header -->
                 <div class="text-center mb-8">
-                    <div class="inline-flex items-center justify-center mb-4">
-                        <img src="{{ asset('images/tab3-logo.png') }}" alt="tab3" class="h-28 w-auto max-w-[280px] object-contain">
+                    <div class="inline-flex items-center justify-center">
+                        <img src="{{ asset('images/tab3-logo.png') }}" alt="tab3" class="h-56 w-auto max-w-[340px] object-contain">
                     </div>
-                    <h1 class="text-2xl font-bold text-white uppercase tracking-wide mb-2">PLATFORM LOGIN</h1>
-                    <p class="text-slate-400 text-sm">Access your platform dashboard</p>
                 </div>
 
                 <!-- Error Messages -->
