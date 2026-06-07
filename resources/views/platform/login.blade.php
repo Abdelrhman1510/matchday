@@ -26,7 +26,7 @@
                 <!-- Header -->
                 <div class="text-center mb-8">
                     <div class="inline-flex items-center justify-center">
-                        <img src="{{ asset('images/tab3-logo.png') }}" alt="tab3" class="h-56 w-auto max-w-[340px] object-contain">
+                        <img src="{{ asset('images/logo - tab3 - png -03.png') }}" alt="tab3" class="h-56 w-auto max-w-[340px] object-contain">
                     </div>
                 </div>
 
