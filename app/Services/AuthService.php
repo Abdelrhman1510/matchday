@@ -330,8 +330,11 @@ class AuthService
             }
 
             // Ensure the token was issued for one of OUR OAuth clients.
+            // Fail closed: an empty allowlist (misconfiguration) must reject the
+            // token, never accept any validly-signed Google token regardless of
+            // which OAuth client minted it.
             $allowedClientIds = config('services.google.client_ids', []);
-            if (!empty($allowedClientIds) && !in_array($payload['aud'] ?? null, $allowedClientIds, true)) {
+            if (empty($allowedClientIds) || !in_array($payload['aud'] ?? null, $allowedClientIds, true)) {
                 throw new \Exception('Invalid Google token');
             }
             
