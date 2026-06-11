@@ -50,6 +50,8 @@ use Illuminate\Support\Facades\Cache;
 Route::get('/debug/google-config', function () {
     return response()->json([
         'client_id' => config('services.google.client_id'),
+        'client_ids' => config('services.google.client_ids'),
+        'client_ids_count' => count(config('services.google.client_ids', [])),
     ]);
 });
 
