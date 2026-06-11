@@ -37,6 +37,12 @@ return [
 
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
+        // All OAuth client IDs (web, iOS, Android) whose ID tokens we accept.
+        // Comma-separated in GOOGLE_CLIENT_IDS; falls back to GOOGLE_CLIENT_ID.
+        'client_ids' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('GOOGLE_CLIENT_IDS', (string) env('GOOGLE_CLIENT_ID')))
+        ))),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
     ],
 

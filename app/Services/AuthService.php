@@ -316,13 +316,22 @@ class AuthService
             // valid token isn't rejected with "Wrong number of segments".
             $googleToken = preg_replace('/\s+/', '', $googleToken);
 
-            // Initialize Google Client
-            $client = new \Google_Client(['client_id' => config('services.google.client_id')]);
+            // Initialize Google Client. We intentionally do NOT pin a single
+            // client_id here: the token may come from our web, iOS or Android
+            // OAuth client (each has a different `aud`). verifyIdToken still
+            // checks the signature, issuer and expiry against Google's certs.
+            $client = new \Google_Client();
 
             // Verify the ID token
             $payload = $client->verifyIdToken($googleToken);
-            
+
             if (!$payload) {
+                throw new \Exception('Invalid Google token');
+            }
+
+            // Ensure the token was issued for one of OUR OAuth clients.
+            $allowedClientIds = config('services.google.client_ids', []);
+            if (!empty($allowedClientIds) && !in_array($payload['aud'] ?? null, $allowedClientIds, true)) {
                 throw new \Exception('Invalid Google token');
             }
             
