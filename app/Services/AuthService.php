@@ -316,20 +316,28 @@ class AuthService
             // valid token isn't rejected with "Wrong number of segments".
             $googleToken = preg_replace('/\s+/', '', $googleToken);
 
-            // Initialize Google Client. We intentionally do NOT pin a single
-            // client_id here: the token may come from our web, iOS or Android
-            // OAuth client (each has a different `aud`). verifyIdToken still
-            // checks the signature, issuer and expiry against Google's certs.
-            $client = new \Google_Client();
+            // Verify the Google ID token against Google's published JWKS — the
+            // same lightweight path we use for Apple, so we don't need the heavy
+            // google/apiclient dependency. JWT::decode checks the RS256 signature
+            // and expiry; we then assert the issuer and audience ourselves.
+            $keysResponse = Http::get('https://www.googleapis.com/oauth2/v3/certs');
+            if (!$keysResponse->successful()) {
+                throw new \Exception('Failed to fetch Google public keys');
+            }
 
-            // Verify the ID token
-            $payload = $client->verifyIdToken($googleToken);
-
-            if (!$payload) {
+            try {
+                $payload = (array) JWT::decode($googleToken, JWK::parseKeySet($keysResponse->json(), 'RS256'));
+            } catch (\Throwable $e) {
+                // Bad signature, expired, malformed, or unknown signing key.
                 throw new \Exception('Invalid Google token');
             }
 
-            // Ensure the token was issued for one of OUR OAuth clients.
+            // Issuer must be Google.
+            if (!in_array($payload['iss'] ?? null, ['https://accounts.google.com', 'accounts.google.com'], true)) {
+                throw new \Exception('Invalid Google token');
+            }
+
+            // Audience must be one of OUR OAuth clients (web, iOS, Android).
             // Fail closed: an empty allowlist (misconfiguration) must reject the
             // token, never accept any validly-signed Google token regardless of
             // which OAuth client minted it.
