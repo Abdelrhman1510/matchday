@@ -204,7 +204,10 @@ class ProfileService
         }
 
         $user->tokens()->delete();
-        $user->delete();
+        // Hard delete: permanently remove the account so its email and phone are
+        // freed for re-registration. Related rows (profile, bookings, payments,
+        // loyalty, role pivots, …) cascade at the DB level.
+        $user->forceDelete();
 
         return ['deleted' => true];
     }

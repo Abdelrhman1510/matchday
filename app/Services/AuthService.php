@@ -199,12 +199,23 @@ class AuthService
         }
 
         $result = DB::transaction(function () use ($data, $email, $role) {
-            // Include soft-deleted rows: the unique email index still covers a
-            // soft-deleted user, so a previously-deleted account must be
-            // reclaimed in place — inserting a new row would hit a duplicate key.
-            $existing = User::withTrashed()->where('email', $email)->first();
+            // A soft-deleted account is terminal: never restore/reclaim it in
+            // place — that would resurrect its old roles and relationships under
+            // new credentials (account takeover). Permanently purge any trashed
+            // row holding this email or phone so the unique indexes free up for a
+            // genuinely fresh registration (related rows cascade at the DB level).
+            User::onlyTrashed()
+                ->where(function ($q) use ($email, $data) {
+                    $q->where('email', $email);
+                    if (!empty($data['phone'])) {
+                        $q->orWhere('phone', $data['phone']);
+                    }
+                })
+                ->forceDelete();
 
-            if ($existing && !$existing->trashed() && $existing->email_verified_at !== null) {
+            $existing = User::where('email', $email)->first();
+
+            if ($existing && $existing->email_verified_at !== null) {
                 // A live, verified account already owns this email.
                 throw ValidationException::withMessages([
                     'email' => ['This email is already registered. Please log in instead.'],
@@ -212,13 +223,8 @@ class AuthService
             }
 
             if ($existing) {
-                // Reclaim the row in place: a legacy unverified row, or a
-                // previously soft-deleted account being re-registered. Restoring
-                // re-activates the same record under the new credentials.
+                // Claim a still-unverified, pending registration row in place.
                 $user = $existing;
-                if ($user->trashed()) {
-                    $user->restore();
-                }
                 $user->name = $data['name'];
                 $user->phone = $data['phone'] ?? $user->phone;
                 $user->password = Hash::make($data['password']);
