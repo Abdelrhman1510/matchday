@@ -46,15 +46,6 @@ use Illuminate\Support\Facades\Cache;
 |
 */
 
-// TEMP DEBUG: shows which Google client the server is configured with (public value). Remove after.
-Route::get('/debug/google-config', function () {
-    return response()->json([
-        'client_id' => config('services.google.client_id'),
-        'client_ids' => config('services.google.client_ids'),
-        'client_ids_count' => count(config('services.google.client_ids', [])),
-    ]);
-});
-
 // Broadcasting auth for API token users (Sanctum)
 Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
