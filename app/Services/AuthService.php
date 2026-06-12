@@ -199,18 +199,26 @@ class AuthService
         }
 
         $result = DB::transaction(function () use ($data, $email, $role) {
-            $existing = User::where('email', $email)->first();
+            // Include soft-deleted rows: the unique email index still covers a
+            // soft-deleted user, so a previously-deleted account must be
+            // reclaimed in place — inserting a new row would hit a duplicate key.
+            $existing = User::withTrashed()->where('email', $email)->first();
 
-            if ($existing && $existing->email_verified_at !== null) {
-                // A real account appeared in the meantime — don't overwrite it.
+            if ($existing && !$existing->trashed() && $existing->email_verified_at !== null) {
+                // A live, verified account already owns this email.
                 throw ValidationException::withMessages([
                     'email' => ['This email is already registered. Please log in instead.'],
                 ]);
             }
 
             if ($existing) {
-                // Claim a legacy unverified row in place.
+                // Reclaim the row in place: a legacy unverified row, or a
+                // previously soft-deleted account being re-registered. Restoring
+                // re-activates the same record under the new credentials.
                 $user = $existing;
+                if ($user->trashed()) {
+                    $user->restore();
+                }
                 $user->name = $data['name'];
                 $user->phone = $data['phone'] ?? $user->phone;
                 $user->password = Hash::make($data['password']);
