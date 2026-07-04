@@ -33,6 +33,9 @@ php artisan db:seed --class=PlatformAdminSeeder --force 2>&1 || echo "WARNING: p
 echo "==> Refreshing teams (idempotent — updates logos, adds new teams)..."
 php artisan db:seed --class=TeamSeeder --force 2>&1 || echo "WARNING: team seed failed"
 
+echo "==> Clearing application cache (so data changes show immediately)..."
+php artisan cache:clear 2>&1 || echo "WARNING: cache:clear failed"
+
 PORT_NUM=$((${PORT:-8000}))
 echo "==> Starting server on port ${PORT_NUM}..."
 exec php -S 0.0.0.0:${PORT_NUM} -t public public/router.php
