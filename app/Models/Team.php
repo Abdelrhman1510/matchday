@@ -12,10 +12,13 @@ class Team extends Model
     use HasFactory;
 
     protected $fillable = [
+        'wikidata_id',
         'name',
+        'name_ar',
         'short_name',
         'logo',
         'league',
+        'type',
         'country',
         'is_popular',
         'sort_order',

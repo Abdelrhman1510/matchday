@@ -26,6 +26,7 @@ class TeamService
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('name_ar', 'like', "%{$search}%")
                   ->orWhere('short_name', 'like', "%{$search}%");
             });
         }
@@ -34,17 +35,19 @@ class TeamService
     }
 
     /**
-     * Get teams for the favourite-team picker.
+     * Get the default favourite-team picker list (a curated shortlist).
      *
-     * Returns ALL teams (popular ones first), not a capped shortlist, so the
-     * picker shows every available club. Cached for 24 hours — remember to run
-     * `php artisan cache:clear` (or forget 'popular_teams') after changing teams.
+     * With thousands of teams we can't return everything here — the app should
+     * use search() for the full catalogue. This returns the popular set
+     * (national teams + flagged clubs). Cached 24h; run `php artisan cache:clear`
+     * after changing teams. Pass through search()/getAllTeams() for the rest.
      */
     public function getPopularTeams(): Collection
     {
         return Cache::remember('popular_teams', 86400, function () {
             return Team::query()
-                ->orderByDesc('is_popular')
+                ->where('is_popular', true)
+                ->orderByRaw("FIELD(type, 'national') DESC")
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->get();
@@ -52,18 +55,21 @@ class TeamService
     }
 
     /**
-     * Search teams by name or short name
+     * Search teams by English name, Arabic name, or short code (typeahead).
+     * Limited so the picker's search stays fast across thousands of teams.
      */
     public function searchTeams(string $searchTerm): Collection
     {
         return Team::query()
             ->where(function ($query) use ($searchTerm) {
                 $query->where('name', 'like', "%{$searchTerm}%")
+                    ->orWhere('name_ar', 'like', "%{$searchTerm}%")
                     ->orWhere('short_name', 'like', "%{$searchTerm}%");
             })
             ->orderBy('is_popular', 'desc')
             ->orderBy('sort_order')
             ->orderBy('name')
+            ->limit(50)
             ->get();
     }
 

@@ -30,8 +30,14 @@ echo "==> Ensuring roles + platform admin (idempotent)..."
 php artisan db:seed --class=RolesAndPermissionsSeeder --force 2>&1 || echo "WARNING: roles seed failed"
 php artisan db:seed --class=PlatformAdminSeeder --force 2>&1 || echo "WARNING: platform admin seed failed"
 
-echo "==> Refreshing teams (idempotent — updates logos, adds new teams)..."
-php artisan db:seed --class=TeamSeeder --force 2>&1 || echo "WARNING: team seed failed"
+echo "==> Importing world teams (once, if not already loaded)..."
+WT=$(php artisan tinker --execute="echo \App\Models\Team::whereNotNull('wikidata_id')->count();" 2>/dev/null | tail -1)
+if [ "$WT" = "0" ] || [ -z "$WT" ]; then
+    echo "    Loading full world-teams dataset (national teams + clubs)..."
+    php artisan teams:import --fresh 2>&1 || echo "WARNING: teams:import failed"
+else
+    echo "    World teams already loaded (${WT}) — skipping."
+fi
 
 echo "==> Clearing application cache (so data changes show immediately)..."
 php artisan cache:clear 2>&1 || echo "WARNING: cache:clear failed"

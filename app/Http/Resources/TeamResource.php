@@ -17,11 +17,13 @@ class TeamResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'name_ar' => $this->name_ar,
             'short_name' => $this->short_name,
             'logo' => $this->logo
                 ? (str_starts_with($this->logo, 'http') ? $this->logo : url('storage/' . $this->logo))
                 : null,
             'league' => $this->league,
+            'type' => $this->type,
             'country' => $this->country,
             'is_popular' => $this->is_popular,
             'sort_order' => $this->sort_order,
