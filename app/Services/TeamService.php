@@ -34,13 +34,20 @@ class TeamService
     }
 
     /**
-     * Get popular teams
-     * Cached for 24 hours
+     * Get teams for the favourite-team picker.
+     *
+     * Returns ALL teams (popular ones first), not a capped shortlist, so the
+     * picker shows every available club. Cached for 24 hours — remember to run
+     * `php artisan cache:clear` (or forget 'popular_teams') after changing teams.
      */
     public function getPopularTeams(): Collection
     {
         return Cache::remember('popular_teams', 86400, function () {
-            return Team::popular()->limit(10)->get();
+            return Team::query()
+                ->orderByDesc('is_popular')
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get();
         });
     }
 

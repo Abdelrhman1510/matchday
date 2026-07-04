@@ -9,14 +9,13 @@ class TeamSeeder extends Seeder
 {
     public function run(): void
     {
-        // Logos use ui-avatars.com — generates a consistent badge image per team
-        // using real club colours. Replace with actual CDN URLs when available.
+        // Logos use TheSportsDB public badge CDN (real club crests).
         $teams = [
             // Premier League
             [
                 'name' => 'Manchester United',
                 'short_name' => 'MUN',
-                'logo' => 'https://ui-avatars.com/api/?name=MUN&background=CC0000&color=fff&size=200&bold=true&format=png',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/xzqdr11517660252.png',
                 'league' => 'Premier League',
                 'is_popular' => true,
                 'sort_order' => 1,
@@ -24,7 +23,7 @@ class TeamSeeder extends Seeder
             [
                 'name' => 'Liverpool',
                 'short_name' => 'LIV',
-                'logo' => 'https://ui-avatars.com/api/?name=LIV&background=C8102E&color=fff&size=200&bold=true&format=png',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/kfaher1737969724.png',
                 'league' => 'Premier League',
                 'is_popular' => true,
                 'sort_order' => 2,
@@ -32,7 +31,7 @@ class TeamSeeder extends Seeder
             [
                 'name' => 'Chelsea',
                 'short_name' => 'CHE',
-                'logo' => 'https://ui-avatars.com/api/?name=CHE&background=034694&color=fff&size=200&bold=true&format=png',
+                'logo' => 'https://www.thesportsdb.com/images/media/team/badge/pbf4ul1782638263.png',
                 'league' => 'Premier League',
                 'is_popular' => true,
                 'sort_order' => 3,
@@ -40,7 +39,7 @@ class TeamSeeder extends Seeder
             [
                 'name' => 'Arsenal',
                 'short_name' => 'ARS',
-                'logo' => 'https://ui-avatars.com/api/?name=ARS&background=EF0107&color=fff&size=200&bold=true&format=png',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/uyhbfe1612467038.png',
                 'league' => 'Premier League',
                 'is_popular' => true,
                 'sort_order' => 4,
@@ -48,7 +47,7 @@ class TeamSeeder extends Seeder
             [
                 'name' => 'Manchester City',
                 'short_name' => 'MCI',
-                'logo' => 'https://ui-avatars.com/api/?name=MCI&background=6CABDD&color=fff&size=200&bold=true&format=png',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/vwpvry1467462651.png',
                 'league' => 'Premier League',
                 'is_popular' => true,
                 'sort_order' => 5,
@@ -56,7 +55,7 @@ class TeamSeeder extends Seeder
             [
                 'name' => 'Tottenham Hotspur',
                 'short_name' => 'TOT',
-                'logo' => 'https://ui-avatars.com/api/?name=TOT&background=132257&color=fff&size=200&bold=true&format=png',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/dfyfhl1604094109.png',
                 'league' => 'Premier League',
                 'is_popular' => true,
                 'sort_order' => 6,
@@ -65,7 +64,7 @@ class TeamSeeder extends Seeder
             [
                 'name' => 'Barcelona',
                 'short_name' => 'BAR',
-                'logo' => 'https://ui-avatars.com/api/?name=BAR&background=A50044&color=fff&size=200&bold=true&format=png',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/wq9sir1639406443.png',
                 'league' => 'La Liga',
                 'is_popular' => true,
                 'sort_order' => 7,
@@ -73,7 +72,7 @@ class TeamSeeder extends Seeder
             [
                 'name' => 'Real Madrid',
                 'short_name' => 'RMA',
-                'logo' => 'https://ui-avatars.com/api/?name=RMA&background=FEBE10&color=000&size=200&bold=true&format=png',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/vwvwrw1473502969.png',
                 'league' => 'La Liga',
                 'is_popular' => true,
                 'sort_order' => 8,
@@ -81,7 +80,7 @@ class TeamSeeder extends Seeder
             [
                 'name' => 'Atletico Madrid',
                 'short_name' => 'ATM',
-                'logo' => 'https://ui-avatars.com/api/?name=ATM&background=CE2028&color=fff&size=200&bold=true&format=png',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/0ulh3q1719984315.png',
                 'league' => 'La Liga',
                 'is_popular' => false,
                 'sort_order' => 9,
@@ -90,7 +89,7 @@ class TeamSeeder extends Seeder
             [
                 'name' => 'Bayern Munich',
                 'short_name' => 'BAY',
-                'logo' => 'https://ui-avatars.com/api/?name=BAY&background=DC052D&color=fff&size=200&bold=true&format=png',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/01ogkh1716960412.png',
                 'league' => 'Bundesliga',
                 'is_popular' => true,
                 'sort_order' => 10,
@@ -98,7 +97,7 @@ class TeamSeeder extends Seeder
             [
                 'name' => 'Borussia Dortmund',
                 'short_name' => 'BVB',
-                'logo' => 'https://ui-avatars.com/api/?name=BVB&background=FDE100&color=000&size=200&bold=true&format=png',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/tqo8ge1716960353.png',
                 'league' => 'Bundesliga',
                 'is_popular' => false,
                 'sort_order' => 11,
@@ -107,7 +106,7 @@ class TeamSeeder extends Seeder
             [
                 'name' => 'Juventus',
                 'short_name' => 'JUV',
-                'logo' => 'https://ui-avatars.com/api/?name=JUV&background=000000&color=fff&size=200&bold=true&format=png',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/uxf0gr1742983727.png',
                 'league' => 'Serie A',
                 'is_popular' => true,
                 'sort_order' => 12,
@@ -115,7 +114,7 @@ class TeamSeeder extends Seeder
             [
                 'name' => 'Inter Milan',
                 'short_name' => 'INT',
-                'logo' => 'https://ui-avatars.com/api/?name=INT&background=003DA5&color=fff&size=200&bold=true&format=png',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/ryhu6d1617113103.png',
                 'league' => 'Serie A',
                 'is_popular' => false,
                 'sort_order' => 13,
@@ -123,7 +122,7 @@ class TeamSeeder extends Seeder
             [
                 'name' => 'AC Milan',
                 'short_name' => 'MIL',
-                'logo' => 'https://ui-avatars.com/api/?name=MIL&background=CC0000&color=000&size=200&bold=true&format=png',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/wvspur1448806617.png',
                 'league' => 'Serie A',
                 'is_popular' => false,
                 'sort_order' => 14,
@@ -132,15 +131,107 @@ class TeamSeeder extends Seeder
             [
                 'name' => 'Paris Saint-Germain',
                 'short_name' => 'PSG',
-                'logo' => 'https://ui-avatars.com/api/?name=PSG&background=004170&color=fff&size=200&bold=true&format=png',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/rwqrrq1473504808.png',
                 'league' => 'Ligue 1',
                 'is_popular' => true,
                 'sort_order' => 15,
             ],
+            // Saudi Pro League
+            [
+                'name' => 'Al Hilal',
+                'short_name' => 'HIL',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/w0b80d1661656916.png',
+                'league' => 'Saudi Pro League',
+                'is_popular' => true,
+                'sort_order' => 16,
+            ],
+            [
+                'name' => 'Al Nassr',
+                'short_name' => 'NAS',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/84yvqi1748524565.png',
+                'league' => 'Saudi Pro League',
+                'is_popular' => true,
+                'sort_order' => 17,
+            ],
+            [
+                'name' => 'Al Ittihad',
+                'short_name' => 'ITT',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/8n1t1j1755192418.png',
+                'league' => 'Saudi Pro League',
+                'is_popular' => true,
+                'sort_order' => 18,
+            ],
+            [
+                'name' => 'Al Ahli',
+                'short_name' => 'AHL',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/1bbtgb1755192301.png',
+                'league' => 'Saudi Pro League',
+                'is_popular' => true,
+                'sort_order' => 19,
+            ],
+            [
+                'name' => 'Al Ettifaq',
+                'short_name' => 'ETT',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/m272h51694761970.png',
+                'league' => 'Saudi Pro League',
+                'is_popular' => false,
+                'sort_order' => 20,
+            ],
+            [
+                'name' => 'Al Taawoun',
+                'short_name' => 'TAA',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/rlsmp91646835052.png',
+                'league' => 'Saudi Pro League',
+                'is_popular' => false,
+                'sort_order' => 21,
+            ],
+            [
+                'name' => 'Al Fateh',
+                'short_name' => 'FAT',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/a5cjf41662659789.png',
+                'league' => 'Saudi Pro League',
+                'is_popular' => false,
+                'sort_order' => 22,
+            ],
+            [
+                'name' => 'Al Feiha',
+                'short_name' => 'FAY',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/jl3spp1677530565.png',
+                'league' => 'Saudi Pro League',
+                'is_popular' => false,
+                'sort_order' => 23,
+            ],
+            [
+                'name' => 'Al Qadsiah',
+                'short_name' => 'QAD',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/ok63wb1719134839.png',
+                'league' => 'Saudi Pro League',
+                'is_popular' => false,
+                'sort_order' => 24,
+            ],
+            [
+                'name' => 'Al Khaleej',
+                'short_name' => 'KHA',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/mvf6ga1755192630.png',
+                'league' => 'Saudi Pro League',
+                'is_popular' => false,
+                'sort_order' => 25,
+            ],
+            [
+                'name' => 'Al Riyadh',
+                'short_name' => 'RIY',
+                'logo' => 'https://r2.thesportsdb.com/images/media/team/badge/i4o0zy1755193321.png',
+                'league' => 'Saudi Pro League',
+                'is_popular' => false,
+                'sort_order' => 26,
+            ],
         ];
 
+        // Idempotent: match existing teams by name so re-running updates logos
+        // and adds new teams WITHOUT duplicating rows or changing IDs (users'
+        // favorite_team_id references these IDs). Safe to run on every deploy.
         foreach ($teams as $team) {
-            Team::create($team);
+            Team::updateOrCreate(['name' => $team['name']], $team);
         }
 
         $this->command->info('Teams seeded successfully!');
