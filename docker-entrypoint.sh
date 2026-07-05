@@ -36,7 +36,8 @@ if [ "$WT" = "0" ] || [ -z "$WT" ]; then
     echo "    Loading full world-teams dataset (national teams + clubs)..."
     php artisan teams:import --fresh 2>&1 || echo "WARNING: teams:import failed"
 else
-    echo "    World teams already loaded (${WT}) — skipping."
+    echo "    Refreshing world teams from dataset (${WT}) — upsert..."
+    php artisan teams:import 2>&1 || echo "WARNING: teams:import failed"
 fi
 
 echo "==> Clearing application cache (so data changes show immediately)..."
