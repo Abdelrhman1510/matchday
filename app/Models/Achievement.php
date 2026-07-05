@@ -12,7 +12,9 @@ class Achievement extends Model
 
     protected $fillable = [
         'name',
+        'name_ar',
         'description',
+        'description_ar',
         'icon',
         'criteria_type',
         'criteria_value',

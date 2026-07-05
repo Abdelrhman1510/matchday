@@ -35,7 +35,9 @@ class AchievementResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'name_ar' => $this->name_ar,
             'description' => $this->description,
+            'description_ar' => $this->description_ar,
             'icon' => $this->icon ? url('storage/' . $this->icon) : null,
             'criteria_type' => $this->criteria_type,
             'criteria_value' => $this->criteria_value,
