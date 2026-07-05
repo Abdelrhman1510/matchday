@@ -41,6 +41,14 @@ class LoyaltyController extends Controller
 
         $progress = $this->loyaltyService->getProgressToNextTier($loyaltyCard);
 
+        $tierLabelsAr = [
+            'bronze'   => 'برونزي',
+            'silver'   => 'فضي',
+            'gold'     => 'ذهبي',
+            'platinum' => 'بلاتيني',
+        ];
+        $tierAr = fn ($t) => $t ? ($tierLabelsAr[$t] ?? $t) : null;
+
         return response()->json([
             'success' => true,
             'message' => 'Loyalty card retrieved successfully',
@@ -49,8 +57,10 @@ class LoyaltyController extends Controller
                 'card_number' => $loyaltyCard->card_number,
                 'points' => $loyaltyCard->points,
                 'tier' => $loyaltyCard->tier,
+                'tier_ar' => $tierAr($loyaltyCard->tier),
                 'total_points_earned' => $loyaltyCard->total_points_earned,
                 'next_tier' => $progress['next_tier'],
+                'next_tier_ar' => $tierAr($progress['next_tier']),
                 'progress' => $progress['progress_percentage'],
             ],
         ]);

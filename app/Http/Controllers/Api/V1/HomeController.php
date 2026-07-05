@@ -23,7 +23,9 @@ class HomeController extends Controller
             ->map(fn($b) => [
                 'id'          => $b->id,
                 'title'       => $b->title,
+                'title_ar'    => $b->title_ar,
                 'subtitle'    => $b->subtitle,
+                'subtitle_ar' => $b->subtitle_ar,
                 'image_url'   => $b->image_url,
                 'action_type' => $b->action_type,
                 'action_id'   => $b->action_id,
