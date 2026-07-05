@@ -12,7 +12,9 @@ class Page extends Model
     protected $fillable = [
         'slug',
         'title',
+        'title_ar',
         'content',
+        'content_ar',
         'is_active',
     ];
 

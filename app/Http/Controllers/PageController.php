@@ -27,7 +27,9 @@ class PageController extends Controller
                 'id' => $page->id,
                 'slug' => $page->slug,
                 'title' => $page->title,
+                'title_ar' => $page->title_ar,
                 'content' => $page->content,
+                'content_ar' => $page->content_ar,
                 'updated_at' => $page->updated_at,
             ],
         ], 'Page retrieved successfully.');
