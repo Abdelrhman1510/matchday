@@ -76,6 +76,7 @@ class SearchController extends Controller
                         'name' => $team->name,
                         'logo' => $team->logo,
                         'league' => $team->league,
+                        'league_ar' => $team->league_ar,
                     ];
                 })->toArray();
         }
@@ -102,6 +103,7 @@ class SearchController extends Controller
                         'away_team' => $match->awayTeam->name ?? null,
                         'match_date' => $match->match_date?->format('Y-m-d'),
                         'league' => $match->league,
+                        'league_ar' => $match->league_ar,
                     ];
                 })->toArray();
         }

@@ -29,17 +29,20 @@ class BookingResource extends JsonResource
             'match' => [
                 'id' => $this->match->id,
                 'league' => $this->match->league,
+                'league_ar' => $this->match->league_ar,
                 'match_date' => $matchDate->format('Y-m-d'),
                 'kick_off' => $this->match->kick_off,
                 'status' => $matchStatus,
                 'home_team' => [
                     'id' => $this->match->homeTeam->id,
                     'name' => $this->match->homeTeam->name,
+                    'name_ar' => $this->match->homeTeam->name_ar,
                     'logo' => $this->match->homeTeam->logo ? (str_starts_with($this->match->homeTeam->logo, 'http') ? $this->match->homeTeam->logo : url('storage/' . $this->match->homeTeam->logo)) : null,
                 ],
                 'away_team' => [
                     'id' => $this->match->awayTeam->id,
                     'name' => $this->match->awayTeam->name,
+                    'name_ar' => $this->match->awayTeam->name_ar,
                     'logo' => $this->match->awayTeam->logo ? (str_starts_with($this->match->awayTeam->logo, 'http') ? $this->match->awayTeam->logo : url('storage/' . $this->match->awayTeam->logo)) : null,
                 ],
                 'home_score' => $this->match->home_score,

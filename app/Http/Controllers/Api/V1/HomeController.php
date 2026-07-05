@@ -42,8 +42,12 @@ class HomeController extends Controller
             ->map(function ($match) {
                 return [
                     'id' => $match->id,
+                    'league' => $match->league,
+                    'league_ar' => $match->league_ar,
                     'home_team' => $match->homeTeam->name ?? null,
+                    'home_team_ar' => $match->homeTeam->name_ar ?? null,
                     'away_team' => $match->awayTeam->name ?? null,
+                    'away_team_ar' => $match->awayTeam->name_ar ?? null,
                     'match_date' => $match->match_date?->format('Y-m-d'),
                 ];
             });
@@ -89,8 +93,12 @@ class HomeController extends Controller
             ->map(function ($match) {
                 return [
                     'id' => $match->id,
+                    'league' => $match->league,
+                    'league_ar' => $match->league_ar,
                     'home_team' => $match->homeTeam->name ?? null,
+                    'home_team_ar' => $match->homeTeam->name_ar ?? null,
                     'away_team' => $match->awayTeam->name ?? null,
+                    'away_team_ar' => $match->awayTeam->name_ar ?? null,
                     'match_date' => $match->match_date?->format('Y-m-d'),
                 ];
             });
@@ -135,8 +143,12 @@ class HomeController extends Controller
             ->map(function ($match) {
                 return [
                     'id' => $match->id,
+                    'league' => $match->league,
+                    'league_ar' => $match->league_ar,
                     'home_team' => $match->homeTeam->name ?? null,
+                    'home_team_ar' => $match->homeTeam->name_ar ?? null,
                     'away_team' => $match->awayTeam->name ?? null,
+                    'away_team_ar' => $match->awayTeam->name_ar ?? null,
                     'match_date' => $match->match_date?->format('Y-m-d'),
                 ];
             });

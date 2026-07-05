@@ -58,4 +58,10 @@ class Team extends Model
     {
         return $query->where('league', $league);
     }
+
+    // Arabic league name (mapped; null if unknown).
+    public function getLeagueArAttribute(): ?string
+    {
+        return \App\Support\Leagues::ar($this->league);
+    }
 }

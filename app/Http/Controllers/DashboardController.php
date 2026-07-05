@@ -146,10 +146,12 @@ class DashboardController extends Controller
                         'match_id' => $match->id,
                         'home_team' => [
                             'name' => $match->homeTeam->name,
+                            'name_ar' => $match->homeTeam->name_ar,
                             'logo' => $match->homeTeam->logo,
                         ],
                         'away_team' => [
                             'name' => $match->awayTeam->name,
+                            'name_ar' => $match->awayTeam->name_ar,
                             'logo' => $match->awayTeam->logo,
                         ],
                         'match_date' => $match->match_date,

@@ -151,4 +151,10 @@ class GameMatch extends Model
                   ->orWhere('booking_closes_at', '>=', now());
             });
     }
+
+    // Arabic league name (mapped; null if unknown).
+    public function getLeagueArAttribute(): ?string
+    {
+        return \App\Support\Leagues::ar($this->league);
+    }
 }

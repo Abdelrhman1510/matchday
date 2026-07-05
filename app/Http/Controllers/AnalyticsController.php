@@ -298,7 +298,9 @@ class AnalyticsController extends Controller
                     'match' => [
                         'id' => $m->id,
                         'home_team' => $m->homeTeam->name ?? null,
+                        'home_team_ar' => $m->homeTeam->name_ar ?? null,
                         'away_team' => $m->awayTeam->name ?? null,
+                        'away_team_ar' => $m->awayTeam->name_ar ?? null,
                     ],
                     'bookings_count' => $m->bookings_count,
                     'revenue' => 0,

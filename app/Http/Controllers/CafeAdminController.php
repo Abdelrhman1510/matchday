@@ -813,7 +813,9 @@ class CafeAdminController extends Controller
                     return [
                         'id' => $match->id,
                         'home_team' => $match->homeTeam->name ?? null,
+                        'home_team_ar' => $match->homeTeam->name_ar ?? null,
                         'away_team' => $match->awayTeam->name ?? null,
+                        'away_team_ar' => $match->awayTeam->name_ar ?? null,
                         'match_date' => $match->match_date,
                         'competition' => $match->competition,
                     ];

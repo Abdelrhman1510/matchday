@@ -46,6 +46,7 @@ class BookingAdminDetailResource extends JsonResource
             'match' => $booking->match ? [
                 'id' => $booking->match->id,
                 'league' => $booking->match->league,
+                'league_ar' => $booking->match->league_ar,
                 'match_date' => $booking->match->match_date?->format('Y-m-d'),
                 'kick_off' => $booking->match->kick_off,
                 'status' => $booking->match->status,
@@ -56,12 +57,14 @@ class BookingAdminDetailResource extends JsonResource
                 'home_team' => $booking->match->homeTeam ? [
                     'id' => $booking->match->homeTeam->id,
                     'name' => $booking->match->homeTeam->name,
+                    'name_ar' => $booking->match->homeTeam->name_ar,
                     'short_name' => $booking->match->homeTeam->short_name,
                     'logo' => $this->formatTeamLogo($booking->match->homeTeam->logo),
                 ] : null,
                 'away_team' => $booking->match->awayTeam ? [
                     'id' => $booking->match->awayTeam->id,
                     'name' => $booking->match->awayTeam->name,
+                    'name_ar' => $booking->match->awayTeam->name_ar,
                     'short_name' => $booking->match->awayTeam->short_name,
                     'logo' => $this->formatTeamLogo($booking->match->awayTeam->logo),
                 ] : null,

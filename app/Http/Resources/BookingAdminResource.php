@@ -53,18 +53,21 @@ class BookingAdminResource extends JsonResource
             'match' => $this->when($this->relationLoaded('match') && $this->match, fn() => [
                 'id' => $this->match->id,
                 'league' => $this->match->league,
+                'league_ar' => $this->match->league_ar,
                 'match_date' => $this->match->match_date?->format('Y-m-d'),
                 'kick_off' => $this->match->kick_off,
                 'status' => $this->match->status,
                 'home_team' => $this->when($this->match->relationLoaded('homeTeam'), fn() => [
                     'id' => $this->match->homeTeam->id,
                     'name' => $this->match->homeTeam->name,
+                    'name_ar' => $this->match->homeTeam->name_ar,
                     'short_name' => $this->match->homeTeam->short_name,
                     'logo' => $this->formatTeamLogo($this->match->homeTeam->logo),
                 ]),
                 'away_team' => $this->when($this->match->relationLoaded('awayTeam'), fn() => [
                     'id' => $this->match->awayTeam->id,
                     'name' => $this->match->awayTeam->name,
+                    'name_ar' => $this->match->awayTeam->name_ar,
                     'short_name' => $this->match->awayTeam->short_name,
                     'logo' => $this->formatTeamLogo($this->match->awayTeam->logo),
                 ]),

@@ -26,7 +26,9 @@ class LoyaltyTransactionResource extends JsonResource
                         'booking_code' => $this->booking->booking_code,
                         'match' => $this->booking->relationLoaded('match') ? [
                             'home_team' => $this->booking->match->homeTeam->name,
+                            'home_team_ar' => $this->booking->match->homeTeam->name_ar ?? null,
                             'away_team' => $this->booking->match->awayTeam->name,
+                            'away_team_ar' => $this->booking->match->awayTeam->name_ar ?? null,
                             'match_date' => $this->booking->match->match_date?->format('Y-m-d'),
                         ] : null,
                     ];

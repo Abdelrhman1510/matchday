@@ -36,6 +36,7 @@ class MatchDetailResource extends JsonResource
         return [
             'id' => $this->id,
             'league' => $this->league,
+            'league_ar' => $this->league_ar,
             'match_date' => $this->match_date?->format('Y-m-d'),
             'kick_off' => $this->kick_off,
             'status' => $this->status,
@@ -44,12 +45,14 @@ class MatchDetailResource extends JsonResource
             'home_team' => [
                 'id' => $this->homeTeam->id,
                 'name' => $this->homeTeam->name,
+                'name_ar' => $this->homeTeam->name_ar,
                 'short_name' => $this->homeTeam->short_name,
                 'logo' => $this->homeTeam->logo ? url('storage/' . $this->homeTeam->logo) : null,
             ],
             'away_team' => [
                 'id' => $this->awayTeam->id,
                 'name' => $this->awayTeam->name,
+                'name_ar' => $this->awayTeam->name_ar,
                 'short_name' => $this->awayTeam->short_name,
                 'logo' => $this->awayTeam->logo ? url('storage/' . $this->awayTeam->logo) : null,
             ],

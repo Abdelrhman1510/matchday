@@ -120,11 +120,13 @@ class QrScanController extends Controller
                         'status' => $booking->match->status,
                         'home_team' => $booking->match->homeTeam ? [
                             'name' => $booking->match->homeTeam->name,
+                            'name_ar' => $booking->match->homeTeam->name_ar,
                             'short_name' => $booking->match->homeTeam->short_name,
                             'logo' => $this->formatTeamLogo($booking->match->homeTeam->logo),
                         ] : null,
                         'away_team' => $booking->match->awayTeam ? [
                             'name' => $booking->match->awayTeam->name,
+                            'name_ar' => $booking->match->awayTeam->name_ar,
                             'short_name' => $booking->match->awayTeam->short_name,
                             'logo' => $this->formatTeamLogo($booking->match->awayTeam->logo),
                         ] : null,

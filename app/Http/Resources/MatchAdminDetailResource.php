@@ -19,6 +19,7 @@ class MatchAdminDetailResource extends JsonResource
         return [
             'id' => $match->id,
             'league' => $match->league,
+            'league_ar' => $match->league_ar,
             'match_date' => $match->match_date?->format('Y-m-d'),
             'kick_off' => $match->kick_off,
             'status' => $match->status,
@@ -27,12 +28,14 @@ class MatchAdminDetailResource extends JsonResource
             'home_team' => [
                 'id' => $match->homeTeam->id,
                 'name' => $match->homeTeam->name,
+                'name_ar' => $match->homeTeam->name_ar,
                 'short_name' => $match->homeTeam->short_name,
                 'logo' => $this->formatTeamLogo($match->homeTeam->logo),
             ],
             'away_team' => [
                 'id' => $match->awayTeam->id,
                 'name' => $match->awayTeam->name,
+                'name_ar' => $match->awayTeam->name_ar,
                 'short_name' => $match->awayTeam->short_name,
                 'logo' => $this->formatTeamLogo($match->awayTeam->logo),
             ],

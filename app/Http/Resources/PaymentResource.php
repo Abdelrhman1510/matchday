@@ -31,6 +31,7 @@ class PaymentResource extends JsonResource
                         return [
                             'id' => $this->booking->match->id,
                             'league' => $this->booking->match->league,
+                            'league_ar' => $this->booking->match->league_ar,
                             'home_team' => $this->booking->match->relationLoaded('homeTeam') ? $this->booking->match->homeTeam->name : null,
                             'away_team' => $this->booking->match->relationLoaded('awayTeam') ? $this->booking->match->awayTeam->name : null,
                             'match_date' => $this->booking->match->match_date->toDateString(),
