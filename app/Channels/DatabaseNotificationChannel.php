@@ -19,7 +19,9 @@ class DatabaseNotificationChannel
             'user_id' => $notifiable->id,
             'type' => get_class($notification),
             'title' => $data['title'] ?? 'Notification',
+            'title_ar' => $data['title_ar'] ?? null,
             'body' => $data['body'] ?? '',
+            'body_ar' => $data['body_ar'] ?? null,
             'data' => $data['data'] ?? $data,
             'read_at' => null,
         ]);

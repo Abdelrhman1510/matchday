@@ -35,7 +35,9 @@ class AchievementUnlockedNotification extends Notification implements ShouldQueu
     {
         $notificationData = [
             'title' => '🎉 Achievement Unlocked!',
+            'title_ar' => '🎉 إنجاز جديد!',
             'body' => "You've unlocked the '{$this->achievement->name}' achievement!",
+            'body_ar' => "لقد فتحت إنجاز '" . ($this->achievement->name_ar ?? $this->achievement->name) . "'!",
             'data' => [
                 'type' => 'achievement_unlocked',
                 'achievement_id' => $this->achievement->id,

@@ -31,7 +31,9 @@ class WelcomeNotification extends Notification implements ShouldQueue
     {
         $notificationData = [
             'title' => 'Welcome to MatchDay! ⚽',
+            'title_ar' => 'مرحبًا بك في ماتش داي! ⚽',
             'body' => "Hi {$this->userName}! We're excited to have you here. Start exploring cafes and booking your perfect match day experience!",
+            'body_ar' => "مرحبًا {$this->userName}! يسعدنا وجودك معنا. ابدأ باستكشاف المقاهي واحجز تجربة مباراتك المثالية!",
             'data' => [
                 'type' => 'welcome',
             ],

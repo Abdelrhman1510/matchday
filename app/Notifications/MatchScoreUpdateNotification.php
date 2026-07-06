@@ -42,7 +42,9 @@ class MatchScoreUpdateNotification extends Notification implements ShouldQueue
         
         $notificationData = [
             'title' => 'Match Update!',
+            'title_ar' => 'تحديث المباراة!',
             'body' => "{$homeTeam} {$homeScore} - {$awayScore} {$awayTeam}. {$this->event}",
+            'body_ar' => ($this->match->homeTeam->name_ar ?? $homeTeam) . " {$homeScore} - {$awayScore} " . ($this->match->awayTeam->name_ar ?? $awayTeam) . ". {$this->event}",
             'data' => [
                 'type' => 'match_score_update',
                 'match_id' => $this->match->id,

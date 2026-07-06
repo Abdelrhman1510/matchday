@@ -15,7 +15,9 @@ class Notification extends Model
         'user_id',
         'type',
         'title',
+        'title_ar',
         'body',
+        'body_ar',
         'data',
         'read_at',
     ];

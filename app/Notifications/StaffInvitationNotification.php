@@ -52,7 +52,9 @@ class StaffInvitationNotification extends Notification implements ShouldQueue
 
         $notificationData = [
             'title' => 'Staff Invitation',
+            'title_ar' => 'دعوة للانضمام',
             'body' => "You've been invited to join {$this->cafe->name}{$branchInfo} as {$this->role}.",
+            'body_ar' => "لقد تمت دعوتك للانضمام إلى {$this->cafe->name}{$branchInfo} بصفة {$this->role}.",
             'data' => $additionalData,
         ];
 

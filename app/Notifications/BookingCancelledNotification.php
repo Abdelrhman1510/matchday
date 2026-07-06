@@ -37,7 +37,9 @@ class BookingCancelledNotification extends Notification implements ShouldQueue
     {
         $notificationData = [
             'title' => 'Booking Cancelled',
+            'title_ar' => 'تم إلغاء الحجز',
             'body' => "Your booking at {$this->booking->branch->cafe->name} has been cancelled. {$this->reason}",
+            'body_ar' => "تم إلغاء حجزك في {$this->booking->branch->cafe->name}. {$this->reason}",
             'data' => [
                 'type' => 'booking_cancelled',
                 'booking_id' => $this->booking->id,

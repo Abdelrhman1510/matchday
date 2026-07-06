@@ -241,7 +241,9 @@ class ProfileController extends Controller
                 'type' => 'booking',
                 'id' => $booking->id,
                 'title' => 'Match Booking',
+                'title_ar' => 'حجز مباراة',
                 'description' => "{$booking->match->homeTeam->name} vs {$booking->match->awayTeam->name}",
+                'description_ar' => ($booking->match->homeTeam->name_ar ?? $booking->match->homeTeam->name) . ' ضد ' . ($booking->match->awayTeam->name_ar ?? $booking->match->awayTeam->name),
                 'points' => $transaction ? $transaction->points : 0,
                 'details' => [
                     'booking_code' => $booking->booking_code,
@@ -267,7 +269,9 @@ class ProfileController extends Controller
                 'type' => 'achievement',
                 'id' => $achievement->id,
                 'title' => 'Achievement Unlocked',
+                'title_ar' => 'إنجاز جديد',
                 'description' => $achievement->name,
+                'description_ar' => $achievement->name_ar ?? $achievement->name,
                 'points' => $achievement->points_reward,
                 'details' => [
                     'achievement_description' => $achievement->description,

@@ -38,7 +38,9 @@ class MatchReminderNotification extends Notification implements ShouldQueue
         
         $notificationData = [
             'title' => 'Match Starting Soon!',
+            'title_ar' => 'المباراة تبدأ قريبًا!',
             'body' => "{$homeTeam} vs {$awayTeam} starts in 1 hour. Don't miss it!",
+            'body_ar' => ($this->match->homeTeam->name_ar ?? $homeTeam) . ' ضد ' . ($this->match->awayTeam->name_ar ?? $awayTeam) . ' تبدأ خلال ساعة. لا تفوّتها!',
             'data' => [
                 'type' => 'match_reminder',
                 'match_id' => $this->match->id,

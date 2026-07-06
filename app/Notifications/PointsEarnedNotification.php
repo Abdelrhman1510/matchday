@@ -47,7 +47,9 @@ class PointsEarnedNotification extends Notification implements ShouldQueue
 
         $notificationData = [
             'title' => '⭐ Points Earned!',
+            'title_ar' => '⭐ نقاط جديدة!',
             'body' => "You've earned {$this->points} points! {$this->reason}",
+            'body_ar' => "لقد حصلت على {$this->points} نقطة! {$this->reason}",
             'data' => $additionalData,
         ];
 

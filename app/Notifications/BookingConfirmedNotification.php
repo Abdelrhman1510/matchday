@@ -35,7 +35,9 @@ class BookingConfirmedNotification extends Notification implements ShouldQueue
     {
         $notificationData = [
             'title' => 'Booking Confirmed!',
+            'title_ar' => 'تم تأكيد الحجز!',
             'body' => "Your booking at {$this->booking->branch->cafe->name} has been confirmed.",
+            'body_ar' => "تم تأكيد حجزك في {$this->booking->branch->cafe->name}.",
             'data' => [
                 'type' => 'booking_confirmed',
                 'booking_id' => $this->booking->id,
