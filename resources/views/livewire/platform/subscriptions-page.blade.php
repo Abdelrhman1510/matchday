@@ -321,9 +321,12 @@
                             @elseif($plan->slug === 'pro')
                                 <span
                                     class="px-3 py-1 bg-[#c8ff00] text-black text-[10px] font-black font-bungee rounded uppercase">{{ __('platform.subscriptions.pro') }}</span>
-                            @else
+                            @elseif($plan->slug === 'elite')
                                 <span
                                     class="px-3 py-1 bg-[#1a0e40] border border-[#1e164e] text-[#c8ff00] text-[10px] font-black font-bungee rounded uppercase">{{ __('platform.subscriptions.enterprise') }}</span>
+                            @else
+                                <span
+                                    class="px-3 py-1 bg-[#1a0e40] border border-[#1e164e] text-white text-[10px] font-black font-bungee rounded uppercase">{{ $plan->display_name }}</span>
                             @endif
                             <span
                                 class="text-2xl font-black font-bungee text-white">${{ number_format($plan->price, 0) }}</span>
@@ -339,8 +342,9 @@
 
                         <!-- Features -->
                         <ul class="space-y-2 mb-4">
-                            @if(is_array($plan->features) && count($plan->features) > 0)
-                                @foreach($plan->features as $feature)
+                            @php($planFeatures = $plan->display_features)
+                            @if(count($planFeatures) > 0)
+                                @foreach($planFeatures as $feature)
                                     <li class="flex items-start gap-2 text-xs text-slate-300">
                                         <svg class="w-4 h-4 text-[#c8ff00] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -446,9 +450,12 @@
                                 @elseif($subscription->plan->slug === 'pro')
                                     <span
                                         class="px-2.5 py-1 bg-[#c8ff00] text-black text-[10px] font-black font-bungee rounded">{{ __('platform.subscriptions.pro') }}</span>
-                                @else
+                                @elseif($subscription->plan->slug === 'elite')
                                     <span
                                         class="px-2.5 py-1 bg-[#1a0e40] border border-[#c8ff00]/30 text-[#c8ff00] text-[10px] font-black font-bungee rounded">{{ __('platform.subscriptions.enterprise') }}</span>
+                                @else
+                                    <span
+                                        class="px-2.5 py-1 bg-[#1a0e40] border border-[#1e164e] text-white text-[10px] font-black font-bungee rounded">{{ $subscription->plan->display_name }}</span>
                                 @endif
                             </td>
                             <td class="py-4 px-4">

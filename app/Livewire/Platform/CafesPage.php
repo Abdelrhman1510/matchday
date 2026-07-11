@@ -42,7 +42,7 @@ class CafesPage extends Component
         if ($cafe) {
             $cafe->is_featured = !($cafe->is_featured ?? false);
             $cafe->save();
-            session()->flash('message', 'Cafe featured status updated.');
+            session()->flash('message', __('platform.flash.cafe_featured_updated'));
         }
     }
 
@@ -54,10 +54,10 @@ class CafesPage extends Component
 
         if ($cafe->trashed()) {
             $cafe->restore();
-            session()->flash('message', "Cafe \"{$cafe->name}\" has been activated.");
+            session()->flash('message', __('platform.flash.cafe_named_activated', ['name' => $cafe->name]));
         } else {
             $cafe->delete();
-            session()->flash('message', "Cafe \"{$cafe->name}\" has been suspended.");
+            session()->flash('message', __('platform.flash.cafe_named_suspended', ['name' => $cafe->name]));
         }
         Cache::forget('cafes_stats');
         $this->dispatch('close-dropdown');
@@ -88,7 +88,7 @@ class CafesPage extends Component
             $cafeName = $cafe->name;
             $cafe->forceDelete();
             Cache::forget('cafes_stats');
-            session()->flash('message', "Cafe \"{$cafeName}\" has been permanently deleted.");
+            session()->flash('message', __('platform.flash.cafe_named_deleted', ['name' => $cafeName]));
         }
         $this->closeDeleteModal();
     }

@@ -85,31 +85,31 @@ class SettingsPage extends Component
     public function updatedCommissionRate($value): void
     {
         app(PlatformSettingsService::class)->set('commission_rate', $value, 'float', 'commission');
-        session()->flash('message', 'Commission rate updated.');
+        session()->flash('message', __('platform.flash.commission_updated'));
     }
 
     public function updatedDynamicPricing($value): void
     {
         app(PlatformSettingsService::class)->set('dynamic_pricing', $value, 'bool', 'commission');
-        session()->flash('message', 'Dynamic pricing updated.');
+        session()->flash('message', __('platform.flash.dynamic_pricing_updated'));
     }
 
     public function updatedDefaultCurrency($value): void
     {
         app(PlatformSettingsService::class)->set('default_currency', $value, 'string', 'currency');
-        session()->flash('message', 'Default currency updated.');
+        session()->flash('message', __('platform.flash.currency_updated'));
     }
 
     public function updatedMultiCurrency($value): void
     {
         app(PlatformSettingsService::class)->set('multi_currency', $value, 'bool', 'currency');
-        session()->flash('message', 'Multi-currency updated.');
+        session()->flash('message', __('platform.flash.multi_currency_updated'));
     }
 
     public function updatedAutoConversion($value): void
     {
         app(PlatformSettingsService::class)->set('auto_conversion', $value, 'bool', 'currency');
-        session()->flash('message', 'Auto conversion updated.');
+        session()->flash('message', __('platform.flash.auto_conversion_updated'));
     }
 
     public function updatedPlatformLanguage($value): void
@@ -118,33 +118,33 @@ class SettingsPage extends Component
         app(PlatformSettingsService::class)->set('platform_language', $locale, 'string', 'language');
         session()->put('platform_locale', $locale);
         \App::setLocale($locale);
-        session()->flash('message', 'Platform language updated.');
+        session()->flash('message', __('platform.flash.language_updated'));
         $this->dispatch('localeChanged', locale: $locale);
     }
 
     public function updatedTimezone($value): void
     {
         app(PlatformSettingsService::class)->set('timezone', $value, 'string', 'language');
-        session()->flash('message', 'Timezone updated.');
+        session()->flash('message', __('platform.flash.timezone_updated'));
     }
 
     public function updatedMultiLanguage($value): void
     {
         app(PlatformSettingsService::class)->set('multi_language', $value, 'bool', 'language');
-        session()->flash('message', 'Multi-language updated.');
+        session()->flash('message', __('platform.flash.multi_language_updated'));
     }
 
     // ─── Footer Actions ───────────────────────────────────────────────────────
 
     public function saveSettings(): void
     {
-        session()->flash('message', 'All settings saved successfully.');
+        session()->flash('message', __('platform.flash.all_saved'));
     }
 
     public function resetSettings(): void
     {
         $this->loadSettings();
-        session()->flash('message', 'Settings reset to saved values.');
+        session()->flash('message', __('platform.flash.settings_reset'));
     }
 
     // ─── Stats ────────────────────────────────────────────────────────────────

@@ -49,7 +49,7 @@
 
                     {{-- Status Badge --}}
                     <div class="flex items-start justify-between mb-4">
-                        <h3 class="text-lg font-bold text-white">{{ $plan->name }}</h3>
+                        <h3 class="text-lg font-bold text-white">{{ $plan->display_name }}</h3>
                         <span class="px-2.5 py-1 text-[10px] rounded-full font-bold {{ $plan->is_active ? 'bg-green-900/40 text-green-400 border border-green-700/40' : 'bg-red-900/30 text-red-400 border border-red-700/30' }}">
                             {{ $plan->is_active ? __('platform.common.active') : __('platform.common.inactive') }}
                         </span>
@@ -109,9 +109,10 @@
 
                     {{-- Features List --}}
                     <div class="flex-1 mb-5">
-                        @if(is_array($plan->features) && count($plan->features) > 0)
+                        @php($cardFeatures = $plan->display_features)
+                        @if(count($cardFeatures) > 0)
                             <ul class="space-y-1.5">
-                                @foreach(array_slice($plan->features, 0, 4) as $feature)
+                                @foreach(array_slice($cardFeatures, 0, 4) as $feature)
                                     <li class="flex items-start gap-2 text-xs text-slate-300">
                                         <svg class="w-3.5 h-3.5 text-[#c8ff00] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
@@ -119,8 +120,8 @@
                                         {{ $feature }}
                                     </li>
                                 @endforeach
-                                @if(count($plan->features) > 4)
-                                    <li class="text-xs text-slate-500 pl-5">+{{ count($plan->features) - 4 }} more...</li>
+                                @if(count($cardFeatures) > 4)
+                                    <li class="text-xs text-slate-500 pl-5">+{{ count($cardFeatures) - 4 }} more...</li>
                                 @endif
                             </ul>
                         @else
@@ -199,6 +200,13 @@
                         </div>
                     </div>
 
+                    {{-- Plan Name (Arabic) --}}
+                    <div>
+                        <label class="block text-sm font-medium text-white mb-1.5">{{ __('platform.plans.name_ar') }}</label>
+                        <input type="text" wire:model="formNameAr" dir="rtl" placeholder="مثال: البداية، المحترف، النخبة"
+                            class="w-full px-4 py-2.5 bg-[#0f172a] border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-[#c8ff00] focus:ring-1 focus:ring-[#c8ff00] outline-none">
+                    </div>
+
                     {{-- Limits Section --}}
                     <div>
                         <h4 class="text-xs font-bold text-[#c8ff00] uppercase tracking-widest mb-3">{{ __('platform.plans.limits_section') }}</h4>
@@ -242,6 +250,14 @@
                         <label class="block text-sm font-medium text-white mb-1.5">{{ __('platform.plans.features_label') }} <span class="text-slate-500 font-normal">({{ __('platform.plans.one_per_line') }})</span></label>
                         <textarea wire:model="formFeatures" rows="4"
                             placeholder="Up to 3 branches&#10;Basic analytics&#10;Email support"
+                            class="w-full px-4 py-2.5 bg-[#0f172a] border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-[#c8ff00] focus:ring-1 focus:ring-[#c8ff00] outline-none resize-none text-sm"></textarea>
+                    </div>
+
+                    {{-- Features Text (Arabic) --}}
+                    <div>
+                        <label class="block text-sm font-medium text-white mb-1.5">{{ __('platform.plans.features_ar_label') }} <span class="text-slate-500 font-normal">({{ __('platform.plans.one_per_line') }})</span></label>
+                        <textarea wire:model="formFeaturesAr" rows="4" dir="rtl"
+                            placeholder="حتى 3 فروع&#10;تحليلات أساسية&#10;دعم عبر البريد الإلكتروني"
                             class="w-full px-4 py-2.5 bg-[#0f172a] border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-[#c8ff00] focus:ring-1 focus:ring-[#c8ff00] outline-none resize-none text-sm"></textarea>
                     </div>
 

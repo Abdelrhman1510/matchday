@@ -39,6 +39,9 @@ php artisan db:seed --class=PageSeeder --force 2>&1 || echo "WARNING: page seed 
 echo "==> Refreshing banners (bilingual, idempotent)..."
 php artisan db:seed --class=BannerSeeder --force 2>&1 || echo "WARNING: banner seed failed"
 
+echo "==> Refreshing subscription plans (bilingual, idempotent)..."
+php artisan db:seed --class=SubscriptionPlanSeeder --force 2>&1 || echo "WARNING: subscription plan seed failed"
+
 echo "==> Importing world teams (once, if not already loaded)..."
 WT=$(php artisan tinker --execute="echo \App\Models\Team::whereNotNull('wikidata_id')->count();" 2>/dev/null | tail -1)
 if [ "$WT" = "0" ] || [ -z "$WT" ]; then

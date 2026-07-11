@@ -12,10 +12,12 @@ class SubscriptionPlan extends Model
 
     protected $fillable = [
         'name',
+        'name_ar',
         'slug',
         'price',
         'currency',
         'features',
+        'features_ar',
         'max_bookings',
         'has_analytics',
         'has_branding',
@@ -40,6 +42,7 @@ class SubscriptionPlan extends Model
         return [
             'price' => 'decimal:2',
             'features' => 'array',
+            'features_ar' => 'array',
             'max_bookings' => 'integer',
             'has_analytics' => 'boolean',
             'has_branding' => 'boolean',
@@ -56,6 +59,30 @@ class SubscriptionPlan extends Model
             'has_occupancy_tracking' => 'boolean',
             'commission_rate' => 'decimal:2',
         ];
+    }
+
+    // ── Locale-aware display accessors ───────────────────────────────────
+    // Return Arabic content when the active locale is 'ar' and a translation
+    // exists; otherwise fall back to the default (English) value. This keeps
+    // the raw `name`/`features` columns intact for editing while letting views
+    // render `$plan->display_name` / `$plan->display_features` transparently.
+
+    public function getDisplayNameAttribute(): string
+    {
+        if (app()->getLocale() === 'ar' && filled($this->name_ar)) {
+            return $this->name_ar;
+        }
+
+        return $this->name;
+    }
+
+    public function getDisplayFeaturesAttribute(): array
+    {
+        if (app()->getLocale() === 'ar' && is_array($this->features_ar) && count($this->features_ar) > 0) {
+            return $this->features_ar;
+        }
+
+        return is_array($this->features) ? $this->features : [];
     }
 
     // Relationships

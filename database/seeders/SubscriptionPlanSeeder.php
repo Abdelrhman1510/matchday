@@ -16,6 +16,7 @@ class SubscriptionPlanSeeder extends Seeder
             ['slug' => 'starter'],
             [
                 'name' => 'Starter',
+                'name_ar' => 'البداية',
                 'price' => 49.00,
                 'currency' => 'SAR',
                 'features' => [
@@ -24,6 +25,13 @@ class SubscriptionPlanSeeder extends Seeder
                     'Email support',
                     '1 branch location',
                     'Standard branding',
+                ],
+                'features_ar' => [
+                    'حتى 50 حجزاً شهرياً',
+                    'لوحة تحليلات أساسية',
+                    'دعم عبر البريد الإلكتروني',
+                    'فرع واحد',
+                    'علامة تجارية قياسية',
                 ],
                 'max_bookings' => 50,
                 'has_analytics' => true,
@@ -48,6 +56,7 @@ class SubscriptionPlanSeeder extends Seeder
             ['slug' => 'pro'],
             [
                 'name' => 'Pro',
+                'name_ar' => 'المحترف',
                 'price' => 99.00,
                 'currency' => 'SAR',
                 'features' => [
@@ -58,6 +67,15 @@ class SubscriptionPlanSeeder extends Seeder
                     'Custom branding options',
                     'Featured in search results',
                     'Promotional offers system',
+                ],
+                'features_ar' => [
+                    'حتى 200 حجز شهرياً',
+                    'تحليلات ورؤى متقدمة',
+                    'دعم ذو أولوية عبر البريد والمحادثة',
+                    'حتى 3 فروع',
+                    'خيارات علامة تجارية مخصصة',
+                    'ظهور مميز في نتائج البحث',
+                    'نظام العروض الترويجية',
                 ],
                 'max_bookings' => 200,
                 'has_analytics' => true,
@@ -82,6 +100,7 @@ class SubscriptionPlanSeeder extends Seeder
             ['slug' => 'elite'],
             [
                 'name' => 'Elite',
+                'name_ar' => 'النخبة',
                 'price' => 199.00,
                 'currency' => 'SAR',
                 'features' => [
@@ -95,6 +114,18 @@ class SubscriptionPlanSeeder extends Seeder
                     'Dedicated account manager',
                     'API access',
                     'Early access to new features',
+                ],
+                'features_ar' => [
+                    'حجوزات غير محدودة',
+                    'تحليلات متميزة برؤى الذكاء الاصطناعي',
+                    'دعم ذو أولوية على مدار الساعة',
+                    'فروع غير محدودة',
+                    'علامة تجارية مخصصة بالكامل',
+                    'أعلى ترتيب في نتائج البحث',
+                    'أدوات ترويجية متقدمة',
+                    'مدير حساب مخصص',
+                    'الوصول إلى واجهة برمجة التطبيقات (API)',
+                    'وصول مبكر للميزات الجديدة',
                 ],
                 'max_bookings' => null,
                 'has_analytics' => true,

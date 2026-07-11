@@ -38,22 +38,22 @@ class CafeDetailPage extends Component
 
     public function editCafe()
     {
-        session()->flash('info', 'Cafe details can only be edited by the cafe owner. Use the owner contact information to request changes.');
+        session()->flash('info', __('platform.flash.cafe_owner_edit_only'));
     }
 
     public function addBranch()
     {
-        session()->flash('info', 'Branches can only be added by the cafe owner through their dashboard.');
+        session()->flash('info', __('platform.flash.branch_owner_only'));
     }
 
     public function toggleCafeStatus()
     {
         if ($this->cafe->trashed()) {
             $this->cafe->restore();
-            session()->flash('message', 'Cafe activated successfully.');
+            session()->flash('message', __('platform.flash.cafe_activated'));
         } else {
             $this->cafe->delete();
-            session()->flash('message', 'Cafe suspended successfully.');
+            session()->flash('message', __('platform.flash.cafe_suspended'));
         }
         $this->cafe = $this->cafe->fresh();
     }
@@ -114,7 +114,7 @@ class CafeDetailPage extends Component
             $this->exportToCSV();
         }
 
-        session()->flash('message', "Export completed successfully in {$format} format.");
+        session()->flash('message', __('platform.flash.export_completed', ['format' => $format]));
     }
 
     private function getPerformanceStats()

@@ -19,8 +19,10 @@ class PlanManagementPage extends Component
 
     // ─── Form Fields ─────────────────────────────────────────────────
     public $formName = '';
+    public $formNameAr = '';
     public $formPrice = '';
     public $formFeatures = '';
+    public $formFeaturesAr = '';
     public $formMaxBookings = '';
     public $formIsActive = true;
     public $formHasAnalytics = false;
@@ -66,8 +68,10 @@ class PlanManagementPage extends Component
         $this->isCreating = false;
         $this->editingPlanId = $plan->id;
         $this->formName = $plan->name;
+        $this->formNameAr = $plan->name_ar;
         $this->formPrice = $plan->price;
         $this->formFeatures = is_array($plan->features) ? implode("\n", $plan->features) : '';
+        $this->formFeaturesAr = is_array($plan->features_ar) ? implode("\n", $plan->features_ar) : '';
         $this->formMaxBookings = $plan->max_bookings;
         $this->formIsActive = $plan->is_active;
         $this->formHasAnalytics = $plan->has_analytics;
@@ -99,6 +103,12 @@ class PlanManagementPage extends Component
         $this->validate([
             'formName' => 'required|string|max:255',
             'formPrice' => 'required|numeric|min:0',
+        ], [
+            'formName.required' => __('platform.validation.name_required'),
+            'formName.max' => __('platform.validation.name_max'),
+            'formPrice.required' => __('platform.validation.price_required'),
+            'formPrice.numeric' => __('platform.validation.price_numeric'),
+            'formPrice.min' => __('platform.validation.price_min'),
         ]);
 
         $featuresArray = array_filter(
@@ -106,12 +116,19 @@ class PlanManagementPage extends Component
             fn($line) => $line !== ''
         );
 
+        $featuresArArray = array_filter(
+            array_map('trim', explode("\n", $this->formFeaturesAr)),
+            fn($line) => $line !== ''
+        );
+
         $data = [
             'name' => $this->formName,
+            'name_ar' => $this->formNameAr ?: null,
             'slug' => Str::slug($this->formName),
             'price' => $this->formPrice,
             'currency' => 'SAR',
             'features' => array_values($featuresArray),
+            'features_ar' => count($featuresArArray) ? array_values($featuresArArray) : null,
             'max_bookings' => $this->formMaxBookings ?: null,
             'is_active' => $this->formIsActive,
             'has_analytics' => $this->formHasAnalytics,
@@ -132,11 +149,11 @@ class PlanManagementPage extends Component
 
         if ($this->isCreating) {
             SubscriptionPlan::create($data);
-            session()->flash('message', 'Plan created successfully!');
+            session()->flash('message', __('platform.flash.plan_created'));
         } else {
             $plan = SubscriptionPlan::findOrFail($this->editingPlanId);
             $plan->update($data);
-            session()->flash('message', 'Plan updated successfully!');
+            session()->flash('message', __('platform.flash.plan_updated'));
         }
 
         $this->closeModal();
@@ -150,7 +167,7 @@ class PlanManagementPage extends Component
         $plan = SubscriptionPlan::findOrFail($planId);
         $plan->update(['is_active' => !$plan->is_active]);
         $this->loadPlans();
-        session()->flash('message', $plan->is_active ? 'Plan activated.' : 'Plan deactivated.');
+        session()->flash('message', $plan->is_active ? __('platform.flash.plan_activated') : __('platform.flash.plan_deactivated'));
     }
 
     // ─── Delete ──────────────────────────────────────────────────────
@@ -162,7 +179,7 @@ class PlanManagementPage extends Component
         // Guard: can't delete plans with active subscriptions
         $activeCount = $plan->subscriptions()->where('status', 'active')->count();
         if ($activeCount > 0) {
-            session()->flash('error', "Cannot delete '{$plan->name}' — it has {$activeCount} active subscription(s). Deactivate it instead.");
+            session()->flash('error', __('platform.flash.plan_delete_blocked', ['name' => $plan->name, 'count' => $activeCount]));
             return;
         }
 
@@ -182,7 +199,7 @@ class PlanManagementPage extends Component
     {
         if ($this->planToDeleteId) {
             SubscriptionPlan::destroy($this->planToDeleteId);
-            session()->flash('message', "Plan '{$this->planToDeleteName}' deleted.");
+            session()->flash('message', __('platform.flash.plan_deleted', ['name' => $this->planToDeleteName]));
         }
 
         $this->cancelDelete();
@@ -195,8 +212,10 @@ class PlanManagementPage extends Component
     {
         $this->editingPlanId = null;
         $this->formName = '';
+        $this->formNameAr = '';
         $this->formPrice = '';
         $this->formFeatures = '';
+        $this->formFeaturesAr = '';
         $this->formMaxBookings = '';
         $this->formIsActive = true;
         $this->formHasAnalytics = false;

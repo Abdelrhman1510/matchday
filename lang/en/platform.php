@@ -392,6 +392,7 @@ return [
         'create_title' => 'Create New Plan',
         'edit_title' => 'Edit Plan',
         'name' => 'Plan Name',
+        'name_ar' => 'Plan Name (Arabic)',
         'price' => 'Monthly Price',
         'limits_section' => 'Resource Limits',
         'limits_hint' => 'Leave empty for unlimited.',
@@ -402,6 +403,7 @@ return [
         'max_offers' => 'Max Offers',
         'commission_rate' => 'Commission %',
         'features_label' => 'Features',
+        'features_ar_label' => 'Features (Arabic)',
         'one_per_line' => 'one per line',
         'feature_flags' => 'Feature Access',
         'active_toggle' => 'Active',
@@ -435,6 +437,47 @@ return [
         'delete_undone' => 'This action cannot be undone.',
         'delete_confirm' => 'Are you sure you want to delete',
         'delete_note' => 'Cafes currently on this plan will not be affected.',
+    ],
+
+    // ── Flash / toast messages ───────────────────────────────────────────
+    'flash' => [
+        // Cafes
+        'cafe_owner_edit_only' => 'Cafe details can only be edited by the cafe owner. Use the owner contact information to request changes.',
+        'branch_owner_only' => 'Branches can only be added by the cafe owner through their dashboard.',
+        'cafe_activated' => 'Cafe activated successfully.',
+        'cafe_suspended' => 'Cafe suspended successfully.',
+        'cafe_featured_updated' => 'Cafe featured status updated.',
+        'cafe_named_activated' => 'Cafe ":name" has been activated.',
+        'cafe_named_suspended' => 'Cafe ":name" has been suspended.',
+        'cafe_named_deleted' => 'Cafe ":name" has been permanently deleted.',
+        'export_completed' => 'Export completed successfully in :format format.',
+        // Plans
+        'plan_created' => 'Plan created successfully!',
+        'plan_updated' => 'Plan updated successfully!',
+        'plan_activated' => 'Plan activated.',
+        'plan_deactivated' => 'Plan deactivated.',
+        'plan_delete_blocked' => 'Cannot delete ":name" — it has :count active subscription(s). Deactivate it instead.',
+        'plan_deleted' => 'Plan ":name" deleted.',
+        // Settings
+        'commission_updated' => 'Commission rate updated.',
+        'dynamic_pricing_updated' => 'Dynamic pricing updated.',
+        'currency_updated' => 'Default currency updated.',
+        'multi_currency_updated' => 'Multi-currency updated.',
+        'auto_conversion_updated' => 'Auto conversion updated.',
+        'language_updated' => 'Platform language updated.',
+        'timezone_updated' => 'Timezone updated.',
+        'multi_language_updated' => 'Multi-language updated.',
+        'all_saved' => 'All settings saved successfully.',
+        'settings_reset' => 'Settings reset to saved values.',
+    ],
+
+    // ── Validation messages ──────────────────────────────────────────────
+    'validation' => [
+        'name_required' => 'The plan name is required.',
+        'name_max' => 'The plan name may not be greater than 255 characters.',
+        'price_required' => 'The monthly price is required.',
+        'price_numeric' => 'The monthly price must be a number.',
+        'price_min' => 'The monthly price must be at least 0.',
     ],
 
 ];
