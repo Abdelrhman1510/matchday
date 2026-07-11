@@ -158,7 +158,7 @@
 
                         {{-- Header --}}
                         <div class="flex items-start justify-between mb-2">
-                            <h3 class="text-base font-bold text-white">{{ $plan->name }}</h3>
+                            <h3 class="text-base font-bold text-white">{{ $plan->display_name }}</h3>
                             <span
                                 class="px-2 py-0.5 text-[10px] rounded font-bold {{ $plan->is_active ? 'bg-green-900/40 text-green-400 border border-green-700/40' : 'bg-[#1a0e40] text-slate-400 border border-[#1e164e]' }}">
                                 {{ $plan->is_active ? __('platform.common.active') : __('platform.common.inactive') }}
@@ -173,9 +173,10 @@
 
                         {{-- Features --}}
                         <div class="flex-1 mb-5">
-                            @if(is_array($plan->features) && count($plan->features) > 0)
+                            @php($planFeatures = $plan->display_features)
+                            @if(count($planFeatures) > 0)
                                 <ul class="space-y-2">
-                                    @foreach($plan->features as $feature)
+                                    @foreach($planFeatures as $feature)
                                         <li class="flex items-start gap-2 text-xs text-slate-300">
                                             <svg class="w-3.5 h-3.5 text-[#c8ff00] flex-shrink-0 mt-0.5" fill="none"
                                                 stroke="currentColor" viewBox="0 0 24 24">
