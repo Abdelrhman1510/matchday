@@ -33,7 +33,7 @@
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
-                Back
+                {{ __('platform.cafe_detail.back') }}
             </a>
         </div>
 
@@ -62,7 +62,7 @@
                             {{ $cafe->name }}
                         </h1>
                         <span
-                            class="px-2.5 py-1 bg-[#c8ff00] text-black text-[10px] font-black font-bungee rounded uppercase">VERIFIED</span>
+                            class="px-2.5 py-1 bg-[#c8ff00] text-black text-[10px] font-black font-bungee rounded uppercase">{{ __('platform.cafe_detail.verified') }}</span>
                     </div>
                     @php $mainBranch = $cafe->branches->first(); @endphp
                     @if($mainBranch)
@@ -85,7 +85,7 @@
                                     </path>
                                 </svg>
                                 <span class="text-white font-semibold">{{ number_format($cafe->avg_rating ?? 0, 1) }}</span>
-                                <span>({{ number_format($cafe->total_reviews ?? 0) }} reviews)</span>
+                                <span>({{ number_format($cafe->total_reviews ?? 0) }} {{ __('platform.cafe_detail.reviews') }})</span>
                             </span>
                         </div>
                     @endif
@@ -99,8 +99,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <span wire:loading.remove wire:target="exportToPDF">PDF Details</span>
-                        <span wire:loading wire:target="exportToPDF">Loading...</span>
+                        <span wire:loading.remove wire:target="exportToPDF">{{ __('platform.cafe_detail.pdf_details') }}</span>
+                        <span wire:loading wire:target="exportToPDF">{{ __('platform.cafe_detail.loading') }}</span>
                     </button>
                     @if($cafe->website_url)
                         <a href="{{ $cafe->website_url }}" target="_blank" rel="noopener noreferrer"
@@ -109,7 +109,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                             </svg>
-                            View Public Page
+                            {{ __('platform.cafe_detail.view_public_page') }}
                         </a>
                     @endif
                 </div>
@@ -119,7 +119,7 @@
 
     <!-- Performance Overview -->
     <div>
-        <h2 class="text-base font-black font-bungee text-white uppercase tracking-wider mb-4">PERFORMANCE OVERVIEW</h2>
+        <h2 class="text-base font-black font-bungee text-white uppercase tracking-wider mb-4">{{ __('platform.cafe_detail.performance_overview') }}</h2>
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <!-- Total Bookings -->
             <div class="bg-[#0e0735] border border-[#1e164e] rounded-xl p-5">
@@ -132,7 +132,7 @@
                             </path>
                         </svg>
                     </div>
-                    <p class="text-[10px] text-slate-400 uppercase tracking-widest">Total Bookings</p>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest">{{ __('platform.cafe_detail.total_bookings') }}</p>
                 </div>
                 <p class="text-3xl font-black font-bungee text-white">{{ number_format($performanceStats['bookings']) }}
                 </p>
@@ -140,10 +140,10 @@
                     <p
                         class="text-xs mt-1 {{ $performanceStats['bookings_change'] > 0 ? 'text-[#c8ff00]' : 'text-red-400' }}">
                         {{ $performanceStats['bookings_change'] > 0 ? '▲' : '▼' }}
-                        {{ abs($performanceStats['bookings_change']) }}% vs last month
+                        {{ abs($performanceStats['bookings_change']) }}% {{ __('platform.cafe_detail.vs_last_month') }}
                     </p>
                 @else
-                    <p class="text-[10px] text-slate-500 mt-1">This month</p>
+                    <p class="text-[10px] text-slate-500 mt-1">{{ __('platform.cafe_detail.this_month') }}</p>
                 @endif
             </div>
 
@@ -158,7 +158,7 @@
                             </path>
                         </svg>
                     </div>
-                    <p class="text-[10px] text-slate-400 uppercase tracking-widest">Revenue</p>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest">{{ __('platform.cafe_detail.revenue') }}</p>
                 </div>
                 <p class="text-3xl font-black font-bungee text-white">
                     £{{ number_format($performanceStats['revenue'] / 100, 1) }}K</p>
@@ -166,10 +166,10 @@
                     <p
                         class="text-xs mt-1 {{ $performanceStats['revenue_change'] > 0 ? 'text-[#c8ff00]' : 'text-red-400' }}">
                         {{ $performanceStats['revenue_change'] > 0 ? '▲' : '▼' }}
-                        {{ abs($performanceStats['revenue_change']) }}% this month
+                        {{ abs($performanceStats['revenue_change']) }}% {{ __('platform.cafe_detail.change_this_month') }}
                     </p>
                 @else
-                    <p class="text-[10px] text-slate-500 mt-1">This month</p>
+                    <p class="text-[10px] text-slate-500 mt-1">{{ __('platform.cafe_detail.this_month') }}</p>
                 @endif
             </div>
 
@@ -184,12 +184,12 @@
                             </path>
                         </svg>
                     </div>
-                    <p class="text-[10px] text-slate-400 uppercase tracking-widest">Average</p>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest">{{ __('platform.cafe_detail.average') }}</p>
                 </div>
                 <p class="text-3xl font-black font-bungee text-white">
                     {{ number_format($performanceStats['occupancy_rate'], 1) }}%
                 </p>
-                <p class="text-[10px] text-slate-500 mt-1">Occupancy Rate</p>
+                <p class="text-[10px] text-slate-500 mt-1">{{ __('platform.cafe_detail.occupancy_rate') }}</p>
             </div>
 
             <!-- Customer Rating -->
@@ -203,12 +203,12 @@
                             </path>
                         </svg>
                     </div>
-                    <p class="text-[10px] text-slate-400 uppercase tracking-widest">Average</p>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest">{{ __('platform.cafe_detail.average') }}</p>
                 </div>
                 <p class="text-3xl font-black font-bungee text-white">
                     {{ number_format($performanceStats['rating'], 1) }}
                 </p>
-                <p class="text-[10px] text-slate-500 mt-1">Customer Rating</p>
+                <p class="text-[10px] text-slate-500 mt-1">{{ __('platform.cafe_detail.customer_rating') }}</p>
             </div>
         </div>
     </div>
@@ -238,7 +238,7 @@
                     type: 'line',
                     data: {
                         labels: this.labels,
-                        datasets: [{ label: 'Bookings', data: this.data, borderColor: '#c8ff00', backgroundColor: 'rgba(200,255,0,0.08)', borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0, pointHoverRadius: 4 }]
+                        datasets: [{ label: '{{ __('platform.cafe_detail.bookings') }}', data: this.data, borderColor: '#c8ff00', backgroundColor: 'rgba(200,255,0,0.08)', borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0, pointHoverRadius: 4 }]
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false,
@@ -256,8 +256,8 @@
         }" class="bg-[#0e0735] border border-[#1e164e] rounded-xl p-6">
             <div class="flex items-center justify-between mb-5">
                 <div>
-                    <h3 class="text-sm font-black font-bungee text-white uppercase tracking-wider">BOOKINGS TREND</h3>
-                    <p class="text-xs text-slate-400 mt-1">Last 30 days</p>
+                    <h3 class="text-sm font-black font-bungee text-white uppercase tracking-wider">{{ __('platform.cafe_detail.bookings_trend') }}</h3>
+                    <p class="text-xs text-slate-400 mt-1">{{ __('platform.cafe_detail.last_30_days') }}</p>
                 </div>
                 <div class="w-8 h-8 bg-[#1a0e40] border border-[#1e164e] rounded-lg flex items-center justify-center">
                     <svg class="w-4 h-4 text-[#c8ff00]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -311,9 +311,9 @@
         }" class="bg-[#0e0735] border border-[#1e164e] rounded-xl p-6">
             <div class="flex items-center justify-between mb-5">
                 <div>
-                    <h3 class="text-sm font-black font-bungee text-white uppercase tracking-wider">REVENUE BY MATCH TYPE
+                    <h3 class="text-sm font-black font-bungee text-white uppercase tracking-wider">{{ __('platform.cafe_detail.revenue_by_match_type') }}
                     </h3>
-                    <p class="text-xs text-slate-400 mt-1">Revenue distribution</p>
+                    <p class="text-xs text-slate-400 mt-1">{{ __('platform.cafe_detail.revenue_distribution') }}</p>
                 </div>
                 <div class="w-8 h-8 bg-[#1a0e40] border border-[#1e164e] rounded-lg flex items-center justify-center">
                     <svg class="w-4 h-4 text-[#c8ff00]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -333,13 +333,16 @@
     <!-- Branches Section -->
     <div>
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-base font-black font-bungee text-white uppercase tracking-wider">BRANCHES</h2>
+            <h2 class="text-base font-black font-bungee text-white uppercase tracking-wider flex items-center gap-2">
+                {{ __('platform.cafe_detail.branches') }}
+                <span class="px-2 py-0.5 bg-[#1a0e40] border border-[#1e164e] text-[#c8ff00] text-xs font-black rounded">{{ count($branches) }}</span>
+            </h2>
             <button
                 class="flex items-center gap-1.5 px-4 py-2 bg-[#c8ff00] hover:bg-[#d4ff33] text-black text-xs font-bold rounded-lg transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
-                Add Branch
+                {{ __('platform.cafe_detail.add_branch') }}
             </button>
         </div>
 
@@ -361,7 +364,7 @@
                         @if($loop->first)
                             <div class="absolute top-3 left-3">
                                 <span
-                                    class="px-2.5 py-1 bg-[#c8ff00] text-black text-[10px] font-black font-bungee rounded uppercase">MAIN</span>
+                                    class="px-2.5 py-1 bg-[#c8ff00] text-black text-[10px] font-black font-bungee rounded uppercase">{{ __('platform.cafe_detail.main') }}</span>
                             </div>
                         @endif
                         <div class="absolute bottom-3 left-3 right-3">
@@ -371,13 +374,13 @@
                     <div class="p-4">
                         <div class="grid grid-cols-2 gap-3 mb-3">
                             <div>
-                                <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-0.5">Occupancy</p>
+                                <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-0.5">{{ __('platform.cafe_detail.occupancy') }}</p>
                                 <p class="text-2xl font-black font-bungee text-[#c8ff00]">
                                     {{ number_format($branch->occupancy_rate, 0) }}%
                                 </p>
                             </div>
                             <div>
-                                <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-0.5">Capacity</p>
+                                <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-0.5">{{ __('platform.cafe_detail.capacity') }}</p>
                                 <p class="text-2xl font-black font-bungee text-white">{{ $branch->total_seats ?? 0 }}</p>
                             </div>
                         </div>
@@ -386,7 +389,7 @@
                 </div>
             @empty
                 <div class="col-span-3 bg-[#0e0735] border border-[#1e164e] rounded-xl p-8 text-center">
-                    <p class="text-slate-400 text-sm">No branches found</p>
+                    <p class="text-slate-400 text-sm">{{ __('platform.cafe_detail.no_branches') }}</p>
                 </div>
             @endforelse
         </div>
@@ -394,7 +397,7 @@
 
     <!-- Upcoming Matches Section -->
     <div>
-        <h2 class="text-base font-black font-bungee text-white uppercase tracking-wider mb-4">UPCOMING MATCHES</h2>
+        <h2 class="text-base font-black font-bungee text-white uppercase tracking-wider mb-4">{{ __('platform.cafe_detail.upcoming_matches') }}</h2>
         <div class="bg-[#0e0735] border border-[#1e164e] rounded-xl overflow-hidden">
             <div class="divide-y divide-[#1e164e]">
                 @forelse($upcomingMatches as $matchData)
@@ -426,21 +429,21 @@
                                         {{ $match->match_date ? \Carbon\Carbon::parse($match->match_date)->format('d M Y, H:i') : 'TBD' }}
                                     </p>
                                     <h4 class="text-sm font-bold text-white mb-1.5 truncate">
-                                        {{ $match->homeTeam->name ?? 'TBD' }} vs {{ $match->awayTeam->name ?? 'TBD' }}
+                                        {{ $match->homeTeam->name ?? 'TBD' }} {{ __('platform.cafe_detail.vs') }} {{ $match->awayTeam->name ?? 'TBD' }}
                                     </h4>
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <span
                                             class="px-2 py-0.5 text-[10px] font-bold rounded border {{ $badgeClass }}">{{ $matchData['bookings_count'] }}
-                                            Bookings</span>
+                                            {{ __('platform.cafe_detail.bookings') }}</span>
                                         <span
                                             class="px-2 py-0.5 text-[10px] font-bold rounded border bg-[#1a0e40] border-[#1e164e] text-slate-300">{{ $matchData['capacity_percent'] }}%
-                                            Capacity</span>
+                                            {{ __('platform.cafe_detail.capacity') }}</span>
                                     </div>
                                 </div>
                             </div>
                             <div
                                 class="text-left sm:text-right flex-shrink-0 sm:pl-4 border-t sm:border-t-0 sm:border-l border-[#1e164e] pt-3 sm:pt-0">
-                                <p class="text-[10px] text-slate-400 mb-0.5">Expected Revenue</p>
+                                <p class="text-[10px] text-slate-400 mb-0.5">{{ __('platform.cafe_detail.expected_revenue') }}</p>
                                 <p class="text-xl font-black font-bungee text-white">
                                     £{{ number_format($matchData['expected_revenue'] / 100, 1) }}K</p>
                             </div>
@@ -454,7 +457,7 @@
                                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                             </path>
                         </svg>
-                        <p class="text-slate-400 text-sm">No upcoming matches</p>
+                        <p class="text-slate-400 text-sm">{{ __('platform.cafe_detail.no_upcoming_matches') }}</p>
                     </div>
                 @endforelse
             </div>
@@ -463,7 +466,7 @@
 
     <!-- Revenue Contribution Section -->
     <div>
-        <h2 class="text-base font-black font-bungee text-white uppercase tracking-wider mb-4">REVENUE CONTRIBUTION</h2>
+        <h2 class="text-base font-black font-bungee text-white uppercase tracking-wider mb-4">{{ __('platform.cafe_detail.revenue_contribution') }}</h2>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- By Branch -->
             <div x-data="{
@@ -503,8 +506,8 @@
             }" class="bg-[#0e0735] border border-[#1e164e] rounded-xl p-6">
                 <div class="flex items-center justify-between mb-5">
                     <div>
-                        <h3 class="text-sm font-black font-bungee text-white uppercase tracking-wider">BY BRANCH</h3>
-                        <p class="text-xs text-slate-400 mt-1">Total revenue per branch</p>
+                        <h3 class="text-sm font-black font-bungee text-white uppercase tracking-wider">{{ __('platform.cafe_detail.by_branch') }}</h3>
+                        <p class="text-xs text-slate-400 mt-1">{{ __('platform.cafe_detail.total_revenue_per_branch') }}</p>
                     </div>
                     <div
                         class="w-8 h-8 bg-[#1a0e40] border border-[#1e164e] rounded-lg flex items-center justify-center">
@@ -546,8 +549,8 @@
                         data: {
                             labels: this.labels,
                             datasets: [
-                                { label: 'Current Period', data: this.current, backgroundColor: '#c8ff00', borderColor: '#c8ff00', borderWidth: 1, borderRadius: 6 },
-                                { label: 'Previous Period', data: this.last, backgroundColor: '#1a0e40', borderColor: '#1e164e', borderWidth: 1, borderRadius: 6 }
+                                { label: '{{ __('platform.cafe_detail.current_period') }}', data: this.current, backgroundColor: '#c8ff00', borderColor: '#c8ff00', borderWidth: 1, borderRadius: 6 },
+                                { label: '{{ __('platform.cafe_detail.previous_period') }}', data: this.last, backgroundColor: '#1a0e40', borderColor: '#1e164e', borderWidth: 1, borderRadius: 6 }
                             ]
                         },
                         options: {
@@ -566,9 +569,8 @@
             }" class="bg-[#0e0735] border border-[#1e164e] rounded-xl p-6">
                 <div class="flex items-center justify-between mb-5">
                     <div>
-                        <h3 class="text-sm font-black font-bungee text-white uppercase tracking-wider">MONTHLY
-                            COMPARISON</h3>
-                        <p class="text-xs text-slate-400 mt-1">Current vs previous month</p>
+                        <h3 class="text-sm font-black font-bungee text-white uppercase tracking-wider">{{ __('platform.cafe_detail.monthly_comparison') }}</h3>
+                        <p class="text-xs text-slate-400 mt-1">{{ __('platform.cafe_detail.current_vs_previous') }}</p>
                     </div>
                     <div
                         class="w-8 h-8 bg-[#1a0e40] border border-[#1e164e] rounded-lg flex items-center justify-center">
