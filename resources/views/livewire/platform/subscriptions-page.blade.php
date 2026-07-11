@@ -76,7 +76,7 @@
             </div>
             <div>
                 <p class="text-[32px] font-black font-bungee text-[#c8ff00] leading-none mb-2">
-                    ${{ number_format($stats['mrr'], 0) }}</p>
+                    {{ number_format($stats['mrr'], 0) }} {{ __('platform.common.sar') }}</p>
                 <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-2">
                     {{ __('platform.subscriptions.mrr') }}
                 </p>
@@ -113,7 +113,7 @@
             </div>
             <div>
                 <p class="text-[32px] font-black font-bungee text-[#c8ff00] leading-none mb-2">
-                    ${{ number_format($stats['arpc'], 0) }}</p>
+                    {{ number_format($stats['arpc'], 0) }} {{ __('platform.common.sar') }}</p>
                 <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-2">
                     {{ __('platform.subscriptions.arpu') }}
                 </p>
@@ -329,7 +329,7 @@
                                     class="px-3 py-1 bg-[#1a0e40] border border-[#1e164e] text-white text-[10px] font-black font-bungee rounded uppercase">{{ $plan->display_name }}</span>
                             @endif
                             <span
-                                class="text-2xl font-black font-bungee text-white">${{ number_format($plan->price, 0) }}</span>
+                                class="text-2xl font-black font-bungee text-white">{{ number_format($plan->price, 0) }} {{ __('platform.common.sar') }}</span>
                         </div>
 
                         <!-- Description -->
@@ -460,7 +460,7 @@
                             </td>
                             <td class="py-4 px-4">
                                 <span
-                                    class="text-white font-bold text-sm">${{ number_format($subscription->plan->price, 0) }}</span>
+                                    class="text-white font-bold text-sm">{{ number_format($subscription->plan->price, 0) }} {{ __('platform.common.sar') }}</span>
                             </td>
                             <td class="py-4 px-4">
                                 <span

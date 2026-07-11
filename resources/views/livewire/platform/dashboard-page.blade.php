@@ -133,7 +133,7 @@
                     {{ __('platform.dashboard.monthly_revenue') }}
                 </p>
                 <p class="text-4xl font-bungee text-[#c8ff00]">
-                    ${{ number_format($stats['monthly_revenue'] / 1000, 1) }}K</p>
+                    {{ number_format($stats['monthly_revenue'] / 1000, 1) }}K {{ __('platform.common.sar') }}</p>
             </div>
         </div>
     </div>
@@ -329,7 +329,7 @@
                         </div>
                         <div class="text-right">
                             <p class="text-sm font-bold text-[#c8ff00]">
-                                ${{ number_format(($cafe->branches->sum('revenue') ?? 0) / 1000, 1) }}K</p>
+                                {{ number_format(($cafe->branches->sum('revenue') ?? 0) / 1000, 1) }}K {{ __('platform.common.sar') }}</p>
                         </div>
                     </div>
                 @empty
@@ -543,7 +543,7 @@
                             </td>
                             <td class="px-6 py-4 text-sm text-slate-300">{{ $match->duration_minutes ?? 90 }} min</td>
                             <td class="px-6 py-4 text-sm text-[#c8ff00] font-black font-bungee">
-                                ${{ number_format(($match->total_revenue ?? 0) / 100, 2) }}</td>
+                                {{ number_format(($match->total_revenue ?? 0) / 100, 2) }} {{ __('platform.common.sar') }}</td>
                             <td class="px-6 py-4">
                                 @if($match->status === 'completed')
                                     <span

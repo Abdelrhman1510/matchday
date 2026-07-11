@@ -211,7 +211,9 @@
                     <div class="absolute top-4 right-4">
                         @php
                             $activeSub = $cafe->subscriptions->first();
-                            $planName = $activeSub?->plan?->name ?? 'STANDARD';
+                            $activePlan = $activeSub?->plan;
+                            $planName = $activePlan?->name ?? 'STANDARD';
+                            $planLabel = $activePlan?->display_name ?? __('platform.cafes.standard');
                             $badgeColors = [
                                 'Premium' => 'bg-[#c8ff00] text-black',
                                 'Elite' => 'bg-[#c8ff00] text-black',
@@ -225,7 +227,7 @@
                         @endphp
                         @if(!$cafe->trashed())
                             <span class="px-3 py-1 {{ $badgeClass }} text-xs font-bold uppercase rounded-full">
-                                {{ $planName }}
+                                {{ $planLabel }}
                             </span>
                         @endif
                     </div>

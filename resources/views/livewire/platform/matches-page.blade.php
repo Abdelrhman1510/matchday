@@ -195,7 +195,7 @@
                             <div class="text-right">
                                 <p class="text-[10px] text-slate-400 mb-0.5">{{ __('platform.matches.revenue') }}</p>
                                 <p class="text-sm font-bold text-white leading-none mb-[2px]">
-                                    ${{ number_format($match->revenue, 0) }}</p>
+                                    {{ number_format($match->revenue, 0) }} {{ __('platform.common.sar') }}</p>
                             </div>
                         </div>
                     </div>

@@ -161,7 +161,7 @@
                     <p class="text-[10px] text-slate-400 uppercase tracking-widest">{{ __('platform.cafe_detail.revenue') }}</p>
                 </div>
                 <p class="text-3xl font-black font-bungee text-white">
-                    £{{ number_format($performanceStats['revenue'] / 100, 1) }}K</p>
+                    {{ number_format($performanceStats['revenue'] / 100, 1) }}K {{ __('platform.common.sar') }}</p>
                 @if($performanceStats['revenue_change'] != 0)
                     <p
                         class="text-xs mt-1 {{ $performanceStats['revenue_change'] > 0 ? 'text-[#c8ff00]' : 'text-red-400' }}">
@@ -302,7 +302,7 @@
                             legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 15, font: { size: 12 } } },
                             tooltip: {
                                 backgroundColor: '#0e0735', titleColor: '#e2e8f0', bodyColor: '#94a3b8', borderColor: '#1e164e', borderWidth: 1,
-                                callbacks: { label: function (c) { return c.label + ': £' + c.parsed.toFixed(2); } }
+                                callbacks: { label: function (c) { return c.label + ': ' + c.parsed.toFixed(2) + ' {{ __('platform.common.sar') }}'; } }
                             }
                         }
                     }
@@ -445,7 +445,7 @@
                                 class="text-left sm:text-right flex-shrink-0 sm:pl-4 border-t sm:border-t-0 sm:border-l border-[#1e164e] pt-3 sm:pt-0">
                                 <p class="text-[10px] text-slate-400 mb-0.5">{{ __('platform.cafe_detail.expected_revenue') }}</p>
                                 <p class="text-xl font-black font-bungee text-white">
-                                    £{{ number_format($matchData['expected_revenue'] / 100, 1) }}K</p>
+                                    {{ number_format($matchData['expected_revenue'] / 100, 1) }}K {{ __('platform.common.sar') }}</p>
                             </div>
                         </div>
                     </div>
@@ -489,16 +489,16 @@
                     
                     this.chart = new window.Chart(canvas, {
                         type: 'bar',
-                        data: { labels: this.labels, datasets: [{ label: 'Revenue (£)', data: this.data, backgroundColor: '#c8ff00', borderColor: '#c8ff00', borderWidth: 1, borderRadius: 6 }] },
+                        data: { labels: this.labels, datasets: [{ label: '{{ __('platform.cafe_detail.revenue') }}', data: this.data, backgroundColor: '#c8ff00', borderColor: '#c8ff00', borderWidth: 1, borderRadius: 6 }] },
                         options: {
                             responsive: true, maintainAspectRatio: false,
                             scales: {
-                                y: { beginAtZero: true, grid: { color: '#1e164e', drawBorder: false }, ticks: { color: '#94a3b8', font: { size: 11 }, callback: function (v) { return '£' + v.toLocaleString(); } } },
+                                y: { beginAtZero: true, grid: { color: '#1e164e', drawBorder: false }, ticks: { color: '#94a3b8', font: { size: 11 }, callback: function (v) { return v.toLocaleString() + ' {{ __('platform.common.sar') }}'; } } },
                                 x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } } }
                             },
                             plugins: {
                                 legend: { display: false },
-                                tooltip: { backgroundColor: '#0e0735', titleColor: '#e2e8f0', bodyColor: '#94a3b8', borderColor: '#1e164e', borderWidth: 1, callbacks: { label: function (c) { return 'Revenue: £' + c.parsed.y.toLocaleString(); } } }
+                                tooltip: { backgroundColor: '#0e0735', titleColor: '#e2e8f0', bodyColor: '#94a3b8', borderColor: '#1e164e', borderWidth: 1, callbacks: { label: function (c) { return '{{ __('platform.cafe_detail.revenue') }}: ' + c.parsed.y.toLocaleString() + ' {{ __('platform.common.sar') }}'; } } }
                             }
                         }
                     });
@@ -556,12 +556,12 @@
                         options: {
                             responsive: true, maintainAspectRatio: false,
                             scales: {
-                                y: { beginAtZero: true, grid: { color: '#1e164e', drawBorder: false }, ticks: { color: '#94a3b8', font: { size: 11 }, callback: function (v) { return '£' + v.toLocaleString(); } } },
+                                y: { beginAtZero: true, grid: { color: '#1e164e', drawBorder: false }, ticks: { color: '#94a3b8', font: { size: 11 }, callback: function (v) { return v.toLocaleString() + ' {{ __('platform.common.sar') }}'; } } },
                                 x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } } }
                             },
                             plugins: {
                                 legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 15, font: { size: 12 }, usePointStyle: true, pointStyle: 'circle' } },
-                                tooltip: { backgroundColor: '#0e0735', titleColor: '#e2e8f0', bodyColor: '#94a3b8', borderColor: '#1e164e', borderWidth: 1, callbacks: { label: function (c) { return c.dataset.label + ': £' + c.parsed.y.toLocaleString(); } } }
+                                tooltip: { backgroundColor: '#0e0735', titleColor: '#e2e8f0', bodyColor: '#94a3b8', borderColor: '#1e164e', borderWidth: 1, callbacks: { label: function (c) { return c.dataset.label + ': ' + c.parsed.y.toLocaleString() + ' {{ __('platform.common.sar') }}'; } } }
                             }
                         }
                     });

@@ -65,7 +65,7 @@
                     {{ __('platform.settings.monthly_revenue') }}
                 </div>
                 <div class="text-3xl font-black font-bungee text-white">
-                    {{ $default_currency }}{{ number_format($stats['monthly_revenue'], 0) }}
+                    {{ number_format($stats['monthly_revenue'], 0) }} {{ $default_currency === 'SAR' ? __('platform.common.sar') : $default_currency }}
                 </div>
                 <div class="text-xs {{ $stats['growth_rate'] >= 0 ? 'text-[#c8ff00]' : 'text-red-400' }} mt-1">
                     {{ $stats['growth_rate'] > 0 ? '+' : '' }}{{ $stats['growth_rate'] }}%
@@ -167,7 +167,7 @@
 
                         {{-- Price --}}
                         <div class="text-3xl font-black font-bungee text-[#c8ff00] mb-0.5">
-                            {{ $default_currency }}{{ number_format($plan->price, 0) }}
+                            {{ number_format($plan->price, 0) }} {{ $default_currency === 'SAR' ? __('platform.common.sar') : $default_currency }}
                         </div>
                         <p class="text-[10px] text-slate-400 mb-4">{{ __('platform.settings.per_month') }}</p>
 

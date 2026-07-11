@@ -57,7 +57,7 @@
 
                     {{-- Price --}}
                     <div class="text-3xl font-black font-bungee text-[#c8ff00] mb-1">
-                        SAR{{ number_format($plan->price, 0) }}
+                        {{ number_format($plan->price, 0) }} {{ __('platform.common.sar') }}
                     </div>
                     <p class="text-[10px] text-slate-500 mb-4">{{ __('platform.common.per_month') }}</p>
 
@@ -193,7 +193,7 @@
                             @error('formName') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-white mb-1.5">{{ __('platform.plans.price') }} (SAR) <span class="text-red-400">*</span></label>
+                            <label class="block text-sm font-medium text-white mb-1.5">{{ __('platform.plans.price') }} ({{ __('platform.common.sar') }}) <span class="text-red-400">*</span></label>
                             <input type="number" wire:model="formPrice" step="0.01" min="0" placeholder="0.00"
                                 class="w-full px-4 py-2.5 bg-[#0f172a] border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-[#c8ff00] focus:ring-1 focus:ring-[#c8ff00] outline-none">
                             @error('formPrice') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror

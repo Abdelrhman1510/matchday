@@ -5,6 +5,7 @@ return [
     // ── Common ────────────────────────────────────────────────────────────────
     'common' => [
         'cafe' => 'Cafe',
+        'sar' => 'SAR',
         'status' => 'Status',
         'loading' => 'Loading...',
         'exporting' => 'Exporting...',
@@ -128,6 +129,7 @@ return [
         'avg_rating' => 'Average Rating',
         'all_cities' => 'All Cities',
         'all_subscriptions' => 'All Subscriptions',
+        'standard' => 'Standard',
         'all_status' => 'All Status',
         'active' => 'Active',
         'suspended' => 'Suspended',

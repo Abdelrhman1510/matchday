@@ -106,13 +106,13 @@
                 <div class="space-y-3">
                     <div>
                         <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">{{ __('platform.reports.total_revenue') }}</div>
-                        <div class="text-2xl font-bold text-white">${{ number_format($revenueReport['total_revenue'] / 100, 2) }}</div>
+                        <div class="text-2xl font-bold text-white">{{ number_format($revenueReport['total_revenue'] / 100, 2) }} {{ __('platform.common.sar') }}</div>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">{{ __('platform.reports.avg_transaction') }}</div>
-                            <div class="text-lg font-semibold text-white">${{ number_format($revenueReport['avg_transaction'] / 100, 2) }}</div>
+                            <div class="text-lg font-semibold text-white">{{ number_format($revenueReport['avg_transaction'] / 100, 2) }} {{ __('platform.common.sar') }}</div>
                         </div>
                         <div>
                             <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">{{ __('platform.reports.growth_rate') }}</div>
