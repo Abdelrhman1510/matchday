@@ -159,6 +159,21 @@ class StaffService
                 $this->syncPermissions($staffMember->user, $defaultPermissions);
             }
 
+            // Reset password if provided
+            if (isset($data['password'])) {
+                $staffMember->user->update(['password' => Hash::make($data['password'])]);
+            }
+
+            // Sync branch assignments if provided
+            if (isset($data['branch_ids'])) {
+                $role = $data['role'] ?? $staffMember->role;
+                $syncData = [];
+                foreach ($data['branch_ids'] as $branchId) {
+                    $syncData[$branchId] = ['role' => $role];
+                }
+                $staffMember->user->branchAssignments()->sync($syncData);
+            }
+
             return $staffMember->fresh(['user', 'invitedBy']);
         });
     }

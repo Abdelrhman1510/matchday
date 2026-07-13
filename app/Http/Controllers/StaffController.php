@@ -206,6 +206,9 @@ class StaffController extends Controller
             'role' => 'sometimes|in:admin,manager,staff',
             'permissions' => 'nullable|array',
             'permissions.*' => 'string|in:manage-bookings,view-bookings,manage-matches,view-analytics,manage-offers,manage-menu,manage-branches,manage-seating,scan-qr,check-in-customers,view-occupancy,manage-staff',
+            'branch_ids' => 'sometimes|array|min:1',
+            'branch_ids.*' => 'integer|exists:branches,id',
+            'password' => 'nullable|string|min:8',
         ]);
 
         if ($validator->fails()) {
@@ -236,10 +239,22 @@ class StaffController extends Controller
             ], 404);
         }
 
+        // Branch ownership guard: every provided branch must belong to this cafe.
+        if ($request->has('branch_ids')) {
+            $ownedBranchIds = $cafe->branches()->pluck('id')->all();
+            $invalidBranches = array_diff($request->input('branch_ids', []), $ownedBranchIds);
+            if (!empty($invalidBranches)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'One or more branches do not belong to your cafe.',
+                ], 422);
+            }
+        }
+
         try {
             $updatedStaff = $this->staffService->updateStaff(
                 $staffMember,
-                $request->only(['role', 'permissions'])
+                $request->only(['role', 'permissions', 'branch_ids', 'password'])
             );
 
             $staffDetail = $this->staffService->getStaffDetail($updatedStaff);

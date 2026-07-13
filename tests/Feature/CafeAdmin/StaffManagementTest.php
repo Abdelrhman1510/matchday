@@ -155,4 +155,36 @@ class StaffManagementTest extends TestCase
         $this->assertContains('Downtown', $names);
         $this->assertContains('Mall', $names);
     }
+
+    /** @test */
+    public function owner_updates_staff_branches_and_password()
+    {
+        Notification::fake();
+        [$owner, $cafe] = $this->activeCafeOwner();
+        $b1 = Branch::factory()->create(['cafe_id' => $cafe->id]);
+        $b2 = Branch::factory()->create(['cafe_id' => $cafe->id]);
+        Sanctum::actingAs($owner);
+
+        $staffId = $this->postJson('/api/v1/cafe-admin/staff', [
+            'name' => 'Sara',
+            'email' => 'sara4@example.com',
+            'password' => 'secret123',
+            'role' => 'staff',
+            'branch_ids' => [$b1->id],
+        ])->json('data.id');
+
+        $response = $this->putJson("/api/v1/cafe-admin/staff/{$staffId}", [
+            'branch_ids' => [$b2->id],
+            'password' => 'newsecret123',
+        ]);
+
+        $response->assertStatus(200);
+
+        $user = User::where('email', 'sara4@example.com')->first();
+        // branches synced: b1 removed, b2 added
+        $this->assertDatabaseMissing('branch_staff', ['branch_id' => $b1->id, 'user_id' => $user->id]);
+        $this->assertDatabaseHas('branch_staff', ['branch_id' => $b2->id, 'user_id' => $user->id]);
+        // password reset
+        $this->assertTrue(Hash::check('newsecret123', $user->fresh()->password));
+    }
 }
