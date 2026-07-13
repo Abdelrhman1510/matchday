@@ -187,4 +187,28 @@ class StaffManagementTest extends TestCase
         // password reset
         $this->assertTrue(Hash::check('newsecret123', $user->fresh()->password));
     }
+
+    /** @test */
+    public function removing_staff_detaches_branch_assignments()
+    {
+        Notification::fake();
+        [$owner, $cafe] = $this->activeCafeOwner();
+        $branch = Branch::factory()->create(['cafe_id' => $cafe->id]);
+        Sanctum::actingAs($owner);
+
+        $staffId = $this->postJson('/api/v1/cafe-admin/staff', [
+            'name' => 'Sara',
+            'email' => 'sara5@example.com',
+            'password' => 'secret123',
+            'role' => 'staff',
+            'branch_ids' => [$branch->id],
+        ])->json('data.id');
+
+        $user = User::where('email', 'sara5@example.com')->first();
+        $this->assertDatabaseHas('branch_staff', ['branch_id' => $branch->id, 'user_id' => $user->id]);
+
+        $this->deleteJson("/api/v1/cafe-admin/staff/{$staffId}")->assertStatus(200);
+
+        $this->assertDatabaseMissing('branch_staff', ['branch_id' => $branch->id, 'user_id' => $user->id]);
+    }
 }

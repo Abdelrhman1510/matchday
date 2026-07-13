@@ -9,7 +9,6 @@ use App\Notifications\StaffInvitationNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
-use Spatie\Permission\Models\Permission;
 
 class StaffService
 {
@@ -207,6 +206,10 @@ class StaffService
                     $user->revokePermissionTo($permission);
                 }
             }
+
+            // Detach branch assignments for this cafe's branches.
+            $cafeBranchIds = $staffMember->cafe->branches()->pluck('id')->all();
+            $user->branchAssignments()->detach($cafeBranchIds);
 
             // Soft delete the staff member record
             return $staffMember->delete();
