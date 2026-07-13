@@ -5703,11 +5703,11 @@
                     "staff"
                   ]
                 },
-                "description": "List all staff members with roles, permissions, and invitation status.\n\n**Returns:**\n- Array of staff with:\n  - id, cafe_id, role (admin/manager/staff)\n  - invitation_status (pending/accepted/rejected)\n  - user: id, name, email, avatar\n  - invited_by: id, name\n  - permissions: Array of permission names\n  - status_badge: UI badge text\n  - role_label: Formatted role name\n  - can_resend_invite: boolean\n  - permissions_count: integer\n- meta: total, pending, accepted counts\n\n**Permission:** manage-staff\n**Features:** Spatie permission integration, UI helper flags"
+                "description": "List all staff members with roles, permissions, and invitation status.\n\n**Returns:**\n- Array of staff with:\n  - id, cafe_id, role (admin/manager/staff)\n  - invitation_status (pending/accepted/rejected)\n  - user: id, name, email, avatar\n  - invited_by: id, name\n  - permissions: Array of permission names\n  - status_badge: UI badge text\n  - role_label: Formatted role name\n  - can_resend_invite: boolean\n  - permissions_count: integer\n- meta: total, pending, accepted counts\n\n**Permission:** manage-staff\n**Features:** Spatie permission integration, UI helper flags\n\n**Update:** the response now includes a `branches` array of `{ id, name }` \u2014 the staff member's assigned branches."
               }
             },
             {
-              "name": "Invite Staff Member",
+              "name": "Add Staff Member (branch + credentials)",
               "request": {
                 "auth": {
                   "type": "bearer",
@@ -5732,7 +5732,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"name\": \"John Manager\",\n    \"email\": \"john@example.com\",\n    \"role\": \"manager\",\n    \"permissions\": [\n        \"manage-bookings\",\n        \"view-bookings\",\n        \"scan-qr\",\n        \"check-in-customers\",\n        \"view-occupancy\"\n    ]\n}"
+                  "raw": "{\n    \"name\": \"Sara Manager\",\n    \"email\": \"sara@example.com\",\n    \"password\": \"secret123\",\n    \"role\": \"manager\",\n    \"permissions\": [\n        \"manage-bookings\",\n        \"view-bookings\",\n        \"view-analytics\",\n        \"scan-qr\",\n        \"check-in-customers\"\n    ],\n    \"branch_ids\": [\n        1,\n        2\n    ]\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/cafe-admin/staff",
@@ -5744,7 +5744,7 @@
                     "staff"
                   ]
                 },
-                "description": "Invite a new staff member to your cafe.\n\n**Request:**\n- name: string (required)\n- email: string (required, email format)\n- role: string (required, one of: admin, manager, staff)\n- permissions: array (optional, overrides role defaults)\n\n**Role Default Permissions:**\n- admin (12): manage-bookings, view-bookings, view-analytics, manage-matches, scan-qr, check-in-customers, view-occupancy, manage-staff, manage-seating, manage-branches, manage-offers, manage-menu\n- manager (7): manage-bookings, view-bookings, view-analytics, manage-matches, scan-qr, check-in-customers, view-occupancy\n- staff (3): view-bookings, scan-qr, check-in-customers\n\n**Features:**\n- Auto-creates user if email doesn't exist\n- Links existing user to cafe\n- Assigns permissions via Spatie\n- Sends invitation notification with signed URL (7-day expiry)\n- Status set to 'pending' until accepted\n\n**Permission:** manage-staff"
+                "description": "Add a new staff member to your cafe. The owner sets the email + password directly and the account is created **active immediately** \u2014 there is no invitation email and no accept step.\n\n**Request:**\n- name: string (required)\n- email: string (required, must be a brand-new email \u2014 422 if already registered)\n- password: string (required, min 8)\n- role: string (required: admin | manager | staff)\n- permissions: array (optional; overrides role defaults)\n- branch_ids: array (required, min 1; each branch must belong to your cafe \u2014 422 otherwise)\n\n**Response `data`** includes a `branches` array of `{ id, name }` plus role, permissions, and `invitation_status: accepted`. The password is never returned.\n\n**Preconditions:** active subscription with staff allowance; permission `manage-staff`."
               }
             },
             {
@@ -5785,7 +5785,7 @@
                     }
                   ]
                 },
-                "description": "Get detailed information about a specific staff member.\n\n**Returns:**\n- Full staff member details\n- Complete permissions list\n- User information\n- Invited by information\n- Cafe details (when loaded)\n- UI helper flags\n\n**Permission:** manage-staff"
+                "description": "Get detailed information about a specific staff member.\n\n**Returns:**\n- Full staff member details\n- Complete permissions list\n- User information\n- Invited by information\n- Cafe details (when loaded)\n- UI helper flags\n\n**Permission:** manage-staff\n\n**Update:** the response now includes a `branches` array of `{ id, name }` \u2014 the staff member's assigned branches."
               }
             },
             {
@@ -5814,7 +5814,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"role\": \"admin\",\n    \"permissions\": [\n        \"manage-bookings\",\n        \"view-bookings\",\n        \"manage-matches\",\n        \"view-analytics\",\n        \"manage-staff\",\n        \"scan-qr\",\n        \"check-in-customers\"\n    ]\n}"
+                  "raw": "{\n    \"role\": \"manager\",\n    \"permissions\": [\n        \"manage-bookings\",\n        \"view-analytics\"\n    ],\n    \"branch_ids\": [\n        2\n    ],\n    \"password\": \"newsecret123\"\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/cafe-admin/staff/:id",
@@ -5834,7 +5834,7 @@
                     }
                   ]
                 },
-                "description": "Update staff member's role and/or permissions.\n\n**Request:**\n- role: string (optional, one of: admin, manager, staff)\n- permissions: array (optional, list of permission names)\n\n**Behavior:**\n- If only role provided: Applies default permissions for that role\n- If only permissions provided: Updates permissions, keeps current role\n- If both provided: Updates both\n\n**Features:**\n- Syncs permissions via Spatie\n- Validates permissions exist\n- Ownership verification\n\n**Permission:** manage-staff"
+                "description": "Update a staff member's role, permissions, branch assignments and/or password. All fields optional.\n\n- role: string (optional: admin | manager | staff)\n- permissions: array (optional)\n- branch_ids: array (optional, min 1; re-syncs assignments \u2014 attaches new, detaches removed; each must belong to your cafe)\n- password: string (optional, min 8; resets the staff member's password)\n\nPermission: manage-staff."
               }
             },
             {
