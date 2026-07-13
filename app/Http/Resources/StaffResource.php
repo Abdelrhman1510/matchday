@@ -17,8 +17,12 @@ class StaffResource extends JsonResource
     {
         // This resource receives an array with 'staff_member' and 'permissions' keys
         $staffMember = is_array($this->resource) ? $this->resource['staff_member'] : $this->resource;
-        $permissions = is_array($this->resource) && isset($this->resource['permissions']) 
-            ? $this->resource['permissions'] 
+        $permissions = is_array($this->resource) && isset($this->resource['permissions'])
+            ? $this->resource['permissions']
+            : [];
+
+        $branches = is_array($this->resource) && isset($this->resource['branches'])
+            ? $this->resource['branches']
             : [];
 
         // Count QR check-ins performed by this staff member
@@ -54,6 +58,9 @@ class StaffResource extends JsonResource
             
             // Permissions
             'permissions' => $permissions,
+
+            // Assigned branches
+            'branches' => $branches,
             
             // Cafe details (when loaded)
             'cafe' => $this->when($staffMember->relationLoaded('cafe'), [

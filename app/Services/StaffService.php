@@ -9,7 +9,6 @@ use App\Notifications\StaffInvitationNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
 
 class StaffService
@@ -126,9 +125,17 @@ class StaffService
         $staffMember->load(['user', 'invitedBy', 'cafe']);
         $permissions = $staffMember->user->getAllPermissions()->pluck('name')->toArray();
 
+        $cafeBranchIds = $staffMember->cafe->branches()->pluck('id')->all();
+        $branches = $staffMember->user->branchAssignments()
+            ->whereIn('branches.id', $cafeBranchIds)
+            ->get(['branches.id', 'branches.name'])
+            ->map(fn ($b) => ['id' => $b->id, 'name' => $b->name])
+            ->all();
+
         return [
             'staff_member' => $staffMember,
             'permissions' => $permissions,
+            'branches' => $branches,
         ];
     }
 

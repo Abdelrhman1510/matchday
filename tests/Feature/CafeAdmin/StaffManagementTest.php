@@ -126,4 +126,33 @@ class StaffManagementTest extends TestCase
         $response->assertStatus(422);
         $this->assertDatabaseMissing('branch_staff', ['branch_id' => $foreignBranch->id]);
     }
+
+    /** @test */
+    public function staff_detail_includes_assigned_branches()
+    {
+        Notification::fake();
+        [$owner, $cafe] = $this->activeCafeOwner();
+        $b1 = Branch::factory()->create(['cafe_id' => $cafe->id, 'name' => 'Downtown']);
+        $b2 = Branch::factory()->create(['cafe_id' => $cafe->id, 'name' => 'Mall']);
+        Sanctum::actingAs($owner);
+
+        $created = $this->postJson('/api/v1/cafe-admin/staff', [
+            'name' => 'Sara',
+            'email' => 'sara3@example.com',
+            'password' => 'secret123',
+            'role' => 'staff',
+            'branch_ids' => [$b1->id, $b2->id],
+        ])->assertStatus(201);
+
+        $staffId = $created->json('data.id');
+
+        $response = $this->getJson("/api/v1/cafe-admin/staff/{$staffId}");
+
+        $response->assertStatus(200)
+            ->assertJsonStructure(['data' => ['branches' => [['id', 'name']]]]);
+
+        $names = collect($response->json('data.branches'))->pluck('name')->all();
+        $this->assertContains('Downtown', $names);
+        $this->assertContains('Mall', $names);
+    }
 }
