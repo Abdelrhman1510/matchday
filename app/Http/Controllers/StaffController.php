@@ -149,7 +149,7 @@ class StaffController extends Controller
      * Get staff detail with permissions
      * Permission: manage-staff
      */
-    public function show(Request $request, $id)
+    public function show(Request $request, string $id)
     {
         // Check permission
         if (!$request->user()->hasPermissionTo('manage-staff')) {
@@ -192,7 +192,7 @@ class StaffController extends Controller
      * Update staff role and/or permissions
      * Permission: manage-staff
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
         // Check permission
         if (!$request->user()->hasPermissionTo('manage-staff')) {
@@ -277,7 +277,7 @@ class StaffController extends Controller
      * Remove staff member and revoke permissions
      * Permission: manage-staff
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, string $id)
     {
         // Check permission
         if (!$request->user()->hasPermissionTo('manage-staff')) {
@@ -327,7 +327,7 @@ class StaffController extends Controller
      * Resend invitation email
      * Permission: manage-staff
      */
-    public function resendInvite(Request $request, $id)
+    public function resendInvite(Request $request, string $id)
     {
         // Check permission
         if (!$request->user()->hasPermissionTo('manage-staff')) {
@@ -398,7 +398,7 @@ class StaffController extends Controller
     /**
      * Invite staff member to a branch
      */
-    public function inviteStaff(Request $request, $branchId)
+    public function inviteStaff(Request $request, string $branchId)
     {
         if (!$request->user()->hasPermissionTo('manage-staff')) {
             return response()->json([
@@ -455,7 +455,7 @@ class StaffController extends Controller
     /**
      * List staff for a branch
      */
-    public function listBranchStaff(Request $request, $branchId)
+    public function listBranchStaff(Request $request, string $branchId)
     {
         if (!$request->user()->hasPermissionTo('manage-staff')) {
             return response()->json([
@@ -495,7 +495,7 @@ class StaffController extends Controller
     /**
      * Update staff permissions
      */
-    public function updatePermissions(Request $request, $branchId, $staffId)
+    public function updatePermissions(Request $request, string $branchId, string $staffId)
     {
         if (!$request->user()->hasPermissionTo('manage-staff')) {
             return response()->json([
@@ -537,7 +537,7 @@ class StaffController extends Controller
     /**
      * Remove staff from branch
      */
-    public function removeStaff(Request $request, $branchId, $staffId)
+    public function removeStaff(Request $request, string $branchId, string $staffId)
     {
         if (!$request->user()->hasPermissionTo('manage-staff')) {
             return response()->json([
