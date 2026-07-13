@@ -122,6 +122,16 @@ class User extends Authenticatable
         return $this->hasMany(StaffMember::class);
     }
 
+    /**
+     * Branches this user is assigned to as staff (via branch_staff pivot).
+     */
+    public function branchAssignments(): BelongsToMany
+    {
+        return $this->belongsToMany(Branch::class, 'branch_staff')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);

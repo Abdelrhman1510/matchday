@@ -82,51 +82,37 @@ class StaffService
     public function inviteStaff(Cafe $cafe, User $invitedBy, array $data): StaffMember
     {
         return DB::transaction(function () use ($cafe, $invitedBy, $data) {
-            // Check if user exists by email
-            $user = User::where('email', $data['email'])->first();
-
-            // If user doesn't exist, create them
-            if (!$user) {
-                $user = User::create([
-                    'name' => $data['name'],
-                    'email' => $data['email'],
-                    'password' => Hash::make(Str::random(32)), // Random password, will reset on first login
-                    'role' => 'staff',
-                    'is_active' => true,
-                ]);
+            // Owner is setting a password, so the email must be a brand-new account.
+            if (User::where('email', $data['email'])->exists()) {
+                throw new \Exception('This email is already in use.');
             }
 
-            // Check if they're already staff at this cafe
-            $existingStaff = StaffMember::where('cafe_id', $cafe->id)
-                ->where('user_id', $user->id)
-                ->first();
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'role' => 'staff',
+                'is_active' => true,
+            ]);
 
-            if ($existingStaff) {
-                throw new \Exception('This user is already a staff member at this cafe');
-            }
-
-            // Create staff member record
             $staffMember = StaffMember::create([
                 'cafe_id' => $cafe->id,
                 'user_id' => $user->id,
                 'role' => $data['role'],
                 'invited_by' => $invitedBy->id,
-                'invitation_status' => 'pending',
+                'invitation_status' => 'accepted',
             ]);
 
-            // Assign permissions
+            // Permissions (global via Spatie) — same across all the staff member's branches.
             $permissions = $data['permissions'] ?? $this->getDefaultPermissionsByRole($data['role']);
             $this->syncPermissions($user, $permissions);
 
-            // Generate signed URL for invitation
-            $signedUrl = URL::temporarySignedRoute(
-                'auth.staff.accept-invite',
-                now()->addDays(7),
-                ['token' => $this->generateInvitationToken($staffMember)]
-            );
-
-            // Send invitation notification
-            $user->notify(new StaffInvitationNotification($cafe, $data['role'], $signedUrl));
+            // Branch assignments (idempotent under unique(branch_id, user_id)).
+            $syncData = [];
+            foreach (($data['branch_ids'] ?? []) as $branchId) {
+                $syncData[$branchId] = ['role' => $data['role']];
+            }
+            $user->branchAssignments()->sync($syncData);
 
             return $staffMember->load(['user', 'invitedBy']);
         });

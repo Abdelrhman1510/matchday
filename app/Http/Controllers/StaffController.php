@@ -75,10 +75,13 @@ class StaffController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8',
             'role' => 'required|in:admin,manager,staff',
             'permissions' => 'nullable|array',
             'permissions.*' => 'string|in:manage-bookings,view-bookings,manage-matches,view-analytics,manage-offers,manage-menu,manage-branches,manage-seating,scan-qr,check-in-customers,view-occupancy,manage-staff',
+            'branch_ids' => 'required|array|min:1',
+            'branch_ids.*' => 'integer|exists:branches,id',
         ]);
 
         if ($validator->fails()) {
@@ -98,6 +101,16 @@ class StaffController extends Controller
             ], 404);
         }
 
+        // Branch ownership guard: every branch must belong to this owner's cafe.
+        $ownedBranchIds = $cafe->branches()->pluck('id')->all();
+        $invalidBranches = array_diff($request->input('branch_ids', []), $ownedBranchIds);
+        if (!empty($invalidBranches)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'One or more branches do not belong to your cafe.',
+            ], 422);
+        }
+
         // Subscription enforcement: check staff limit
         $check = $this->enforcement->canAddStaff($cafe);
         if (!$check['allowed']) {
@@ -113,14 +126,14 @@ class StaffController extends Controller
             $staffMember = $this->staffService->inviteStaff(
                 $cafe,
                 $request->user(),
-                $request->only(['name', 'email', 'role', 'permissions'])
+                $request->only(['name', 'email', 'password', 'role', 'permissions', 'branch_ids'])
             );
 
             $staffDetail = $this->staffService->getStaffDetail($staffMember);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Staff invitation sent successfully.',
+                'message' => 'Staff member added successfully.',
                 'data' => new StaffResource($staffDetail),
             ], 201);
         } catch (\Exception $e) {
