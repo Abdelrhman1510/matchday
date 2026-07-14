@@ -232,6 +232,17 @@ class User extends Authenticatable
             }
         }
 
+        // Check directly-granted Spatie permissions (used by the staff-management flow).
+        if (is_string($abilities)) {
+            try {
+                if ($this->permissions()->where('name', $abilities)->exists()) {
+                    return true;
+                }
+            } catch (\Throwable) {
+                // Spatie permission relation not applicable — ignore.
+            }
+        }
+
         return false;
     }
 

@@ -43,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'throttle.chat' => \App\Http\Middleware\ThrottleChat::class,
             'cafe.owner' => \App\Http\Middleware\EnsureCafeOwner::class,
+            'cafe.permission' => \App\Http\Middleware\EnsureCafePermission::class,
             'platform.admin' => \App\Http\Middleware\EnsurePlatformAdmin::class,
             'auth' => \App\Http\Middleware\Authenticate::class,
             'subscription' => \App\Http\Middleware\EnforceSubscription::class,

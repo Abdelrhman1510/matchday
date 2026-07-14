@@ -76,4 +76,46 @@ class StaffAuthorizationTest extends TestCase
             ->assertStatus(200)
             ->assertJsonPath('data.id', $cafe->id);
     }
+
+    /** @test */
+    public function staff_with_permission_can_hit_gated_endpoint()
+    {
+        [$owner, $cafe, $branch] = $this->cafeWithOwner();
+        $staff = $this->makeStaff($cafe, [$branch->id], ['view-bookings']);
+        Sanctum::actingAs($staff);
+
+        $this->getJson('/api/v1/cafe-admin/bookings')->assertStatus(200);
+    }
+
+    /** @test */
+    public function staff_without_permission_is_forbidden()
+    {
+        [$owner, $cafe, $branch] = $this->cafeWithOwner();
+        $staff = $this->makeStaff($cafe, [$branch->id], []); // no view-bookings
+        Sanctum::actingAs($staff);
+
+        $this->getJson('/api/v1/cafe-admin/bookings')
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'You do not have permission to perform this action.');
+    }
+
+    /** @test */
+    public function staff_cannot_access_owner_only_subscription()
+    {
+        [$owner, $cafe, $branch] = $this->cafeWithOwner();
+        $staff = $this->makeStaff($cafe, [$branch->id], ['manage-subscription']);
+        Sanctum::actingAs($staff);
+
+        $this->getJson('/api/v1/cafe-admin/subscription')->assertStatus(403);
+    }
+
+    /** @test */
+    public function owner_bypasses_permission_gates()
+    {
+        [$owner, $cafe, $branch] = $this->cafeWithOwner();
+        Sanctum::actingAs($owner);
+
+        $this->getJson('/api/v1/cafe-admin/bookings')->assertStatus(200);
+        $this->getJson('/api/v1/cafe-admin/subscription')->assertStatus(200);
+    }
 }

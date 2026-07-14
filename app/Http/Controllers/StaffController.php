@@ -28,14 +28,6 @@ class StaffController extends Controller
      */
     public function index(Request $request)
     {
-        // Check permission
-        if (!$request->user()->hasPermissionTo('manage-staff')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You do not have permission to manage staff.',
-            ], 403);
-        }
-
         $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
@@ -65,14 +57,6 @@ class StaffController extends Controller
      */
     public function store(Request $request)
     {
-        // Check permission
-        if (!$request->user()->hasPermissionTo('manage-staff')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You do not have permission to manage staff.',
-            ], 403);
-        }
-
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
@@ -151,14 +135,6 @@ class StaffController extends Controller
      */
     public function show(Request $request, string $id)
     {
-        // Check permission
-        if (!$request->user()->hasPermissionTo('manage-staff')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You do not have permission to manage staff.',
-            ], 403);
-        }
-
         $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
@@ -194,14 +170,6 @@ class StaffController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // Check permission
-        if (!$request->user()->hasPermissionTo('manage-staff')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You do not have permission to manage staff.',
-            ], 403);
-        }
-
         $validator = Validator::make($request->all(), [
             'role' => 'sometimes|in:admin,manager,staff',
             'permissions' => 'nullable|array',
@@ -279,14 +247,6 @@ class StaffController extends Controller
      */
     public function destroy(Request $request, string $id)
     {
-        // Check permission
-        if (!$request->user()->hasPermissionTo('manage-staff')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You do not have permission to manage staff.',
-            ], 403);
-        }
-
         $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
@@ -329,14 +289,6 @@ class StaffController extends Controller
      */
     public function resendInvite(Request $request, string $id)
     {
-        // Check permission
-        if (!$request->user()->hasPermissionTo('manage-staff')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You do not have permission to manage staff.',
-            ], 403);
-        }
-
         $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
@@ -379,14 +331,6 @@ class StaffController extends Controller
      */
     public function rolesPermissions(Request $request)
     {
-        // Check permission
-        if (!$request->user()->hasPermissionTo('manage-staff')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You do not have permission to manage staff.',
-            ], 403);
-        }
-
         $rolesAndPermissions = $this->staffService->getRolesAndPermissions();
 
         return response()->json([

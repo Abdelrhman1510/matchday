@@ -474,23 +474,23 @@ Route::post('/webhooks/subscription/payment-failed', [\App\Http\Controllers\Subs
 Route::middleware(['auth:sanctum', 'cafe.owner'])->prefix('cafe-admin')->name('cafe-admin.')->group(function () {
 
     // CAFE MANAGEMENT (Endpoints 1-5)
-    Route::post('/cafe', [CafeAdminController::class, 'createCafe'])->name('cafe.create');
-    Route::put('/cafe', [CafeAdminController::class, 'updateCafe'])->name('cafe.update');
+    Route::post('/cafe', [CafeAdminController::class, 'createCafe'])->middleware('cafe.permission:owner')->name('cafe.create');
+    Route::put('/cafe', [CafeAdminController::class, 'updateCafe'])->middleware('cafe.permission:manage-cafe-profile')->name('cafe.update');
     Route::post('/cafe/logo', [CafeAdminController::class, 'uploadLogo'])
-        ->middleware('throttle:uploads')
+        ->middleware(['throttle:uploads', 'cafe.permission:manage-cafe-profile'])
         ->name('cafe.logo');
     Route::get('/cafe', [CafeAdminController::class, 'getMyCafe'])->name('cafe.show');
     Route::get('/onboarding-status', [CafeAdminController::class, 'getOnboardingStatus'])->name('onboarding.status');
 
     // BRANCH CRUD (Endpoints 6-14)
     Route::get('/branches', [CafeAdminController::class, 'listBranches'])->name('branches.index');
-    Route::post('/branches', [CafeAdminController::class, 'createBranch'])->name('branches.create');
-    Route::put('/branches/{id}/hours', [CafeAdminController::class, 'updateBranchHours'])->name('branches.hours');
-    Route::post('/branches/{id}/amenities/bulk', [CafeAdminController::class, 'addAmenitiesBulk'])->name('branches.amenities.bulk');
+    Route::post('/branches', [CafeAdminController::class, 'createBranch'])->middleware('cafe.permission:manage-branches')->name('branches.create');
+    Route::put('/branches/{id}/hours', [CafeAdminController::class, 'updateBranchHours'])->middleware('cafe.permission:manage-branches')->name('branches.hours');
+    Route::post('/branches/{id}/amenities/bulk', [CafeAdminController::class, 'addAmenitiesBulk'])->middleware('cafe.permission:manage-branches')->name('branches.amenities.bulk');
     Route::get('/branches/{id}', [CafeAdminController::class, 'getBranch'])->name('branches.show');
-    Route::put('/branches/{id}', [CafeAdminController::class, 'updateBranch'])->name('branches.update');
-    Route::delete('/branches/{id}', [CafeAdminController::class, 'deleteBranch'])->name('branches.delete');
-    Route::put('/branches/{id}/status', [CafeAdminController::class, 'toggleBranchStatus'])->name('branches.status');
+    Route::put('/branches/{id}', [CafeAdminController::class, 'updateBranch'])->middleware('cafe.permission:manage-branches')->name('branches.update');
+    Route::delete('/branches/{id}', [CafeAdminController::class, 'deleteBranch'])->middleware('cafe.permission:manage-branches')->name('branches.delete');
+    Route::put('/branches/{id}/status', [CafeAdminController::class, 'toggleBranchStatus'])->middleware('cafe.permission:manage-branches')->name('branches.status');
     Route::get('/branches/{id}/setup-progress', [CafeAdminController::class, 'getBranchSetupProgress'])->name('branches.setup-progress');
 
     // BRANCH OVERVIEW (Endpoint 15)
@@ -502,129 +502,130 @@ Route::middleware(['auth:sanctum', 'cafe.owner'])->prefix('cafe-admin')->name('c
 
     // AMENITIES (Endpoints 18-20)
     Route::get('/branches/{id}/amenities', [CafeAdminController::class, 'listAmenities'])->name('branches.amenities.list');
-    Route::post('/branches/{id}/amenities', [CafeAdminController::class, 'addAmenity'])->name('branches.amenities.add');
-    Route::delete('/amenities/{id}', [CafeAdminController::class, 'removeAmenity'])->name('amenities.remove');
+    Route::post('/branches/{id}/amenities', [CafeAdminController::class, 'addAmenity'])->middleware('cafe.permission:manage-branches')->name('branches.amenities.add');
+    Route::delete('/amenities/{id}', [CafeAdminController::class, 'removeAmenity'])->middleware('cafe.permission:manage-branches')->name('amenities.remove');
 
     // ===================================
     // SEATING MANAGEMENT (Endpoints 21-29)
     // ===================================
     Route::get('/branches/{id}/sections', [SeatingAdminController::class, 'listSections'])->name('sections.list');
-    Route::post('/branches/{id}/sections', [SeatingAdminController::class, 'createSection'])->name('sections.create');
-    Route::post('/branches/{id}/sections/bulk', [SeatingAdminController::class, 'bulkCreateSections'])->name('sections.bulk');
-    Route::put('/sections/{id}', [SeatingAdminController::class, 'updateSection'])->name('sections.update');
-    Route::delete('/sections/{id}', [SeatingAdminController::class, 'deleteSection'])->name('sections.delete');
+    Route::post('/branches/{id}/sections', [SeatingAdminController::class, 'createSection'])->middleware('cafe.permission:manage-seating')->name('sections.create');
+    Route::post('/branches/{id}/sections/bulk', [SeatingAdminController::class, 'bulkCreateSections'])->middleware('cafe.permission:manage-seating')->name('sections.bulk');
+    Route::put('/sections/{id}', [SeatingAdminController::class, 'updateSection'])->middleware('cafe.permission:manage-seating')->name('sections.update');
+    Route::delete('/sections/{id}', [SeatingAdminController::class, 'deleteSection'])->middleware('cafe.permission:manage-seating')->name('sections.delete');
     Route::get('/sections/{id}/seats', [SeatingAdminController::class, 'listSeats'])->name('sections.seats.list');
-    Route::post('/sections/{id}/seats', [SeatingAdminController::class, 'bulkAddSeats'])->name('sections.seats.add');
-    Route::put('/seats/{id}', [SeatingAdminController::class, 'updateSeat'])->name('seats.update');
-    Route::delete('/seats/{id}', [SeatingAdminController::class, 'deleteSeat'])->name('seats.delete');
+    Route::post('/sections/{id}/seats', [SeatingAdminController::class, 'bulkAddSeats'])->middleware('cafe.permission:manage-seating')->name('sections.seats.add');
+    Route::put('/seats/{id}', [SeatingAdminController::class, 'updateSeat'])->middleware('cafe.permission:manage-seating')->name('seats.update');
+    Route::delete('/seats/{id}', [SeatingAdminController::class, 'deleteSeat'])->middleware('cafe.permission:manage-seating')->name('seats.delete');
 
     // ===================================
     // MATCH MANAGEMENT (Endpoints 30-38)
     // ===================================
     Route::get('/matches', [MatchAdminController::class, 'index'])->name('matches.index');
-    Route::post('/matches', [MatchAdminController::class, 'store'])->name('matches.store');
+    Route::post('/matches', [MatchAdminController::class, 'store'])->middleware('cafe.permission:manage-matches')->name('matches.store');
     Route::get('/matches/{id}', [MatchAdminController::class, 'show'])->name('matches.show');
-    Route::put('/matches/{id}', [MatchAdminController::class, 'update'])->name('matches.update');
-    Route::delete('/matches/{id}', [MatchAdminController::class, 'destroy'])->name('matches.destroy');
-    Route::post('/matches/{id}/publish', [MatchAdminController::class, 'publish'])->name('matches.publish');
-    Route::put('/matches/{id}/score', [MatchAdminController::class, 'updateScore'])->name('matches.score');
-    Route::put('/matches/{id}/status', [MatchAdminController::class, 'updateStatus'])->name('matches.status');
-    Route::post('/matches/{id}/reminder', [MatchAdminController::class, 'sendReminder'])->name('matches.reminder');
+    Route::put('/matches/{id}', [MatchAdminController::class, 'update'])->middleware('cafe.permission:manage-matches')->name('matches.update');
+    Route::delete('/matches/{id}', [MatchAdminController::class, 'destroy'])->middleware('cafe.permission:manage-matches')->name('matches.destroy');
+    Route::post('/matches/{id}/publish', [MatchAdminController::class, 'publish'])->middleware('cafe.permission:manage-matches')->name('matches.publish');
+    Route::put('/matches/{id}/score', [MatchAdminController::class, 'updateScore'])->middleware('cafe.permission:manage-matches')->name('matches.score');
+    Route::put('/matches/{id}/status', [MatchAdminController::class, 'updateStatus'])->middleware('cafe.permission:manage-matches')->name('matches.status');
+    Route::post('/matches/{id}/reminder', [MatchAdminController::class, 'sendReminder'])->middleware('cafe.permission:manage-matches')->name('matches.reminder');
 
     // ===================================
     // BOOKING MANAGEMENT (Endpoints 39-43)
     // ===================================
-    Route::get('/bookings/today-summary', [BookingAdminController::class, 'todaySummary'])->name('bookings.today-summary');
-    Route::get('/bookings', [BookingAdminController::class, 'index'])->name('bookings.index');
-    Route::get('/bookings/{id}', [BookingAdminController::class, 'show'])->name('bookings.show');
-    Route::post('/bookings/{id}/check-in', [BookingAdminController::class, 'checkIn'])->name('bookings.check-in');
-    Route::post('/bookings/{id}/cancel', [BookingAdminController::class, 'cancel'])->name('bookings.cancel');
+    Route::get('/bookings/today-summary', [BookingAdminController::class, 'todaySummary'])->middleware('cafe.permission:view-bookings')->name('bookings.today-summary');
+    Route::get('/bookings', [BookingAdminController::class, 'index'])->middleware('cafe.permission:view-bookings')->name('bookings.index');
+    Route::get('/bookings/{id}', [BookingAdminController::class, 'show'])->middleware('cafe.permission:view-bookings')->name('bookings.show');
+    Route::post('/bookings/{id}/check-in', [BookingAdminController::class, 'checkIn'])->middleware('cafe.permission:check-in-customers')->name('bookings.check-in');
+    Route::post('/bookings/{id}/cancel', [BookingAdminController::class, 'cancel'])->middleware('cafe.permission:manage-bookings')->name('bookings.cancel');
 
     // ===================================
     // QR SCAN (Endpoints 44-47)
     // ===================================
-    Route::post('/scan-qr', [QrScanController::class, 'scan'])->name('scan-qr.scan');
+    Route::post('/scan-qr', [QrScanController::class, 'scan'])->middleware('cafe.permission:scan-qr')->name('scan-qr.scan');
     Route::post('/scan-qr/upload', [QrScanController::class, 'upload'])
-        ->middleware('throttle:uploads')
+        ->middleware(['throttle:uploads', 'cafe.permission:scan-qr'])
         ->name('scan-qr.upload');
-    Route::get('/scan-qr/recent', [QrScanController::class, 'recent'])->name('scan-qr.recent');
-    Route::get('/scan-qr/stats', [QrScanController::class, 'stats'])->name('scan-qr.stats');
+    Route::get('/scan-qr/recent', [QrScanController::class, 'recent'])->middleware('cafe.permission:scan-qr')->name('scan-qr.recent');
+    Route::get('/scan-qr/stats', [QrScanController::class, 'stats'])->middleware('cafe.permission:scan-qr')->name('scan-qr.stats');
 
     // ===================================
     // OCCUPANCY TRACKING (Endpoints 48-51)
     // ===================================
     Route::middleware(['subscription:has_occupancy_tracking'])->group(function () {
-        Route::get('/occupancy', [OccupancyController::class, 'index'])->name('occupancy.dashboard');
-        Route::put('/occupancy/capacity', [OccupancyController::class, 'updateCapacity'])->name('occupancy.capacity');
-        Route::get('/occupancy/peak-times', [OccupancyController::class, 'peakTimes'])->name('occupancy.peak-times');
-        Route::get('/occupancy/sections', [OccupancyController::class, 'sections'])->name('occupancy.sections');
+        Route::get('/occupancy', [OccupancyController::class, 'index'])->middleware('cafe.permission:view-occupancy')->name('occupancy.dashboard');
+        Route::put('/occupancy/capacity', [OccupancyController::class, 'updateCapacity'])->middleware('cafe.permission:manage-seating')->name('occupancy.capacity');
+        Route::get('/occupancy/peak-times', [OccupancyController::class, 'peakTimes'])->middleware('cafe.permission:view-occupancy')->name('occupancy.peak-times');
+        Route::get('/occupancy/sections', [OccupancyController::class, 'sections'])->middleware('cafe.permission:view-occupancy')->name('occupancy.sections');
     });
 
     // ===================================
     // STAFF MANAGEMENT (Endpoints 52-59)
     // ===================================
-    Route::get('/staff', [\App\Http\Controllers\StaffController::class, 'index'])->name('staff.index');
-    Route::post('/staff', [\App\Http\Controllers\StaffController::class, 'store'])->name('staff.store');
-    Route::get('/staff/{id}', [\App\Http\Controllers\StaffController::class, 'show'])->name('staff.show');
-    Route::put('/staff/{id}', [\App\Http\Controllers\StaffController::class, 'update'])->name('staff.update');
-    Route::delete('/staff/{id}', [\App\Http\Controllers\StaffController::class, 'destroy'])->name('staff.destroy');
-    Route::post('/staff/{id}/resend-invite', [\App\Http\Controllers\StaffController::class, 'resendInvite'])->name('staff.resend-invite');
+    Route::get('/staff', [\App\Http\Controllers\StaffController::class, 'index'])->middleware('cafe.permission:manage-staff')->name('staff.index');
+    Route::post('/staff', [\App\Http\Controllers\StaffController::class, 'store'])->middleware('cafe.permission:manage-staff')->name('staff.store');
+    Route::get('/staff/{id}', [\App\Http\Controllers\StaffController::class, 'show'])->middleware('cafe.permission:manage-staff')->name('staff.show');
+    Route::put('/staff/{id}', [\App\Http\Controllers\StaffController::class, 'update'])->middleware('cafe.permission:manage-staff')->name('staff.update');
+    Route::delete('/staff/{id}', [\App\Http\Controllers\StaffController::class, 'destroy'])->middleware('cafe.permission:manage-staff')->name('staff.destroy');
+    Route::post('/staff/{id}/resend-invite', [\App\Http\Controllers\StaffController::class, 'resendInvite'])->middleware('cafe.permission:manage-staff')->name('staff.resend-invite');
     Route::get('/roles-permissions', [\App\Http\Controllers\StaffController::class, 'rolesPermissions'])->name('roles-permissions');
 
     // ===================================
     // OFFERS MANAGEMENT (Endpoints 60-66)
     // ===================================
     Route::get('/offers', [\App\Http\Controllers\OfferAdminController::class, 'index'])->name('offers.index');
-    Route::post('/offers', [\App\Http\Controllers\OfferAdminController::class, 'store'])->name('offers.store');
+    Route::post('/offers', [\App\Http\Controllers\OfferAdminController::class, 'store'])->middleware('cafe.permission:manage-offers')->name('offers.store');
     Route::get('/offers/{id}', [\App\Http\Controllers\OfferAdminController::class, 'show'])->name('offers.show');
-    Route::put('/offers/{id}', [\App\Http\Controllers\OfferAdminController::class, 'update'])->name('offers.update');
-    Route::delete('/offers/{id}', [\App\Http\Controllers\OfferAdminController::class, 'destroy'])->name('offers.destroy');
+    Route::put('/offers/{id}', [\App\Http\Controllers\OfferAdminController::class, 'update'])->middleware('cafe.permission:manage-offers')->name('offers.update');
+    Route::delete('/offers/{id}', [\App\Http\Controllers\OfferAdminController::class, 'destroy'])->middleware('cafe.permission:manage-offers')->name('offers.destroy');
     Route::post('/offers/{id}/upload-image', [\App\Http\Controllers\OfferAdminController::class, 'uploadImage'])
-        ->middleware('throttle:uploads')
+        ->middleware(['throttle:uploads', 'cafe.permission:manage-offers'])
         ->name('offers.upload-image');
-    Route::put('/offers/{id}/status', [\App\Http\Controllers\OfferAdminController::class, 'updateStatus'])->name('offers.status');
+    Route::put('/offers/{id}/status', [\App\Http\Controllers\OfferAdminController::class, 'updateStatus'])->middleware('cafe.permission:manage-offers')->name('offers.status');
 
     // ===================================
     // DASHBOARD (Endpoints 67-69)
     // ===================================
-    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard.index');
-    Route::get('/dashboard/upcoming-matches', [\App\Http\Controllers\DashboardController::class, 'upcomingMatches'])->name('dashboard.upcoming-matches');
-    Route::get('/dashboard/recent-bookings', [\App\Http\Controllers\DashboardController::class, 'recentBookings'])->name('dashboard.recent-bookings');
+    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware('cafe.permission:view-analytics')->name('dashboard.index');
+    Route::get('/dashboard/upcoming-matches', [\App\Http\Controllers\DashboardController::class, 'upcomingMatches'])->middleware('cafe.permission:view-analytics')->name('dashboard.upcoming-matches');
+    Route::get('/dashboard/recent-bookings', [\App\Http\Controllers\DashboardController::class, 'recentBookings'])->middleware('cafe.permission:view-analytics')->name('dashboard.recent-bookings');
 
     // ===================================
     // ANALYTICS (Endpoints 70-76)
     // ===================================
     Route::middleware(['subscription:has_analytics'])->group(function () {
-        Route::get('/analytics/overview', [\App\Http\Controllers\AnalyticsController::class, 'overview'])->name('analytics.overview');
-        Route::get('/analytics/bookings', [\App\Http\Controllers\AnalyticsController::class, 'bookings'])->name('analytics.bookings');
-        Route::get('/analytics/revenue', [\App\Http\Controllers\AnalyticsController::class, 'revenue'])->name('analytics.revenue');
-        Route::get('/analytics/peak-hours', [\App\Http\Controllers\AnalyticsController::class, 'peakHours'])->name('analytics.peak-hours');
-        Route::get('/analytics/customers', [\App\Http\Controllers\AnalyticsController::class, 'customers'])->name('analytics.customers');
-        Route::get('/analytics/matches', [\App\Http\Controllers\AnalyticsController::class, 'matches'])->name('analytics.matches');
-        Route::get('/analytics/subscription', [\App\Http\Controllers\AnalyticsController::class, 'subscription'])->name('analytics.subscription');
+        Route::get('/analytics/overview', [\App\Http\Controllers\AnalyticsController::class, 'overview'])->middleware('cafe.permission:view-analytics')->name('analytics.overview');
+        Route::get('/analytics/bookings', [\App\Http\Controllers\AnalyticsController::class, 'bookings'])->middleware('cafe.permission:view-analytics')->name('analytics.bookings');
+        Route::get('/analytics/revenue', [\App\Http\Controllers\AnalyticsController::class, 'revenue'])->middleware('cafe.permission:view-analytics')->name('analytics.revenue');
+        Route::get('/analytics/peak-hours', [\App\Http\Controllers\AnalyticsController::class, 'peakHours'])->middleware('cafe.permission:view-analytics')->name('analytics.peak-hours');
+        Route::get('/analytics/customers', [\App\Http\Controllers\AnalyticsController::class, 'customers'])->middleware('cafe.permission:view-analytics')->name('analytics.customers');
+        Route::get('/analytics/matches', [\App\Http\Controllers\AnalyticsController::class, 'matches'])->middleware('cafe.permission:view-analytics')->name('analytics.matches');
+        Route::get('/analytics/subscription', [\App\Http\Controllers\AnalyticsController::class, 'subscription'])->middleware('cafe.permission:view-analytics')->name('analytics.subscription');
     });
 
     // ===================================
     // SUBSCRIPTION MANAGEMENT (Endpoints 77-81)
     // ===================================
-    Route::get('/subscription', [\App\Http\Controllers\SubscriptionController::class, 'current'])->name('subscription.current');
-    Route::post('/subscription/upgrade', [\App\Http\Controllers\SubscriptionController::class, 'upgrade'])->name('subscription.upgrade');
-    Route::post('/subscription/cancel', [\App\Http\Controllers\SubscriptionController::class, 'cancel'])->name('subscription.cancel');
-    Route::put('/subscription/auto-renew', [\App\Http\Controllers\SubscriptionController::class, 'toggleAutoRenew'])->name('subscription.auto-renew');
+    Route::get('/subscription', [\App\Http\Controllers\SubscriptionController::class, 'current'])->middleware('cafe.permission:owner')->name('subscription.current');
+    Route::post('/subscription/upgrade', [\App\Http\Controllers\SubscriptionController::class, 'upgrade'])->middleware('cafe.permission:owner')->name('subscription.upgrade');
+    Route::post('/subscription/cancel', [\App\Http\Controllers\SubscriptionController::class, 'cancel'])->middleware('cafe.permission:owner')->name('subscription.cancel');
+    Route::put('/subscription/auto-renew', [\App\Http\Controllers\SubscriptionController::class, 'toggleAutoRenew'])->middleware('cafe.permission:owner')->name('subscription.auto-renew');
 
     // ===================================
     // BILLING MANAGEMENT (Endpoints 82-85)
     // ===================================
-    Route::get('/billing', [\App\Http\Controllers\BillingController::class, 'index'])->name('billing.index');
-    Route::get('/billing/summary', [\App\Http\Controllers\BillingController::class, 'summary'])->name('billing.summary');
-    Route::get('/billing/export', [\App\Http\Controllers\BillingController::class, 'export'])->name('billing.export');
-    Route::put('/billing/payment-method', [\App\Http\Controllers\BillingController::class, 'updatePaymentMethod'])->name('billing.payment-method');
+    Route::get('/billing', [\App\Http\Controllers\BillingController::class, 'index'])->middleware('cafe.permission:owner')->name('billing.index');
+    Route::get('/billing/summary', [\App\Http\Controllers\BillingController::class, 'summary'])->middleware('cafe.permission:owner')->name('billing.summary');
+    Route::get('/billing/export', [\App\Http\Controllers\BillingController::class, 'export'])->middleware('cafe.permission:owner')->name('billing.export');
+    Route::put('/billing/payment-method', [\App\Http\Controllers\BillingController::class, 'updatePaymentMethod'])->middleware('cafe.permission:owner')->name('billing.payment-method');
 
     // ===================================
     // SUBSCRIPTION USAGE (Enforcement)
     // ===================================
     Route::get('/subscription/usage', function (Request $request) {
         $cafe = $request->user()->ownedCafes()->first();
+        // NB: owner-only via cafe.permission:owner middleware below.
         if (!$cafe) {
             return response()->json(['success' => false, 'message' => 'No cafe found'], 404);
         }
@@ -633,6 +634,6 @@ Route::middleware(['auth:sanctum', 'cafe.owner'])->prefix('cafe-admin')->name('c
             'success' => true,
             'data' => $enforcement->getUsageSummary($cafe),
         ]);
-    })->name('subscription.usage');
+    })->middleware('cafe.permission:owner')->name('subscription.usage');
 });
 
