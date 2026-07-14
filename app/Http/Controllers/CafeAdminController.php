@@ -382,7 +382,7 @@ class CafeAdminController extends Controller
      * 8. Update branch hours (Step 2: Hours)
      * PUT /api/v1/cafe-admin/branches/{id}/hours
      */
-    public function updateBranchHours(Request $request, $id)
+    public function updateBranchHours(Request $request, string $id)
     {
         $cafe = $this->actingCafe($request);
 
@@ -456,7 +456,7 @@ class CafeAdminController extends Controller
      * 9. Add amenities in bulk (Step 3: Amenities)
      * POST /api/v1/cafe-admin/branches/{id}/amenities/bulk
      */
-    public function addAmenitiesBulk(Request $request, $id)
+    public function addAmenitiesBulk(Request $request, string $id)
     {
         $cafe = $this->actingCafe($request);
 
@@ -539,7 +539,7 @@ class CafeAdminController extends Controller
      * 10. Get branch detail
      * GET /api/v1/cafe-admin/branches/{id}
      */
-    public function getBranch(Request $request, $id)
+    public function getBranch(Request $request, string $id)
     {
         $cafe = $this->actingCafe($request);
 
@@ -564,7 +564,7 @@ class CafeAdminController extends Controller
      * 11. Update branch basic info
      * PUT /api/v1/cafe-admin/branches/{id}
      */
-    public function updateBranch(Request $request, $id)
+    public function updateBranch(Request $request, string $id)
     {
         // Check if the branch exists
         $branch = Branch::find($id);
@@ -617,7 +617,7 @@ class CafeAdminController extends Controller
      * 12. Delete branch
      * DELETE /api/v1/cafe-admin/branches/{id}
      */
-    public function deleteBranch(Request $request, $id)
+    public function deleteBranch(Request $request, string $id)
     {
         $cafe = $this->actingCafe($request);
 
@@ -655,7 +655,7 @@ class CafeAdminController extends Controller
      * 13. Toggle branch status
      * PUT /api/v1/cafe-admin/branches/{id}/status
      */
-    public function toggleBranchStatus(Request $request, $id)
+    public function toggleBranchStatus(Request $request, string $id)
     {
         $cafe = $this->actingCafe($request);
 
@@ -683,7 +683,7 @@ class CafeAdminController extends Controller
      * 14. Get branch setup progress
      * GET /api/v1/cafe-admin/branches/{id}/setup-progress
      */
-    public function getBranchSetupProgress(Request $request, $id)
+    public function getBranchSetupProgress(Request $request, string $id)
     {
         $cafe = $this->actingCafe($request);
 
@@ -723,7 +723,7 @@ class CafeAdminController extends Controller
      * 15. Get branch overview (all-in-one)
      * GET /api/v1/cafe-admin/branches/{id}/overview
      */
-    public function getBranchOverview(Request $request, $id)
+    public function getBranchOverview(Request $request, string $id)
     {
         $cafe = $this->actingCafe($request);
 
@@ -919,7 +919,7 @@ class CafeAdminController extends Controller
      * 18. List branch amenities
      * GET /api/v1/cafe-admin/branches/{id}/amenities
      */
-    public function listAmenities(Request $request, $id)
+    public function listAmenities(Request $request, string $id)
     {
         $cafe = $this->actingCafe($request);
 
@@ -943,7 +943,7 @@ class CafeAdminController extends Controller
      * 19. Add single amenity
      * POST /api/v1/cafe-admin/branches/{id}/amenities
      */
-    public function addAmenity(Request $request, $id)
+    public function addAmenity(Request $request, string $id)
     {
         $cafe = $this->actingCafe($request);
 
@@ -986,7 +986,7 @@ class CafeAdminController extends Controller
      * 20. Remove amenity
      * DELETE /api/v1/cafe-admin/amenities/{id}
      */
-    public function removeAmenity(Request $request, $id)
+    public function removeAmenity(Request $request, string $id)
     {
         $cafe = $this->actingCafe($request);
 
