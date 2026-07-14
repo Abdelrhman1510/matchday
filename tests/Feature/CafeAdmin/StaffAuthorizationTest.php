@@ -118,4 +118,25 @@ class StaffAuthorizationTest extends TestCase
         $this->getJson('/api/v1/cafe-admin/bookings')->assertStatus(200);
         $this->getJson('/api/v1/cafe-admin/subscription')->assertStatus(200);
     }
+
+    /** @test */
+    public function staff_can_reach_subscription_gated_endpoint_with_permission()
+    {
+        // Cafe on a plan that includes analytics; staff granted view-analytics.
+        $this->seed(RolesAndPermissionsSeeder::class);
+        $owner = User::factory()->cafeOwner()->create();
+        $cafe = Cafe::factory()->create(['owner_id' => $owner->id]);
+        $branch = Branch::factory()->create(['cafe_id' => $cafe->id]);
+        $plan = SubscriptionPlan::factory()->create([
+            'is_active' => true, 'has_analytics' => true, 'max_staff_members' => 10,
+        ]);
+        CafeSubscription::factory()->create([
+            'cafe_id' => $cafe->id, 'plan_id' => $plan->id, 'status' => 'active',
+            'starts_at' => now()->subMonth(), 'expires_at' => now()->addMonth(),
+        ]);
+        $staff = $this->makeStaff($cafe, [$branch->id], ['view-analytics']);
+        Sanctum::actingAs($staff);
+
+        $this->getJson('/api/v1/cafe-admin/analytics/overview')->assertStatus(200);
+    }
 }

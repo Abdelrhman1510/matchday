@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\CafeContextResolver;
 use App\Services\SubscriptionEnforcementService;
 use Closure;
 use Illuminate\Http\Request;
@@ -10,7 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 class EnforceSubscription
 {
     public function __construct(
-        protected SubscriptionEnforcementService $enforcement
+        protected SubscriptionEnforcementService $enforcement,
+        protected CafeContextResolver $contextResolver,
     ) {
     }
 
@@ -21,7 +23,10 @@ class EnforceSubscription
      */
     public function handle(Request $request, Closure $next, ?string $feature = null): Response
     {
-        $cafe = $request->user()?->ownedCafes()?->first();
+        // Resolve the acting cafe for owner OR assigned staff (not just owners).
+        $cafe = $request->user()
+            ? $this->contextResolver->resolve($request->user())?->cafe
+            : null;
 
         if (!$cafe) {
             return response()->json([
