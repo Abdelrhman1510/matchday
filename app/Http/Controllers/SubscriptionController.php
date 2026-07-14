@@ -46,7 +46,7 @@ class SubscriptionController extends Controller
                 ], 403);
             }
         } else {
-            $cafe = $request->user()->ownedCafes()->first();
+            $cafe = $this->actingCafe($request);
             if (!$cafe) {
                 return response()->json([
                     'success' => false,
@@ -117,7 +117,7 @@ class SubscriptionController extends Controller
             ], 422);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -209,7 +209,7 @@ class SubscriptionController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -259,7 +259,7 @@ class SubscriptionController extends Controller
             ], 422);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -298,7 +298,7 @@ class SubscriptionController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe) {
             return response()->json([
                 'success' => false,
@@ -339,7 +339,7 @@ class SubscriptionController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe) {
             return response()->json([
                 'success' => false,
@@ -378,7 +378,7 @@ class SubscriptionController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe) {
             return response()->json([
                 'success' => false,

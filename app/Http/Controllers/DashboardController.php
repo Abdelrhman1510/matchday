@@ -34,7 +34,7 @@ class DashboardController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -112,7 +112,7 @@ class DashboardController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -189,7 +189,7 @@ class DashboardController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([

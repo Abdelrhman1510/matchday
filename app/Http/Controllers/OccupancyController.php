@@ -21,7 +21,7 @@ class OccupancyController extends Controller
 
     protected function getOwnerCafe(Request $request)
     {
-        return $request->user()->ownedCafes()->first();
+        return $this->actingCafe($request);
     }
 
     protected function getCurrentBranch(Request $request)

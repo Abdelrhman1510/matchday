@@ -97,7 +97,7 @@ class CafeAdminController extends Controller
                 return response()->json(['success' => false, 'message' => 'You do not own this cafe'], 403);
             }
         } else {
-            $cafe = $request->user()->ownedCafes()->first();
+            $cafe = $this->actingCafe($request);
             if (!$cafe) {
                 return response()->json(['success' => false, 'message' => 'No cafe found for this owner'], 404);
             }
@@ -136,7 +136,7 @@ class CafeAdminController extends Controller
      */
     public function uploadLogo(Request $request)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -197,7 +197,7 @@ class CafeAdminController extends Controller
      */
     public function getMyCafe(Request $request)
     {
-        $cafe = $request->user()->ownedCafes()->with(['branches'])->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -205,6 +205,8 @@ class CafeAdminController extends Controller
                 'message' => 'No cafe found for this owner',
             ], 404);
         }
+
+        $cafe->load('branches');
 
         return response()->json([
             'success' => true,
@@ -218,7 +220,7 @@ class CafeAdminController extends Controller
      */
     public function getOnboardingStatus(Request $request)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -275,7 +277,7 @@ class CafeAdminController extends Controller
      */
     public function listBranches(Request $request)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -314,7 +316,7 @@ class CafeAdminController extends Controller
      */
     public function createBranch(Request $request)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -382,7 +384,7 @@ class CafeAdminController extends Controller
      */
     public function updateBranchHours(Request $request, $id)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -456,7 +458,7 @@ class CafeAdminController extends Controller
      */
     public function addAmenitiesBulk(Request $request, $id)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -539,7 +541,7 @@ class CafeAdminController extends Controller
      */
     public function getBranch(Request $request, $id)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -573,7 +575,7 @@ class CafeAdminController extends Controller
             ], 404);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         // Check ownership
         if (!$cafe || $branch->cafe_id !== $cafe->id) {
@@ -617,7 +619,7 @@ class CafeAdminController extends Controller
      */
     public function deleteBranch(Request $request, $id)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -655,7 +657,7 @@ class CafeAdminController extends Controller
      */
     public function toggleBranchStatus(Request $request, $id)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -683,7 +685,7 @@ class CafeAdminController extends Controller
      */
     public function getBranchSetupProgress(Request $request, $id)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -723,7 +725,7 @@ class CafeAdminController extends Controller
      */
     public function getBranchOverview(Request $request, $id)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -841,7 +843,7 @@ class CafeAdminController extends Controller
      */
     public function switchCurrentBranch(Request $request)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -886,7 +888,7 @@ class CafeAdminController extends Controller
      */
     public function getCurrentBranch(Request $request)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json(['success' => false, 'message' => 'No cafe found for this owner'], 404);
@@ -919,7 +921,7 @@ class CafeAdminController extends Controller
      */
     public function listAmenities(Request $request, $id)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -943,7 +945,7 @@ class CafeAdminController extends Controller
      */
     public function addAmenity(Request $request, $id)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -986,7 +988,7 @@ class CafeAdminController extends Controller
      */
     public function removeAmenity(Request $request, $id)
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([

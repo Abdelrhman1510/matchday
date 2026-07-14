@@ -27,7 +27,7 @@ class MatchAdminController extends Controller
 
     protected function getOwnerCafe(Request $request)
     {
-        return $request->user()->ownedCafes()->first();
+        return $this->actingCafe($request);
     }
 
     protected function getOwnerMatch(Request $request, int $matchId): ?GameMatch

@@ -29,7 +29,7 @@ class AnalyticsController extends Controller
             return response()->json(['success' => false, 'message' => 'You do not have permission to view analytics.'], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe && $request->user()->role !== 'admin') {
             return response()->json(['success' => false, 'message' => 'No cafe found for this owner.'], 404);
         }
@@ -76,7 +76,7 @@ class AnalyticsController extends Controller
             return response()->json(['success' => false, 'message' => 'You do not have permission to view analytics.'], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe && $request->user()->role !== 'admin') {
             return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
         }
@@ -125,7 +125,7 @@ class AnalyticsController extends Controller
             return response()->json(['success' => false, 'message' => 'You do not have permission to view analytics.'], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe && $request->user()->role !== 'admin') {
             return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
         }
@@ -164,7 +164,7 @@ class AnalyticsController extends Controller
             return response()->json(['success' => false, 'message' => 'Permission denied.'], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe) {
             return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
         }
@@ -187,7 +187,7 @@ class AnalyticsController extends Controller
             return response()->json(['success' => false, 'message' => 'Permission denied.'], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe) {
             return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
         }
@@ -212,7 +212,7 @@ class AnalyticsController extends Controller
             return response()->json(['success' => false, 'message' => 'Permission denied.'], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe) {
             return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
         }
@@ -281,7 +281,7 @@ class AnalyticsController extends Controller
         if ($branchId) {
             $query->where('branch_id', $branchId);
         } else {
-            $cafe = $request->user()->ownedCafes()->first();
+            $cafe = $this->actingCafe($request);
             if ($cafe) {
                 $branchIds = $cafe->branches()->pluck('id');
                 $query->whereIn('branch_id', $branchIds);

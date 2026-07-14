@@ -26,7 +26,7 @@ class SeatingAdminController extends Controller
 
     protected function getOwnerBranch(Request $request, int $branchId): ?Branch
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe) {
             return null;
         }
@@ -36,7 +36,7 @@ class SeatingAdminController extends Controller
 
     protected function getOwnerSection(Request $request, int $sectionId): ?SeatingSection
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe) {
             return null;
         }
@@ -57,7 +57,7 @@ class SeatingAdminController extends Controller
 
     protected function getOwnerSeat(Request $request, int $seatId): ?Seat
     {
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe) {
             return null;
         }

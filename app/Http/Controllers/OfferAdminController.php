@@ -38,7 +38,7 @@ class OfferAdminController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -83,7 +83,7 @@ class OfferAdminController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -156,7 +156,7 @@ class OfferAdminController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -195,7 +195,7 @@ class OfferAdminController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -267,7 +267,7 @@ class OfferAdminController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -316,7 +316,7 @@ class OfferAdminController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -379,7 +379,7 @@ class OfferAdminController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -440,7 +440,7 @@ class OfferAdminController extends Controller
             return response()->json(['success' => false, 'message' => 'You do not have permission to manage offers.'], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe) {
             return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
         }
@@ -521,7 +521,7 @@ class OfferAdminController extends Controller
             return response()->json(['success' => false, 'message' => 'You do not have permission to manage offers.'], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe) {
             return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
         }

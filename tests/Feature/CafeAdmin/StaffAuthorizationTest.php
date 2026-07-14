@@ -1,0 +1,79 @@
+<?php
+
+namespace Tests\Feature\CafeAdmin;
+
+use App\Models\Branch;
+use App\Models\Cafe;
+use App\Models\CafeSubscription;
+use App\Models\SubscriptionPlan;
+use App\Models\User;
+use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
+
+class StaffAuthorizationTest extends TestCase
+{
+    use RefreshDatabase;
+
+    /**
+     * Owner + cafe + one branch + an ACTIVE subscription that allows staff
+     * (POST /staff enforces canAddStaff).
+     *
+     * @return array{0: User, 1: Cafe, 2: Branch}
+     */
+    protected function cafeWithOwner(): array
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+        $owner = User::factory()->cafeOwner()->create();
+        $cafe = Cafe::factory()->create(['owner_id' => $owner->id]);
+        $branch = Branch::factory()->create(['cafe_id' => $cafe->id]);
+        $plan = SubscriptionPlan::factory()->create(['max_staff_members' => 10, 'is_active' => true]);
+        CafeSubscription::factory()->create([
+            'cafe_id' => $cafe->id,
+            'plan_id' => $plan->id,
+            'status' => 'active',
+            'starts_at' => now()->subMonth(),
+            'expires_at' => now()->addMonth(),
+        ]);
+        return [$owner, $cafe, $branch];
+    }
+
+    protected function makeStaff(Cafe $cafe, array $branchIds, array $permissions, string $role = 'manager'): User
+    {
+        $staff = User::factory()->staff()->create();
+        $staff->staffMemberships()->create([
+            'cafe_id' => $cafe->id, 'role' => $role, 'invitation_status' => 'accepted',
+        ]);
+        foreach ($branchIds as $bid) {
+            $staff->branchAssignments()->attach($bid, ['role' => $role]);
+        }
+        foreach ($permissions as $p) {
+            $staff->givePermissionTo($p);
+        }
+        return $staff;
+    }
+
+    /** @test */
+    public function staff_can_see_their_cafe()
+    {
+        [$owner, $cafe, $branch] = $this->cafeWithOwner();
+        $staff = $this->makeStaff($cafe, [$branch->id], []);
+        Sanctum::actingAs($staff);
+
+        $this->getJson('/api/v1/cafe-admin/cafe')
+            ->assertStatus(200)
+            ->assertJsonPath('data.id', $cafe->id);
+    }
+
+    /** @test */
+    public function owner_can_still_see_their_cafe()
+    {
+        [$owner, $cafe] = $this->cafeWithOwner();
+        Sanctum::actingAs($owner);
+
+        $this->getJson('/api/v1/cafe-admin/cafe')
+            ->assertStatus(200)
+            ->assertJsonPath('data.id', $cafe->id);
+    }
+}

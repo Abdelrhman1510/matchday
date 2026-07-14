@@ -36,7 +36,7 @@ class StaffController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -92,7 +92,7 @@ class StaffController extends Controller
             ], 422);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -159,7 +159,7 @@ class StaffController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -219,7 +219,7 @@ class StaffController extends Controller
             ], 422);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -287,7 +287,7 @@ class StaffController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -337,7 +337,7 @@ class StaffController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
             return response()->json([
@@ -407,7 +407,7 @@ class StaffController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe) {
             return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
         }
@@ -464,7 +464,7 @@ class StaffController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe) {
             return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
         }
@@ -504,7 +504,7 @@ class StaffController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe) {
             return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
         }
@@ -546,7 +546,7 @@ class StaffController extends Controller
             ], 403);
         }
 
-        $cafe = $request->user()->ownedCafes()->first();
+        $cafe = $this->actingCafe($request);
         if (!$cafe) {
             return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
         }
