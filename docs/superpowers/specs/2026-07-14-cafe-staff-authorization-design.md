@@ -48,6 +48,14 @@ Today none of this works: `/cafe-admin/*` controllers resolve the cafe with
 Three isolated pieces; controller bodies change only where they resolve the cafe or filter by
 branch.
 
+**Design principle — minimize controller changes.** The `CafeContextResolver` service and the
+`cafe.permission` middleware absorb as much logic as possible (resolution, ownership, permission
+gating, owner-only, branch-target guards). Existing controllers should change in only two ways:
+(1) replace the `ownedCafes()->first()` resolution line with `$this->actingCafe($request)`, and
+(2) apply `accessibleBranchIds` scoping where branch-owned data is queried (Phase 2). No
+per-method permission checks are added to controllers except the staff-management guardrails
+(§5), which are inherently controller logic.
+
 ### 3.1 `CafeContextResolver` (service) + `ResolvesCafeContext` (trait)
 
 A service that, given the authenticated user, returns a `CafeContext`:
@@ -209,8 +217,14 @@ Feature tests (extend `tests/Feature/CafeAdmin`, in-memory SQLite):
 - **Phase 1 — foundation & gating:** `CafeContext` + `CafeContextResolver` + `ResolvesCafeContext`
   trait; replace all `ownedCafes()->first()` with `actingCafe()`; `cafe.permission` middleware
   (incl. `owner` token) applied across the route map (§4); Phase-1 branch rules (§6.1); staff-mgmt
-  guardrails (§5). Deliverable: staff can log in, see their cafe + assigned branches, and are
-  permission-gated; owners unchanged.
+  guardrails (§5). Owners unchanged.
+
+  **Phase 1 is complete only when a staff member can:**
+  1. Log in successfully (existing auth) and reach `/cafe-admin/*`.
+  2. View their cafe and assigned branches (`GET /cafe`, `GET /branches`, `GET /current-branch`).
+  3. Switch the current branch only to an assigned branch (403 on unassigned).
+  4. Access only the endpoints their granted permissions allow (403 otherwise); owner-only
+     routes (subscription/billing/createCafe) always 403 for staff.
 - **Phase 2 — data isolation:** branch-scope the data queries per controller group (§6.2),
   one group per task.
 
