@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\Cafe;
 use App\Models\Branch;
 use App\Models\BranchHour;
-use App\Models\Amenity;
 use App\Models\CafeSubscription;
 use App\Models\SubscriptionPlan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -146,22 +145,27 @@ class BranchAdminTest extends TestCase
         $owner = User::factory()->cafeOwner()->create();
         $cafe = Cafe::factory()->create(['owner_id' => $owner->id]);
         $branch = Branch::factory()->create(['cafe_id' => $cafe->id]);
-        $amenity1 = Amenity::factory()->create(['name' => 'WiFi']);
-        $amenity2 = Amenity::factory()->create(['name' => 'Parking']);
         Sanctum::actingAs($owner);
 
         $response = $this->postJson("/api/v1/admin/branches/{$branch->id}/amenities", [
-            'amenity_ids' => [$amenity1->id, $amenity2->id],
+            'amenities' => [
+                ['name' => 'WiFi', 'icon' => 'wifi'],
+                ['name' => 'Parking', 'icon' => 'parking'],
+            ],
         ]);
 
-        $response->assertStatus(200)
+        $response->assertStatus(201)
             ->assertJson([
                 'success' => true,
             ]);
 
-        $this->assertDatabaseHas('branch_amenity', [
+        $this->assertDatabaseHas('branch_amenities', [
             'branch_id' => $branch->id,
-            'amenity_id' => $amenity1->id,
+            'name' => 'WiFi',
+        ]);
+        $this->assertDatabaseHas('branch_amenities', [
+            'branch_id' => $branch->id,
+            'name' => 'Parking',
         ]);
     }
 

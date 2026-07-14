@@ -469,31 +469,7 @@ class CafeAdminController extends Controller
 
         $branch = $cafe->branches()->findOrFail($id);
 
-        // Support both formats: amenity_ids (pivot) and amenities (create new)
-        if ($request->has('amenity_ids')) {
-            $validator = Validator::make($request->all(), [
-                'amenity_ids' => 'required|array|min:1',
-                'amenity_ids.*' => 'required|integer|exists:amenities,id',
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validation failed',
-                    'errors' => $validator->errors(),
-                ], 422);
-            }
-
-            // Sync amenities via pivot table
-            $branch->amenities()->syncWithoutDetaching($request->amenity_ids);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Amenities added successfully',
-                'data' => $branch->amenities,
-            ]);
-        }
-
+        // Amenities are per-branch entities (BranchAmenity: name + icon).
         $validator = Validator::make($request->all(), [
             'amenities' => 'required|array|min:1',
             'amenities.*.name' => 'required|string|max:100',
