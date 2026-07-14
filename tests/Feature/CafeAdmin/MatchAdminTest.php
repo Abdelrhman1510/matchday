@@ -62,7 +62,9 @@ class MatchAdminTest extends TestCase
             ])
             ->assertJson([
                 'success' => true,
-                'data' => ['status' => 'draft'],
+                // "Unpublished" is expressed by is_published=false; the timeline
+                // status of a new match is the schema default 'upcoming'.
+                'data' => ['status' => 'upcoming'],
             ]);
 
         $this->assertDatabaseHas('game_matches', [
@@ -150,7 +152,7 @@ class MatchAdminTest extends TestCase
         $response->assertStatus(200);
 
         $match->refresh();
-        $this->assertEquals('completed', $match->status);
+        $this->assertEquals('finished', $match->status);
     }
 
     /** @test */
