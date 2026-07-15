@@ -21,7 +21,10 @@ class MatchAdminService
      */
     public function listMatches(Cafe $cafe, array $filters = []): array
     {
-        $branchIds = $cafe->branches()->pluck('id');
+        // Phase 2: caller may pass an explicit accessible-branch set; default to all cafe branches.
+        $branchIds = array_key_exists('branch_ids', $filters)
+            ? collect($filters['branch_ids'])
+            : $cafe->branches()->pluck('id');
 
         $query = GameMatch::whereIn('branch_id', $branchIds)
             ->with(['homeTeam', 'awayTeam', 'branch'])

@@ -70,6 +70,7 @@ class MatchAdminController extends Controller
             'status' => $request->query('status'),
             'branch_id' => $request->query('branch_id'),
             'per_page' => $request->query('per_page', 15),
+            'branch_ids' => $this->accessibleBranchIds($request),
         ]);
 
         return response()->json([
@@ -155,6 +156,11 @@ class MatchAdminController extends Controller
             ], 404);
         }
 
+        // Staff may only create matches on their assigned branches (owner passes).
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
+        }
+
         $match = $this->matchService->createMatch($branch->id, $validator->validated());
 
         return response()->json([
@@ -186,6 +192,10 @@ class MatchAdminController extends Controller
             ], 404);
         }
 
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $match->branch_id)) {
+            return $deny;
+        }
+
         $result = $this->matchService->getMatchDetail($match);
 
         return response()->json([
@@ -215,6 +225,10 @@ class MatchAdminController extends Controller
                 'success' => false,
                 'message' => 'Match not found or does not belong to your cafe.',
             ], 404);
+        }
+
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $match->branch_id)) {
+            return $deny;
         }
 
         $validator = Validator::make($request->all(), [
@@ -291,6 +305,10 @@ class MatchAdminController extends Controller
             ], 404);
         }
 
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $match->branch_id)) {
+            return $deny;
+        }
+
         $result = $this->matchService->cancelMatch($match);
 
         if (!$result['success']) {
@@ -333,6 +351,10 @@ class MatchAdminController extends Controller
             ], 404);
         }
 
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $match->branch_id)) {
+            return $deny;
+        }
+
         $result = $this->matchService->publishMatch($match);
 
         if (!$result['success']) {
@@ -369,6 +391,10 @@ class MatchAdminController extends Controller
                 'success' => false,
                 'message' => 'Match not found or does not belong to your cafe.',
             ], 404);
+        }
+
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $match->branch_id)) {
+            return $deny;
         }
 
         $validator = Validator::make($request->all(), [
@@ -422,6 +448,10 @@ class MatchAdminController extends Controller
             ], 404);
         }
 
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $match->branch_id)) {
+            return $deny;
+        }
+
         $validator = Validator::make($request->all(), [
             'status' => 'required|string|in:upcoming,live,finished',
         ]);
@@ -470,6 +500,10 @@ class MatchAdminController extends Controller
                 'success' => false,
                 'message' => 'Match not found or does not belong to your cafe.',
             ], 404);
+        }
+
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $match->branch_id)) {
+            return $deny;
         }
 
         $result = $this->matchService->sendReminder($match);

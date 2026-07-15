@@ -95,4 +95,31 @@ class BranchDataIsolationTest extends TestCase
         $this->assertContains($bookingA->id, $ids);
         $this->assertContains($bookingB->id, $ids);
     }
+
+    /** @test */
+    public function staff_matches_list_shows_only_assigned_branch()
+    {
+        [$owner, $cafe, $branchA, $branchB] = $this->isolationCafe();
+        $matchA = GameMatch::factory()->create(['branch_id' => $branchA->id]);
+        $matchB = GameMatch::factory()->create(['branch_id' => $branchB->id]);
+        $staff = $this->makeStaff($cafe, [$branchA->id], ['manage-matches']);
+        Sanctum::actingAs($staff);
+
+        $res = $this->getJson('/api/v1/cafe-admin/matches')->assertStatus(200);
+        $ids = collect($res->json('data'))->pluck('id')->all();
+        $this->assertContains($matchA->id, $ids);
+        $this->assertNotContains($matchB->id, $ids);
+    }
+
+    /** @test */
+    public function staff_cannot_modify_unassigned_branch_match()
+    {
+        [$owner, $cafe, $branchA, $branchB] = $this->isolationCafe();
+        $matchB = GameMatch::factory()->create(['branch_id' => $branchB->id, 'is_published' => false]);
+        $staff = $this->makeStaff($cafe, [$branchA->id], ['manage-matches']);
+        Sanctum::actingAs($staff);
+
+        $this->getJson("/api/v1/cafe-admin/matches/{$matchB->id}")->assertStatus(403);
+        $this->postJson("/api/v1/cafe-admin/matches/{$matchB->id}/publish")->assertStatus(403);
+    }
 }
