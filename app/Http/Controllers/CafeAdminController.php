@@ -286,7 +286,10 @@ class CafeAdminController extends Controller
             ], 404);
         }
 
+        // Staff see only their assigned branches; owner's accessible set = all cafe branches.
+        $accessibleBranchIds = $this->cafeContext($request)->accessibleBranchIds;
         $branches = $cafe->branches()
+            ->whereIn('id', $accessibleBranchIds)
             ->withCount([
                 'bookings as active_bookings_count' => function ($query) {
                     $query->where('status', 'confirmed');
@@ -848,6 +851,14 @@ class CafeAdminController extends Controller
                 'success' => false,
                 'message' => 'Branch not found or does not belong to your cafe',
             ], 404);
+        }
+
+        // Staff may switch only to branches assigned to them (owners pass through).
+        if (!$this->cafeContext($request)->canAccessBranch((int) $branch->id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to perform this action.',
+            ], 403);
         }
 
         $cafe->update(['current_branch_id' => $branch->id]);

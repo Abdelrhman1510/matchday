@@ -139,4 +139,45 @@ class StaffAuthorizationTest extends TestCase
 
         $this->getJson('/api/v1/cafe-admin/analytics/overview')->assertStatus(200);
     }
+
+    /** @test */
+    public function staff_can_switch_to_assigned_branch_but_not_others()
+    {
+        [$owner, $cafe, $assigned] = $this->cafeWithOwner();
+        $other = Branch::factory()->create(['cafe_id' => $cafe->id]);
+        $staff = $this->makeStaff($cafe, [$assigned->id], ['manage-branches']);
+        Sanctum::actingAs($staff);
+
+        $this->putJson('/api/v1/cafe-admin/current-branch', ['branch_id' => $assigned->id])
+            ->assertStatus(200);
+
+        $this->putJson('/api/v1/cafe-admin/current-branch', ['branch_id' => $other->id])
+            ->assertStatus(403);
+    }
+
+    /** @test */
+    public function list_branches_returns_only_assigned_for_staff()
+    {
+        [$owner, $cafe, $assigned] = $this->cafeWithOwner();
+        $other = Branch::factory()->create(['cafe_id' => $cafe->id]);
+        $staff = $this->makeStaff($cafe, [$assigned->id], []);
+        Sanctum::actingAs($staff);
+
+        $res = $this->getJson('/api/v1/cafe-admin/branches')->assertStatus(200);
+        $ids = collect($res->json('data'))->pluck('id')->all();
+        $this->assertContains($assigned->id, $ids);
+        $this->assertNotContains($other->id, $ids);
+    }
+
+    /** @test */
+    public function list_branches_returns_all_for_owner()
+    {
+        [$owner, $cafe, $b1] = $this->cafeWithOwner();
+        $b2 = Branch::factory()->create(['cafe_id' => $cafe->id]);
+        Sanctum::actingAs($owner);
+
+        $res = $this->getJson('/api/v1/cafe-admin/branches')->assertStatus(200);
+        $ids = collect($res->json('data'))->pluck('id')->all();
+        $this->assertEqualsCanonicalizing([$b1->id, $b2->id], $ids);
+    }
 }
