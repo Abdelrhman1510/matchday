@@ -15,7 +15,10 @@ class BookingAdminService
      */
     public function listBookings(Cafe $cafe, array $filters = []): array
     {
-        $branchIds = $cafe->branches()->pluck('id');
+        // Phase 2: caller may pass an explicit accessible-branch set; default to all cafe branches.
+        $branchIds = array_key_exists('branch_ids', $filters)
+            ? collect($filters['branch_ids'])
+            : $cafe->branches()->pluck('id');
 
         $query = Booking::where(function($q) use ($branchIds) {
                 $q->whereIn('branch_id', $branchIds)
@@ -185,9 +188,10 @@ class BookingAdminService
     /**
      * Today's booking summary for the café.
      */
-    public function getTodaySummary(Cafe $cafe): array
+    public function getTodaySummary(Cafe $cafe, ?array $branchIds = null): array
     {
-        $branchIds = $cafe->branches()->pluck('id');
+        // Phase 2: scope to caller-supplied accessible branches; default to all cafe branches.
+        $branchIds = $branchIds !== null ? collect($branchIds) : $cafe->branches()->pluck('id');
 
         $todayBookings = Booking::where(function($q) use ($branchIds) {
                 $q->whereIn('branch_id', $branchIds)

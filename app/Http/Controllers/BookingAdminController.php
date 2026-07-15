@@ -32,6 +32,8 @@ class BookingAdminController extends Controller
         $cafe = $this->getOwnerCafe($request);
         if (!$cafe) return null;
 
+        // Cafe-scoped resolution (truly-missing → null → 404). Branch accessibility
+        // is enforced by the caller via denyIfBranchInaccessible (403 for unassigned).
         $branchIds = $cafe->branches()->pluck('id');
 
         return Booking::where(function($q) use ($branchIds) {
@@ -79,6 +81,7 @@ class BookingAdminController extends Controller
             'match_id' => $request->query('match_id'),
             'date' => $request->query('date'),
             'per_page' => $request->query('per_page', 15),
+            'branch_ids' => $this->accessibleBranchIds($request),
         ]);
 
         $bookings = $result['bookings'];
@@ -122,6 +125,19 @@ class BookingAdminController extends Controller
             ], 404);
         }
 
+        // Staff may only act on bookings for their assigned branches (owner passes).
+        // A booking links to a branch directly and/or through its match; it is accessible
+        // if either linkage is in the accessible set (mirrors getOwnerBooking's OR scope).
+        $accessible = $this->accessibleBranchIds($request);
+        $bookingAccessible = in_array((int) $booking->branch_id, $accessible, true)
+            || ($booking->match && in_array((int) $booking->match->branch_id, $accessible, true));
+        if (!$bookingAccessible) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to perform this action.',
+            ], 403);
+        }
+
         $cafe = $this->getOwnerCafe($request);
         $result = $this->bookingService->getBookingDetail($booking, $cafe);
 
@@ -153,6 +169,19 @@ class BookingAdminController extends Controller
                 'success' => false,
                 'message' => 'Booking not found or does not belong to your cafe.',
             ], 404);
+        }
+
+        // Staff may only act on bookings for their assigned branches (owner passes).
+        // A booking links to a branch directly and/or through its match; it is accessible
+        // if either linkage is in the accessible set (mirrors getOwnerBooking's OR scope).
+        $accessible = $this->accessibleBranchIds($request);
+        $bookingAccessible = in_array((int) $booking->branch_id, $accessible, true)
+            || ($booking->match && in_array((int) $booking->match->branch_id, $accessible, true));
+        if (!$bookingAccessible) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to perform this action.',
+            ], 403);
         }
 
         $result = $this->bookingService->checkIn($booking);
@@ -207,6 +236,19 @@ class BookingAdminController extends Controller
             ], 404);
         }
 
+        // Staff may only act on bookings for their assigned branches (owner passes).
+        // A booking links to a branch directly and/or through its match; it is accessible
+        // if either linkage is in the accessible set (mirrors getOwnerBooking's OR scope).
+        $accessible = $this->accessibleBranchIds($request);
+        $bookingAccessible = in_array((int) $booking->branch_id, $accessible, true)
+            || ($booking->match && in_array((int) $booking->match->branch_id, $accessible, true));
+        if (!$bookingAccessible) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to perform this action.',
+            ], 403);
+        }
+
         $result = $this->bookingService->cancelBooking($booking);
 
         if (!$result['success']) {
@@ -249,7 +291,7 @@ class BookingAdminController extends Controller
             ], 404);
         }
 
-        $summary = $this->bookingService->getTodaySummary($cafe);
+        $summary = $this->bookingService->getTodaySummary($cafe, $this->accessibleBranchIds($request));
 
         return response()->json([
             'success' => true,

@@ -30,6 +30,16 @@ trait ResolvesCafeContext
     }
 
     /**
+     * Accessible branch ids for the acting user.
+     * Owner = all cafe branches; staff = assigned branches within the cafe;
+     * [] when no cafe context resolves (callers guard the no-cafe case with 404 first).
+     */
+    protected function accessibleBranchIds(Request $request): array
+    {
+        return $this->cafeContext($request)?->accessibleBranchIds ?? [];
+    }
+
+    /**
      * Object-level branch authorization for the acting user.
      *
      * Call AFTER a branch has been confirmed to belong to the acting cafe
