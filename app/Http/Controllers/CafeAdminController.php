@@ -398,6 +398,10 @@ class CafeAdminController extends Controller
 
         $branch = $cafe->branches()->findOrFail($id);
 
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
+        }
+
         $validator = Validator::make($request->all(), [
             'hours' => 'required|array|min:1',
             'hours.*.day_of_week' => 'required|string',
@@ -472,6 +476,10 @@ class CafeAdminController extends Controller
 
         $branch = $cafe->branches()->findOrFail($id);
 
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
+        }
+
         // Amenities are per-branch entities (BranchAmenity: name + icon).
         $validator = Validator::make($request->all(), [
             'amenities' => 'required|array|min:1',
@@ -533,6 +541,10 @@ class CafeAdminController extends Controller
             ->with(['hours', 'amenities', 'seatingSections', 'cafe'])
             ->findOrFail($id);
 
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
+        }
+
         return response()->json([
             'success' => true,
             'data' => new BranchDetailResource($branch),
@@ -562,6 +574,10 @@ class CafeAdminController extends Controller
                 'success' => false,
                 'message' => 'This branch does not belong to your cafe',
             ], 403);
+        }
+
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
         }
 
         $validator = Validator::make($request->all(), [
@@ -609,6 +625,10 @@ class CafeAdminController extends Controller
 
         $branch = $cafe->branches()->findOrFail($id);
 
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
+        }
+
         // Check for active bookings
         $activeBookingsCount = $branch->bookings()
             ->where('status', 'confirmed')
@@ -647,6 +667,10 @@ class CafeAdminController extends Controller
 
         $branch = $cafe->branches()->findOrFail($id);
 
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
+        }
+
         $branch->update([
             'is_open' => !$branch->is_open,
         ]);
@@ -674,6 +698,10 @@ class CafeAdminController extends Controller
         }
 
         $branch = $cafe->branches()->findOrFail($id);
+
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
+        }
 
         $progress = [
             'basic_info' => true, // Always true if branch exists
@@ -711,6 +739,14 @@ class CafeAdminController extends Controller
                 'success' => false,
                 'message' => 'No cafe found for this owner',
             ], 404);
+        }
+
+        // Confirm the branch belongs to the cafe (404) and is accessible (403)
+        // before serving any cached overview data.
+        $branch = $cafe->branches()->findOrFail($id);
+
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
         }
 
         // Cache key for this overview
@@ -918,6 +954,10 @@ class CafeAdminController extends Controller
         }
 
         $branch = $cafe->branches()->findOrFail($id);
+
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
+        }
         $amenities = $branch->amenities;
 
         return response()->json([
@@ -942,6 +982,10 @@ class CafeAdminController extends Controller
         }
 
         $branch = $cafe->branches()->findOrFail($id);
+
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
+        }
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:100',
@@ -993,6 +1037,10 @@ class CafeAdminController extends Controller
                 'success' => false,
                 'message' => 'Amenity not found or does not belong to your cafe',
             ], 404);
+        }
+
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
         }
 
         $amenity->delete();

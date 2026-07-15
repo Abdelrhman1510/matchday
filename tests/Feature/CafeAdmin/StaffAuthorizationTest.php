@@ -232,4 +232,34 @@ class StaffAuthorizationTest extends TestCase
             'role' => 'admin', 'permissions' => ['manage-offers'], 'branch_ids' => [$branch->id],
         ])->assertStatus(201);
     }
+
+    /** @test */
+    public function staff_cannot_read_or_modify_unassigned_branch_by_id()
+    {
+        [$owner, $cafe, $assigned] = $this->cafeWithOwner();
+        $other = Branch::factory()->create(['cafe_id' => $cafe->id]);
+        $staff = $this->makeStaff($cafe, [$assigned->id], ['manage-branches']);
+        Sanctum::actingAs($staff);
+
+        // Assigned branch: reachable.
+        $this->getJson("/api/v1/cafe-admin/branches/{$assigned->id}")->assertStatus(200);
+
+        // Unassigned branch in the SAME cafe: object-level 403 (IDOR guard).
+        $this->getJson("/api/v1/cafe-admin/branches/{$other->id}")->assertStatus(403);
+        $this->putJson("/api/v1/cafe-admin/branches/{$other->id}", ['name' => 'Hacked'])->assertStatus(403);
+        $this->deleteJson("/api/v1/cafe-admin/branches/{$other->id}")->assertStatus(403);
+        $this->getJson("/api/v1/cafe-admin/branches/{$other->id}/overview")->assertStatus(403);
+        $this->getJson("/api/v1/cafe-admin/branches/{$other->id}/setup-progress")->assertStatus(403);
+    }
+
+    /** @test */
+    public function owner_can_access_any_branch_by_id()
+    {
+        [$owner, $cafe, $b1] = $this->cafeWithOwner();
+        $b2 = Branch::factory()->create(['cafe_id' => $cafe->id]);
+        Sanctum::actingAs($owner);
+
+        $this->getJson("/api/v1/cafe-admin/branches/{$b1->id}")->assertStatus(200);
+        $this->getJson("/api/v1/cafe-admin/branches/{$b2->id}")->assertStatus(200);
+    }
 }
