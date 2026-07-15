@@ -180,4 +180,56 @@ class StaffAuthorizationTest extends TestCase
         $ids = collect($res->json('data'))->pluck('id')->all();
         $this->assertEqualsCanonicalizing([$b1->id, $b2->id], $ids);
     }
+
+    /** @test */
+    public function delegated_staff_cannot_create_admin_or_escalate()
+    {
+        [$owner, $cafe, $branch] = $this->cafeWithOwner();
+        $manager = $this->makeStaff($cafe, [$branch->id], ['manage-staff', 'manage-bookings']);
+        Sanctum::actingAs($manager);
+
+        // cannot create an admin
+        $this->postJson('/api/v1/cafe-admin/staff', [
+            'name' => 'X', 'email' => 'x1@example.com', 'password' => 'secret123',
+            'role' => 'admin', 'branch_ids' => [$branch->id],
+        ])->assertStatus(422);
+
+        // cannot grant a permission they don't hold (manage-offers)
+        $this->postJson('/api/v1/cafe-admin/staff', [
+            'name' => 'Y', 'email' => 'y1@example.com', 'password' => 'secret123',
+            'role' => 'staff', 'permissions' => ['manage-offers'], 'branch_ids' => [$branch->id],
+        ])->assertStatus(422);
+
+        // cannot assign a branch they aren't on
+        $other = Branch::factory()->create(['cafe_id' => $cafe->id]);
+        $this->postJson('/api/v1/cafe-admin/staff', [
+            'name' => 'Z', 'email' => 'z1@example.com', 'password' => 'secret123',
+            'role' => 'staff', 'branch_ids' => [$other->id],
+        ])->assertStatus(422);
+    }
+
+    /** @test */
+    public function delegated_staff_can_create_permitted_staff()
+    {
+        [$owner, $cafe, $branch] = $this->cafeWithOwner();
+        $manager = $this->makeStaff($cafe, [$branch->id], ['manage-staff', 'manage-bookings']);
+        Sanctum::actingAs($manager);
+
+        $this->postJson('/api/v1/cafe-admin/staff', [
+            'name' => 'OK', 'email' => 'ok1@example.com', 'password' => 'secret123',
+            'role' => 'staff', 'permissions' => ['manage-bookings'], 'branch_ids' => [$branch->id],
+        ])->assertStatus(201);
+    }
+
+    /** @test */
+    public function owner_is_not_restricted_by_guardrails()
+    {
+        [$owner, $cafe, $branch] = $this->cafeWithOwner();
+        Sanctum::actingAs($owner);
+
+        $this->postJson('/api/v1/cafe-admin/staff', [
+            'name' => 'Admin', 'email' => 'admin1@example.com', 'password' => 'secret123',
+            'role' => 'admin', 'permissions' => ['manage-offers'], 'branch_ids' => [$branch->id],
+        ])->assertStatus(201);
+    }
 }

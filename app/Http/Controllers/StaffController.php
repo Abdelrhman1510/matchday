@@ -22,6 +22,52 @@ class StaffController extends Controller
     }
 
     /**
+     * Enforce delegation guardrails for a non-owner acting on staff.
+     * Returns a JsonResponse to short-circuit with, or null to proceed.
+     * The owner is unrestricted; a delegated manager (manage-staff) is bounded:
+     * no admin role, no permission escalation, and only their own branches.
+     */
+    private function guardStaffDelegation(Request $request, array $data): ?\Illuminate\Http\JsonResponse
+    {
+        $ctx = $this->cafeContext($request);
+        if ($ctx === null || $ctx->isOwner) {
+            return null; // owner unrestricted
+        }
+
+        // 1) No admin creation/elevation.
+        if (($data['role'] ?? null) === 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'You cannot assign the admin role.',
+            ], 422);
+        }
+
+        // 2) No granting permissions the actor does not hold.
+        $requested = $data['permissions'] ?? [];
+        $escalated = array_values(array_diff($requested, $ctx->permissions));
+        if (!empty($escalated)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You cannot grant permissions you do not have.',
+                'errors' => ['permissions' => $escalated],
+            ], 422);
+        }
+
+        // 3) Branch bounds.
+        $branchIds = $data['branch_ids'] ?? [];
+        $outside = array_values(array_diff($branchIds, $ctx->accessibleBranchIds));
+        if (!empty($outside)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You can only assign your own branches.',
+                'errors' => ['branch_ids' => $outside],
+            ], 422);
+        }
+
+        return null;
+    }
+
+    /**
      * 1. GET /api/v1/cafe-admin/staff
      * List all staff with role, permissions, invitation status
      * Permission: manage-staff
@@ -93,6 +139,11 @@ class StaffController extends Controller
                 'success' => false,
                 'message' => 'One or more branches do not belong to your cafe.',
             ], 422);
+        }
+
+        // Delegation guardrails: a non-owner manager cannot escalate.
+        if ($guard = $this->guardStaffDelegation($request, $request->only(['role', 'permissions', 'branch_ids']))) {
+            return $guard;
         }
 
         // Subscription enforcement: check staff limit
@@ -207,6 +258,15 @@ class StaffController extends Controller
             ], 404);
         }
 
+        // A delegated (non-owner) manager may not modify an admin.
+        $ctx = $this->cafeContext($request);
+        if ($ctx && !$ctx->isOwner && $staffMember->role === 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to perform this action.',
+            ], 403);
+        }
+
         // Branch ownership guard: every provided branch must belong to this cafe.
         if ($request->has('branch_ids')) {
             $ownedBranchIds = $cafe->branches()->pluck('id')->all();
@@ -217,6 +277,11 @@ class StaffController extends Controller
                     'message' => 'One or more branches do not belong to your cafe.',
                 ], 422);
             }
+        }
+
+        // Delegation guardrails: a non-owner manager cannot escalate role/permissions/branches.
+        if ($guard = $this->guardStaffDelegation($request, $request->only(['role', 'permissions', 'branch_ids']))) {
+            return $guard;
         }
 
         try {
@@ -265,6 +330,15 @@ class StaffController extends Controller
                 'success' => false,
                 'message' => 'Staff member not found.',
             ], 404);
+        }
+
+        // A delegated (non-owner) manager may not remove an admin.
+        $ctx = $this->cafeContext($request);
+        if ($ctx && !$ctx->isOwner && $staffMember->role === 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to perform this action.',
+            ], 403);
         }
 
         try {
