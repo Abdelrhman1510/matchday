@@ -29,9 +29,16 @@ class OccupancyController extends Controller
         $cafe = $this->getOwnerCafe($request);
         if (!$cafe) return null;
 
-        // For now, get the first branch or you can implement branch switching
-        // In a real app, track the "current" selected branch per user session
-        return $cafe->branches()->first();
+        // Phase 2: resolve within the acting user's accessible branches.
+        // Prefer the cafe's current branch when it is accessible, else the first accessible branch.
+        $accessible = $this->accessibleBranchIds($request);
+        $query = $cafe->branches()->whereIn('id', $accessible);
+
+        if ($cafe->current_branch_id && in_array($cafe->current_branch_id, $accessible, true)) {
+            return $query->find($cafe->current_branch_id) ?? $query->first();
+        }
+
+        return $query->first();
     }
 
     // =========================================

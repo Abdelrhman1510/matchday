@@ -27,7 +27,8 @@ class BranchDataIsolationTest extends TestCase
         $branchA = Branch::factory()->create(['cafe_id' => $cafe->id]);
         $branchB = Branch::factory()->create(['cafe_id' => $cafe->id]);
         $plan = SubscriptionPlan::factory()->create([
-            'is_active' => true, 'has_analytics' => true, 'max_staff_members' => 10,
+            'is_active' => true, 'has_analytics' => true, 'has_occupancy_tracking' => true,
+            'max_staff_members' => 10,
         ]);
         CafeSubscription::factory()->create([
             'cafe_id' => $cafe->id, 'plan_id' => $plan->id, 'status' => 'active',
@@ -136,5 +137,24 @@ class BranchDataIsolationTest extends TestCase
 
         $this->postJson('/api/v1/cafe-admin/scan-qr', ['qr_data' => $bookingB->booking_code])
             ->assertStatus(403);
+    }
+
+    /** @test */
+    public function staff_occupancy_resolves_an_assigned_branch()
+    {
+        [$owner, $cafe, $branchA, $branchB] = $this->isolationCafe();
+        // Checked-in visitors exist ONLY on branch B today.
+        $matchB = GameMatch::factory()->create(['branch_id' => $branchB->id]);
+        Booking::factory()->create([
+            'branch_id' => $branchB->id, 'match_id' => $matchB->id,
+            'status' => 'checked_in', 'checked_in_at' => now(), 'guests_count' => 7,
+        ]);
+        // Staff assigned ONLY to branch B (not the cafe's first branch A).
+        $staff = $this->makeStaff($cafe, [$branchB->id], ['view-occupancy']);
+        Sanctum::actingAs($staff);
+
+        $res = $this->getJson('/api/v1/cafe-admin/occupancy')->assertStatus(200);
+        // If occupancy resolved branch A (old behavior), visitors would be 0.
+        $this->assertEquals(7, $res->json('data.today_total_visitors'));
     }
 }
