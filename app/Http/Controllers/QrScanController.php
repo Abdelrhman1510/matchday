@@ -77,6 +77,24 @@ class QrScanController extends Controller
             }
         }
 
+        // Staff may only check in bookings for their assigned branches (owner passes).
+        // A booking links to a branch directly and/or through its match.
+        $targetBooking = \App\Models\Booking::with('match:id,branch_id')
+            ->where('booking_code', $qrInput)
+            ->orWhere('qr_code', $qrInput)
+            ->first();
+        if ($targetBooking) {
+            $accessible = $this->accessibleBranchIds($request);
+            $bookingAccessible = in_array((int) $targetBooking->branch_id, $accessible, true)
+                || ($targetBooking->match && in_array((int) $targetBooking->match->branch_id, $accessible, true));
+            if (!$bookingAccessible) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You do not have permission to perform this action.',
+                ], 403);
+            }
+        }
+
         $result = $this->qrService->scanQrCode(
             $qrInput,
             $cafe,
@@ -188,6 +206,23 @@ class QrScanController extends Controller
             ], 422);
         }
 
+        // Staff may only check in bookings for their assigned branches (owner passes).
+        $targetBooking = \App\Models\Booking::with('match:id,branch_id')
+            ->where('booking_code', $decodedText)
+            ->orWhere('qr_code', $decodedText)
+            ->first();
+        if ($targetBooking) {
+            $accessible = $this->accessibleBranchIds($request);
+            $bookingAccessible = in_array((int) $targetBooking->branch_id, $accessible, true)
+                || ($targetBooking->match && in_array((int) $targetBooking->match->branch_id, $accessible, true));
+            if (!$bookingAccessible) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You do not have permission to perform this action.',
+                ], 403);
+            }
+        }
+
         // Now scan the decoded text
         $result = $this->qrService->scanQrCode(
             $decodedText,
@@ -254,7 +289,7 @@ class QrScanController extends Controller
             ], 404);
         }
 
-        $scans = $this->qrService->getRecentScans($cafe, 10);
+        $scans = $this->qrService->getRecentScans($cafe, 10, $this->accessibleBranchIds($request));
 
         return response()->json([
             'success' => true,
@@ -286,7 +321,7 @@ class QrScanController extends Controller
             ], 404);
         }
 
-        $stats = $this->qrService->getScanStats($cafe);
+        $stats = $this->qrService->getScanStats($cafe, $this->accessibleBranchIds($request));
 
         return response()->json([
             'success' => true,

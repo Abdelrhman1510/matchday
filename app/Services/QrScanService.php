@@ -138,9 +138,17 @@ class QrScanService
     /**
      * Get recent scans for a café.
      */
-    public function getRecentScans(Cafe $cafe, int $limit = 10): array
+    public function getRecentScans(Cafe $cafe, int $limit = 10, ?array $branchIds = null): array
     {
         $scans = QrScanLog::where('cafe_id', $cafe->id)
+            ->when($branchIds !== null, function ($q) use ($branchIds) {
+                $q->whereHas('booking', function ($b) use ($branchIds) {
+                    $b->where(function ($bb) use ($branchIds) {
+                        $bb->whereIn('branch_id', $branchIds)
+                           ->orWhereHas('match', fn ($m) => $m->whereIn('branch_id', $branchIds));
+                    });
+                });
+            })
             ->with('booking:id,booking_code,status')
             ->orderByDesc('created_at')
             ->limit($limit)
@@ -163,12 +171,22 @@ class QrScanService
     /**
      * Today's scan stats for a café.
      */
-    public function getScanStats(Cafe $cafe): array
+    public function getScanStats(Cafe $cafe, ?array $branchIds = null): array
     {
-        $cacheKey = "qr_scan_stats_{$cafe->id}_" . now()->toDateString();
+        $cacheKey = "qr_scan_stats_{$cafe->id}_"
+            . ($branchIds !== null ? md5(json_encode($branchIds)) : 'all')
+            . '_' . now()->toDateString();
 
-        return Cache::remember($cacheKey, 60, function () use ($cafe) {
+        return Cache::remember($cacheKey, 60, function () use ($cafe, $branchIds) {
             $todayScans = QrScanLog::where('cafe_id', $cafe->id)
+                ->when($branchIds !== null, function ($q) use ($branchIds) {
+                    $q->whereHas('booking', function ($b) use ($branchIds) {
+                        $b->where(function ($bb) use ($branchIds) {
+                            $bb->whereIn('branch_id', $branchIds)
+                               ->orWhereHas('match', fn ($m) => $m->whereIn('branch_id', $branchIds));
+                        });
+                    });
+                })
                 ->whereDate('created_at', now()->toDateString())
                 ->get();
 

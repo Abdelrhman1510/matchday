@@ -122,4 +122,19 @@ class BranchDataIsolationTest extends TestCase
         $this->getJson("/api/v1/cafe-admin/matches/{$matchB->id}")->assertStatus(403);
         $this->postJson("/api/v1/cafe-admin/matches/{$matchB->id}/publish")->assertStatus(403);
     }
+
+    /** @test */
+    public function staff_cannot_scan_unassigned_branch_booking()
+    {
+        [$owner, $cafe, $branchA, $branchB] = $this->isolationCafe();
+        $matchB = GameMatch::factory()->create(['branch_id' => $branchB->id]);
+        $bookingB = Booking::factory()->create([
+            'branch_id' => $branchB->id, 'match_id' => $matchB->id, 'status' => 'confirmed',
+        ]);
+        $staff = $this->makeStaff($cafe, [$branchA->id], ['scan-qr']);
+        Sanctum::actingAs($staff);
+
+        $this->postJson('/api/v1/cafe-admin/scan-qr', ['qr_data' => $bookingB->booking_code])
+            ->assertStatus(403);
+    }
 }
