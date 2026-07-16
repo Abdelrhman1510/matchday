@@ -587,7 +587,14 @@ class OfferAdminController extends Controller
             return response()->json(['success' => false, 'message' => 'You do not have permission to manage offers.'], 403);
         }
 
-        $offer = Offer::find($id);
+        // Resolve within the acting cafe (by cafe_id or a branch in the cafe) so one
+        // cafe cannot touch another cafe's offers.
+        $cafe = $this->actingCafe($request);
+        $offer = $cafe ? Offer::where('id', $id)
+            ->where(function ($q) use ($cafe) {
+                $q->where('cafe_id', $cafe->id)
+                  ->orWhereIn('branch_id', $cafe->branches()->pluck('id'));
+            })->first() : null;
         if (!$offer) {
             return response()->json(['success' => false, 'message' => 'Offer not found.'], 404);
         }
@@ -631,7 +638,14 @@ class OfferAdminController extends Controller
             return response()->json(['success' => false, 'message' => 'You do not have permission to manage offers.'], 403);
         }
 
-        $offer = Offer::find($id);
+        // Resolve within the acting cafe (by cafe_id or a branch in the cafe) so one
+        // cafe cannot touch another cafe's offers.
+        $cafe = $this->actingCafe($request);
+        $offer = $cafe ? Offer::where('id', $id)
+            ->where(function ($q) use ($cafe) {
+                $q->where('cafe_id', $cafe->id)
+                  ->orWhereIn('branch_id', $cafe->branches()->pluck('id'));
+            })->first() : null;
         if (!$offer) {
             return response()->json(['success' => false, 'message' => 'Offer not found.'], 404);
         }
@@ -665,7 +679,14 @@ class OfferAdminController extends Controller
             return response()->json(['success' => false, 'message' => 'You do not have permission to manage offers.'], 403);
         }
 
-        $offer = Offer::find($id);
+        // Resolve within the acting cafe (by cafe_id or a branch in the cafe) so one
+        // cafe cannot touch another cafe's offers.
+        $cafe = $this->actingCafe($request);
+        $offer = $cafe ? Offer::where('id', $id)
+            ->where(function ($q) use ($cafe) {
+                $q->where('cafe_id', $cafe->id)
+                  ->orWhereIn('branch_id', $cafe->branches()->pluck('id'));
+            })->first() : null;
         if (!$offer) {
             return response()->json(['success' => false, 'message' => 'Offer not found.'], 404);
         }
@@ -693,7 +714,14 @@ class OfferAdminController extends Controller
             return response()->json(['success' => false, 'message' => 'You do not have permission to manage offers.'], 403);
         }
 
-        $offer = Offer::find($id);
+        // Resolve within the acting cafe (by cafe_id or a branch in the cafe) so one
+        // cafe cannot touch another cafe's offers.
+        $cafe = $this->actingCafe($request);
+        $offer = $cafe ? Offer::where('id', $id)
+            ->where(function ($q) use ($cafe) {
+                $q->where('cafe_id', $cafe->id)
+                  ->orWhereIn('branch_id', $cafe->branches()->pluck('id'));
+            })->first() : null;
         if (!$offer) {
             return response()->json(['success' => false, 'message' => 'Offer not found.'], 404);
         }

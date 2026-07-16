@@ -264,4 +264,20 @@ class BranchDataIsolationTest extends TestCase
         // Deleting a section on an unassigned branch → 403.
         $this->deleteJson("/api/v1/cafe-admin/sections/{$sectionB->id}")->assertStatus(403);
     }
+
+    /** @test */
+    public function owner_cannot_touch_another_cafes_offer_via_admin_route()
+    {
+        [$owner, $cafe, $branchA] = $this->isolationCafe();
+        // A different cafe with a cafe-wide (branch_id NULL) offer.
+        $otherOwner = User::factory()->cafeOwner()->create();
+        $otherCafe = Cafe::factory()->create(['owner_id' => $otherOwner->id]);
+        $foreignOffer = Offer::factory()->create(['cafe_id' => $otherCafe->id, 'branch_id' => null]);
+        Sanctum::actingAs($owner);
+
+        // Cross-tenant access must be rejected (offer not in the acting cafe).
+        $this->putJson("/api/v1/admin/offers/{$foreignOffer->id}", ['title' => 'Hacked'])->assertStatus(404);
+        $this->deleteJson("/api/v1/admin/offers/{$foreignOffer->id}")->assertStatus(404);
+        $this->putJson("/api/v1/admin/offers/{$foreignOffer->id}/toggle-status")->assertStatus(404);
+    }
 }
