@@ -60,7 +60,7 @@ class OfferAdminController extends Controller
             ], 422);
         }
 
-        $offers = $this->offerService->list($cafe, $request->query('status'));
+        $offers = $this->offerService->list($cafe, $request->query('status'), $this->accessibleBranchIds($request));
 
         return response()->json([
             'success' => true,
@@ -168,6 +168,12 @@ class OfferAdminController extends Controller
         try {
             $offer = $this->offerService->getDetail($cafe, $id);
 
+            // Cafe-wide (branch_id NULL) offers are visible to any staff; a
+            // branch-scoped offer requires the branch to be accessible.
+            if ($offer->branch_id && ($deny = $this->denyIfBranchInaccessible($request, (int) $offer->branch_id))) {
+                return $deny;
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => new OfferResource($offer),
@@ -212,6 +218,12 @@ class OfferAdminController extends Controller
                 'success' => false,
                 'message' => 'Offer not found.',
             ], 404);
+        }
+
+        // Staff may only act on offers for their assigned branches; cafe-wide
+        // (branch_id NULL) offers stay editable by any staff of the cafe.
+        if ($offer->branch_id && ($deny = $this->denyIfBranchInaccessible($request, (int) $offer->branch_id))) {
+            return $deny;
         }
 
         // Validation
@@ -286,6 +298,12 @@ class OfferAdminController extends Controller
             ], 404);
         }
 
+        // Staff may only act on offers for their assigned branches; cafe-wide
+        // (branch_id NULL) offers stay editable by any staff of the cafe.
+        if ($offer->branch_id && ($deny = $this->denyIfBranchInaccessible($request, (int) $offer->branch_id))) {
+            return $deny;
+        }
+
         try {
             $this->offerService->delete($offer);
 
@@ -333,6 +351,12 @@ class OfferAdminController extends Controller
                 'success' => false,
                 'message' => 'Offer not found.',
             ], 404);
+        }
+
+        // Staff may only act on offers for their assigned branches; cafe-wide
+        // (branch_id NULL) offers stay editable by any staff of the cafe.
+        if ($offer->branch_id && ($deny = $this->denyIfBranchInaccessible($request, (int) $offer->branch_id))) {
+            return $deny;
         }
 
         // Validation
@@ -396,6 +420,12 @@ class OfferAdminController extends Controller
                 'success' => false,
                 'message' => 'Offer not found.',
             ], 404);
+        }
+
+        // Staff may only act on offers for their assigned branches; cafe-wide
+        // (branch_id NULL) offers stay editable by any staff of the cafe.
+        if ($offer->branch_id && ($deny = $this->denyIfBranchInaccessible($request, (int) $offer->branch_id))) {
+            return $deny;
         }
 
         // Validation
@@ -562,6 +592,12 @@ class OfferAdminController extends Controller
             return response()->json(['success' => false, 'message' => 'Offer not found.'], 404);
         }
 
+        // Staff may only act on offers for their assigned branches; cafe-wide
+        // (branch_id NULL) offers stay editable by any staff of the cafe.
+        if ($offer->branch_id && ($deny = $this->denyIfBranchInaccessible($request, (int) $offer->branch_id))) {
+            return $deny;
+        }
+
         $validator = Validator::make($request->all(), [
             'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
@@ -600,6 +636,12 @@ class OfferAdminController extends Controller
             return response()->json(['success' => false, 'message' => 'Offer not found.'], 404);
         }
 
+        // Staff may only act on offers for their assigned branches; cafe-wide
+        // (branch_id NULL) offers stay editable by any staff of the cafe.
+        if ($offer->branch_id && ($deny = $this->denyIfBranchInaccessible($request, (int) $offer->branch_id))) {
+            return $deny;
+        }
+
         $offer->update($request->only(['title', 'description', 'discount_type', 'discount_value', 'valid_from', 'valid_until', 'is_active']));
 
         return response()->json([
@@ -628,6 +670,12 @@ class OfferAdminController extends Controller
             return response()->json(['success' => false, 'message' => 'Offer not found.'], 404);
         }
 
+        // Staff may only act on offers for their assigned branches; cafe-wide
+        // (branch_id NULL) offers stay editable by any staff of the cafe.
+        if ($offer->branch_id && ($deny = $this->denyIfBranchInaccessible($request, (int) $offer->branch_id))) {
+            return $deny;
+        }
+
         $offer->update(['is_active' => !$offer->is_active]);
 
         return response()->json([
@@ -648,6 +696,12 @@ class OfferAdminController extends Controller
         $offer = Offer::find($id);
         if (!$offer) {
             return response()->json(['success' => false, 'message' => 'Offer not found.'], 404);
+        }
+
+        // Staff may only act on offers for their assigned branches; cafe-wide
+        // (branch_id NULL) offers stay editable by any staff of the cafe.
+        if ($offer->branch_id && ($deny = $this->denyIfBranchInaccessible($request, (int) $offer->branch_id))) {
+            return $deny;
         }
 
         $offer->delete();

@@ -7,6 +7,7 @@ use App\Models\Branch;
 use App\Models\Cafe;
 use App\Models\CafeSubscription;
 use App\Models\GameMatch;
+use App\Models\Offer;
 use App\Models\SubscriptionPlan;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -218,5 +219,34 @@ class BranchDataIsolationTest extends TestCase
         $res = $this->getJson('/api/v1/cafe-admin/analytics/customers')->assertStatus(200);
         // Only branch A's single customer is counted, not branch B's.
         $this->assertEquals(1, $res->json('data.new_count'));
+    }
+
+    /** @test */
+    public function staff_offers_list_shows_assigned_branch_and_cafe_wide_only()
+    {
+        [$owner, $cafe, $branchA, $branchB] = $this->isolationCafe();
+        $offerA = Offer::factory()->create(['cafe_id' => $cafe->id, 'branch_id' => $branchA->id]);
+        $offerB = Offer::factory()->create(['cafe_id' => $cafe->id, 'branch_id' => $branchB->id]);
+        $offerCafeWide = Offer::factory()->create(['cafe_id' => $cafe->id, 'branch_id' => null]);
+        $staff = $this->makeStaff($cafe, [$branchA->id], ['manage-offers']);
+        Sanctum::actingAs($staff);
+
+        $res = $this->getJson('/api/v1/cafe-admin/offers')->assertStatus(200);
+        $ids = collect($res->json('data'))->pluck('id')->all();
+        $this->assertContains($offerA->id, $ids);
+        $this->assertContains($offerCafeWide->id, $ids);
+        $this->assertNotContains($offerB->id, $ids);
+    }
+
+    /** @test */
+    public function staff_cannot_modify_unassigned_branch_offer()
+    {
+        [$owner, $cafe, $branchA, $branchB] = $this->isolationCafe();
+        $offerB = Offer::factory()->create(['cafe_id' => $cafe->id, 'branch_id' => $branchB->id]);
+        $staff = $this->makeStaff($cafe, [$branchA->id], ['manage-offers']);
+        Sanctum::actingAs($staff);
+
+        $this->getJson("/api/v1/cafe-admin/offers/{$offerB->id}")->assertStatus(403);
+        $this->deleteJson("/api/v1/cafe-admin/offers/{$offerB->id}")->assertStatus(403);
     }
 }

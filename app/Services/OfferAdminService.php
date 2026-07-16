@@ -19,10 +19,19 @@ class OfferAdminService
     /**
      * Get all offers for a cafe with optional status filter
      */
-    public function list(Cafe $cafe, ?string $status = null)
+    public function list(Cafe $cafe, ?string $status = null, ?array $branchIds = null)
     {
         $query = $cafe->offers()
             ->orderBy('created_at', 'desc');
+
+        // Phase 2: staff see offers for their accessible branches plus cafe-wide
+        // offers (branch_id IS NULL). Owner passes the full cafe branch set → no-op.
+        if ($branchIds !== null) {
+            $query->where(function ($q) use ($branchIds) {
+                $q->whereIn('branch_id', $branchIds)
+                  ->orWhereNull('branch_id');
+            });
+        }
 
         if ($status) {
             if ($status === 'expired') {
