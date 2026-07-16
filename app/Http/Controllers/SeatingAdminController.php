@@ -91,6 +91,10 @@ class SeatingAdminController extends Controller
             ], 404);
         }
 
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
+        }
+
         $result = $this->seatingService->listSections($branch);
 
         return response()->json([
@@ -116,6 +120,10 @@ class SeatingAdminController extends Controller
                 'success' => false,
                 'message' => 'Branch not found or does not belong to your cafe',
             ], 404);
+        }
+
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
         }
 
         $validator = Validator::make($request->all(), [
@@ -167,6 +175,10 @@ class SeatingAdminController extends Controller
             ], 404);
         }
 
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $section->branch_id)) {
+            return $deny;
+        }
+
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
             'type' => 'sometimes|string|in:main_screen,vip,premium,standard',
@@ -208,6 +220,10 @@ class SeatingAdminController extends Controller
             ], 404);
         }
 
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $section->branch_id)) {
+            return $deny;
+        }
+
         $result = $this->seatingService->deleteSection($section);
 
         if (!$result['success']) {
@@ -242,6 +258,10 @@ class SeatingAdminController extends Controller
             ], 404);
         }
 
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $section->branch_id)) {
+            return $deny;
+        }
+
         $result = $this->seatingService->listSeats($section);
 
         return response()->json([
@@ -268,6 +288,10 @@ class SeatingAdminController extends Controller
                 'success' => false,
                 'message' => 'Section not found or does not belong to your cafe',
             ], 404);
+        }
+
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $section->branch_id)) {
+            return $deny;
         }
 
         $validator = Validator::make($request->all(), [
@@ -343,6 +367,10 @@ class SeatingAdminController extends Controller
             ], 404);
         }
 
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $seat->section->branch_id)) {
+            return $deny;
+        }
+
         $validator = Validator::make($request->all(), [
             'label' => 'sometimes|string|max:50',
             'price' => 'sometimes|numeric|min:0',
@@ -382,6 +410,10 @@ class SeatingAdminController extends Controller
             ], 404);
         }
 
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $seat->section->branch_id)) {
+            return $deny;
+        }
+
         $result = $this->seatingService->deleteSeat($seat);
 
         if (!$result['success']) {
@@ -413,6 +445,10 @@ class SeatingAdminController extends Controller
                 'success' => false,
                 'message' => 'Branch not found or does not belong to your cafe',
             ], 404);
+        }
+
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
         }
 
         $validator = Validator::make($request->all(), [

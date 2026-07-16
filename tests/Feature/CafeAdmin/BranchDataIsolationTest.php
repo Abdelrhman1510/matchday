@@ -8,6 +8,7 @@ use App\Models\Cafe;
 use App\Models\CafeSubscription;
 use App\Models\GameMatch;
 use App\Models\Offer;
+use App\Models\SeatingSection;
 use App\Models\SubscriptionPlan;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -248,5 +249,19 @@ class BranchDataIsolationTest extends TestCase
 
         $this->getJson("/api/v1/cafe-admin/offers/{$offerB->id}")->assertStatus(403);
         $this->deleteJson("/api/v1/cafe-admin/offers/{$offerB->id}")->assertStatus(403);
+    }
+
+    /** @test */
+    public function staff_cannot_list_or_modify_unassigned_branch_sections()
+    {
+        [$owner, $cafe, $branchA, $branchB] = $this->isolationCafe();
+        $sectionB = SeatingSection::factory()->create(['branch_id' => $branchB->id]);
+        $staff = $this->makeStaff($cafe, [$branchA->id], ['manage-seating']);
+        Sanctum::actingAs($staff);
+
+        // Listing sections of an unassigned branch → 403 (branch target guard).
+        $this->getJson("/api/v1/cafe-admin/branches/{$branchB->id}/sections")->assertStatus(403);
+        // Deleting a section on an unassigned branch → 403.
+        $this->deleteJson("/api/v1/cafe-admin/sections/{$sectionB->id}")->assertStatus(403);
     }
 }
