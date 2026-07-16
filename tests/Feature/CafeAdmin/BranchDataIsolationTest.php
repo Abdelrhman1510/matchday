@@ -157,4 +157,66 @@ class BranchDataIsolationTest extends TestCase
         // If occupancy resolved branch A (old behavior), visitors would be 0.
         $this->assertEquals(7, $res->json('data.today_total_visitors'));
     }
+
+    /** @test */
+    public function staff_analytics_overview_counts_only_assigned_branch()
+    {
+        [$owner, $cafe, $branchA, $branchB] = $this->isolationCafe();
+        $matchA = GameMatch::factory()->create(['branch_id' => $branchA->id]);
+        $matchB = GameMatch::factory()->create(['branch_id' => $branchB->id]);
+        Booking::factory()->create(['branch_id' => $branchA->id, 'match_id' => $matchA->id]);
+        Booking::factory()->count(3)->create(['branch_id' => $branchB->id, 'match_id' => $matchB->id]);
+        $staff = $this->makeStaff($cafe, [$branchA->id], ['view-analytics']);
+        Sanctum::actingAs($staff);
+
+        $res = $this->getJson('/api/v1/cafe-admin/analytics/overview')->assertStatus(200);
+        // Only branch A's single booking must be counted, not branch B's 3.
+        $this->assertEquals(1, $res->json('data.total_bookings'));
+    }
+
+    /** @test */
+    public function staff_analytics_for_unassigned_branch_is_forbidden()
+    {
+        [$owner, $cafe, $branchA, $branchB] = $this->isolationCafe();
+        $staff = $this->makeStaff($cafe, [$branchA->id], ['view-analytics']);
+        Sanctum::actingAs($staff);
+
+        $this->getJson("/api/v1/admin/branches/{$branchB->id}/analytics/dashboard")
+            ->assertStatus(403);
+    }
+
+    /** @test */
+    public function staff_dashboard_recent_bookings_shows_only_assigned_branch()
+    {
+        [$owner, $cafe, $branchA, $branchB] = $this->isolationCafe();
+        $matchA = GameMatch::factory()->create(['branch_id' => $branchA->id]);
+        $matchB = GameMatch::factory()->create(['branch_id' => $branchB->id]);
+        $bookingA = Booking::factory()->create(['branch_id' => $branchA->id, 'match_id' => $matchA->id]);
+        $bookingB = Booking::factory()->create(['branch_id' => $branchB->id, 'match_id' => $matchB->id]);
+        $staff = $this->makeStaff($cafe, [$branchA->id], ['view-analytics']);
+        Sanctum::actingAs($staff);
+
+        $res = $this->getJson('/api/v1/cafe-admin/dashboard/recent-bookings')->assertStatus(200);
+        $ids = collect($res->json('data'))->pluck('booking_id')->all();
+        $this->assertContains($bookingA->id, $ids);
+        $this->assertNotContains($bookingB->id, $ids);
+    }
+
+    /** @test */
+    public function staff_customer_analytics_scoped_to_assigned_branch()
+    {
+        [$owner, $cafe, $branchA, $branchB] = $this->isolationCafe();
+        $matchA = GameMatch::factory()->create(['branch_id' => $branchA->id]);
+        $matchB = GameMatch::factory()->create(['branch_id' => $branchB->id]);
+        $custA = User::factory()->create();
+        $custB = User::factory()->create();
+        Booking::factory()->create(['branch_id' => $branchA->id, 'match_id' => $matchA->id, 'user_id' => $custA->id]);
+        Booking::factory()->create(['branch_id' => $branchB->id, 'match_id' => $matchB->id, 'user_id' => $custB->id]);
+        $staff = $this->makeStaff($cafe, [$branchA->id], ['view-analytics']);
+        Sanctum::actingAs($staff);
+
+        $res = $this->getJson('/api/v1/cafe-admin/analytics/customers')->assertStatus(200);
+        // Only branch A's single customer is counted, not branch B's.
+        $this->assertEquals(1, $res->json('data.new_count'));
+    }
 }

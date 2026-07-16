@@ -263,13 +263,13 @@ class AnalyticsService
     /**
      * Get peak hours data
      */
-    public function getPeakHours(Cafe $cafe): array
+    public function getPeakHours(Cafe $cafe, ?array $branchIds = null): array
     {
-        $cacheKey = "analytics_peak_hours_{$cafe->id}";
+        // Phase 2: scope to caller-supplied accessible branches; cache key includes the set.
+        $branchIds = $branchIds !== null ? collect($branchIds) : $cafe->branches()->pluck('id');
+        $cacheKey = "analytics_peak_hours_{$cafe->id}_" . md5($branchIds->sort()->values()->implode(','));
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($cafe) {
-            $branchIds = $cafe->branches()->pluck('id');
-
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($branchIds) {
             $data = Booking::whereIn('branch_id', $branchIds)
                 ->whereIn('status', ['confirmed', 'checked_in', 'completed'])
                 ->select(DB::raw('HOUR(created_at) as hour'), DB::raw('COUNT(*) as bookings_count'))
@@ -289,13 +289,13 @@ class AnalyticsService
     /**
      * Get customer analytics (new vs returning)
      */
-    public function getCustomerAnalytics(Cafe $cafe, array $periodDates): array
+    public function getCustomerAnalytics(Cafe $cafe, array $periodDates, ?array $branchIds = null): array
     {
-        $cacheKey = "analytics_customers_{$cafe->id}_{$periodDates['start']->format('Y-m-d')}_{$periodDates['end']->format('Y-m-d')}";
+        $branchIds = $branchIds !== null ? collect($branchIds) : $cafe->branches()->pluck('id');
+        $cacheKey = "analytics_customers_{$cafe->id}_" . md5($branchIds->sort()->values()->implode(','))
+            . "_{$periodDates['start']->format('Y-m-d')}_{$periodDates['end']->format('Y-m-d')}";
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($cafe, $periodDates) {
-            $branchIds = $cafe->branches()->pluck('id');
-
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($periodDates, $branchIds) {
             $allCustomers = Booking::whereIn('branch_id', $branchIds)
                 ->whereBetween('created_at', [$periodDates['start'], $periodDates['end']])
                 ->distinct('user_id')
@@ -322,13 +322,12 @@ class AnalyticsService
     /**
      * Get best performing matches
      */
-    public function getBestPerformingMatches(Cafe $cafe): array
+    public function getBestPerformingMatches(Cafe $cafe, ?array $branchIds = null): array
     {
-        $cacheKey = "analytics_best_matches_{$cafe->id}";
+        $branchIds = $branchIds !== null ? collect($branchIds) : $cafe->branches()->pluck('id');
+        $cacheKey = "analytics_best_matches_{$cafe->id}_" . md5($branchIds->sort()->values()->implode(','));
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($cafe) {
-            $branchIds = $cafe->branches()->pluck('id');
-
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($branchIds) {
             $matches = GameMatch::whereIn('branch_id', $branchIds)
                 ->with(['homeTeam', 'awayTeam'])
                 ->withCount(['bookings as total_bookings'])

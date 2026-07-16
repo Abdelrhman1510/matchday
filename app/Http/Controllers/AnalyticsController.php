@@ -34,9 +34,13 @@ class AnalyticsController extends Controller
             return response()->json(['success' => false, 'message' => 'No cafe found for this owner.'], 404);
         }
 
+        if ($branchId && ($deny = $this->denyIfBranchInaccessible($request, (int) $branchId))) {
+            return $deny;
+        }
+
         $matchIds = $branchId
             ? GameMatch::where('branch_id', $branchId)->pluck('id')
-            : ($cafe ? GameMatch::whereIn('branch_id', $cafe->branches()->pluck('id'))->pluck('id') : collect());
+            : ($cafe ? GameMatch::whereIn('branch_id', collect($this->accessibleBranchIds($request)))->pluck('id') : collect());
 
         $totalBookings = Booking::whereIn('match_id', $matchIds)->count();
         $totalRevenue = Payment::whereIn('booking_id', Booking::whereIn('match_id', $matchIds)->pluck('id'))
@@ -82,9 +86,13 @@ class AnalyticsController extends Controller
         }
 
         $period = $request->query('period', 'month');
+        if ($branchId && ($deny = $this->denyIfBranchInaccessible($request, (int) $branchId))) {
+            return $deny;
+        }
+
         $matchIds = $branchId
             ? GameMatch::where('branch_id', $branchId)->pluck('id')
-            : ($cafe ? GameMatch::whereIn('branch_id', $cafe->branches()->pluck('id'))->pluck('id') : collect());
+            : ($cafe ? GameMatch::whereIn('branch_id', collect($this->accessibleBranchIds($request)))->pluck('id') : collect());
 
         $bookingIds = Booking::whereIn('match_id', $matchIds)->pluck('id');
         $totalRevenue = Payment::whereIn('booking_id', $bookingIds)->where('status', 'completed')->sum('amount');
@@ -130,9 +138,13 @@ class AnalyticsController extends Controller
             return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
         }
 
+        if ($branchId && ($deny = $this->denyIfBranchInaccessible($request, (int) $branchId))) {
+            return $deny;
+        }
+
         $matchIds = $branchId
             ? GameMatch::where('branch_id', $branchId)->pluck('id')
-            : ($cafe ? GameMatch::whereIn('branch_id', $cafe->branches()->pluck('id'))->pluck('id') : collect());
+            : ($cafe ? GameMatch::whereIn('branch_id', collect($this->accessibleBranchIds($request)))->pluck('id') : collect());
 
         $totalBookings = Booking::whereIn('match_id', $matchIds)->count();
 
@@ -169,7 +181,7 @@ class AnalyticsController extends Controller
             return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
         }
 
-        $data = $this->analyticsService->getPeakHours($cafe);
+        $data = $this->analyticsService->getPeakHours($cafe, $this->accessibleBranchIds($request));
 
         return response()->json([
             'success' => true,
@@ -194,7 +206,7 @@ class AnalyticsController extends Controller
 
         $period = $request->query('period', 'this_month');
         $periodDates = $this->analyticsService->getPeriodDates($period);
-        $data = $this->analyticsService->getCustomerAnalytics($cafe, $periodDates);
+        $data = $this->analyticsService->getCustomerAnalytics($cafe, $periodDates, $this->accessibleBranchIds($request));
 
         return response()->json([
             'success' => true,
@@ -217,7 +229,7 @@ class AnalyticsController extends Controller
             return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
         }
 
-        $data = $this->analyticsService->getBestPerformingMatches($cafe);
+        $data = $this->analyticsService->getBestPerformingMatches($cafe, $this->accessibleBranchIds($request));
 
         return response()->json([
             'success' => true,
@@ -244,6 +256,10 @@ class AnalyticsController extends Controller
     {
         if (!$request->user()->can('view-analytics')) {
             return response()->json(['success' => false, 'message' => 'Permission denied.'], 403);
+        }
+
+        if ($branchId && ($deny = $this->denyIfBranchInaccessible($request, (int) $branchId))) {
+            return $deny;
         }
 
         $period = $request->query('period', 'week');
@@ -276,6 +292,10 @@ class AnalyticsController extends Controller
             return response()->json(['success' => false, 'message' => 'Permission denied.'], 403);
         }
 
+        if ($branchId && ($deny = $this->denyIfBranchInaccessible($request, (int) $branchId))) {
+            return $deny;
+        }
+
         $query = GameMatch::with(['homeTeam', 'awayTeam'])->withCount('bookings');
 
         if ($branchId) {
@@ -283,7 +303,7 @@ class AnalyticsController extends Controller
         } else {
             $cafe = $this->actingCafe($request);
             if ($cafe) {
-                $branchIds = $cafe->branches()->pluck('id');
+                $branchIds = collect($this->accessibleBranchIds($request));
                 $query->whereIn('branch_id', $branchIds);
             }
         }
@@ -318,6 +338,10 @@ class AnalyticsController extends Controller
             return response()->json(['success' => false, 'message' => 'Permission denied.'], 403);
         }
 
+        if ($branchId && ($deny = $this->denyIfBranchInaccessible($request, (int) $branchId))) {
+            return $deny;
+        }
+
         $occupancyByDay = [];
         $days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
         foreach ($days as $day) {
@@ -342,6 +366,10 @@ class AnalyticsController extends Controller
     {
         if (!$request->user()->can('view-analytics')) {
             return response()->json(['success' => false, 'message' => 'Permission denied.'], 403);
+        }
+
+        if ($branchId && ($deny = $this->denyIfBranchInaccessible($request, (int) $branchId))) {
+            return $deny;
         }
 
         return response()->json([

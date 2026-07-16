@@ -26,14 +26,8 @@ class DashboardController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        // Check permission
-        if (!$request->user()->can('view-bookings')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You do not have permission to view dashboard.',
-            ], 403);
-        }
-
+        // Authorization is enforced by the route middleware `cafe.permission:view-analytics`
+        // (owner or a staff member granted view-analytics). No redundant in-controller check.
         $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
@@ -43,10 +37,13 @@ class DashboardController extends Controller
             ], 404);
         }
 
-        $cacheKey = "dashboard_stats_{$cafe->id}";
+        // Scope to the acting user's accessible branches; the cache key includes the
+        // branch set so an owner's cafe-wide stats and a staff member's scoped stats
+        // never collide in the shared cache.
+        $branchIds = collect($this->accessibleBranchIds($request));
+        $cacheKey = "dashboard_stats_{$cafe->id}_" . md5($branchIds->sort()->values()->implode(','));
 
-        $stats = Cache::remember($cacheKey, 900, function () use ($cafe) {
-            $branchIds = $cafe->branches()->pluck('id');
+        $stats = Cache::remember($cacheKey, 900, function () use ($cafe, $branchIds) {
             $today = now()->toDateString();
 
             // Today's matches
@@ -65,7 +62,7 @@ class DashboardController extends Controller
                 ->where('status', 'checked_in')
                 ->sum('guests_count');
 
-            $totalSeats = $cafe->branches()->sum('total_seats');
+            $totalSeats = $cafe->branches()->whereIn('id', $branchIds)->sum('total_seats');
             $occupancyPct = $totalSeats > 0 ? round(($checkedInGuests / $totalSeats) * 100, 1) : 0;
 
             // Quick actions available (based on permissions)
@@ -104,14 +101,8 @@ class DashboardController extends Controller
      */
     public function upcomingMatches(Request $request): JsonResponse
     {
-        // Check permission
-        if (!$request->user()->can('view-bookings')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You do not have permission to view dashboard.',
-            ], 403);
-        }
-
+        // Authorization is enforced by the route middleware `cafe.permission:view-analytics`
+        // (owner or a staff member granted view-analytics). No redundant in-controller check.
         $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
@@ -121,11 +112,10 @@ class DashboardController extends Controller
             ], 404);
         }
 
-        $cacheKey = "dashboard_upcoming_matches_{$cafe->id}";
+        $branchIds = collect($this->accessibleBranchIds($request));
+        $cacheKey = "dashboard_upcoming_matches_{$cafe->id}_" . md5($branchIds->sort()->values()->implode(','));
 
-        $matches = Cache::remember($cacheKey, 900, function () use ($cafe) {
-            $branchIds = $cafe->branches()->pluck('id');
-
+        $matches = Cache::remember($cacheKey, 900, function () use ($branchIds) {
             return GameMatch::whereIn('branch_id', $branchIds)
                 ->where('match_date', '>=', now()->toDateString())
                 ->whereIn('status', ['upcoming', 'live'])
@@ -181,14 +171,8 @@ class DashboardController extends Controller
      */
     public function recentBookings(Request $request): JsonResponse
     {
-        // Check permission
-        if (!$request->user()->can('view-bookings')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You do not have permission to view dashboard.',
-            ], 403);
-        }
-
+        // Authorization is enforced by the route middleware `cafe.permission:view-analytics`
+        // (owner or a staff member granted view-analytics). No redundant in-controller check.
         $cafe = $this->actingCafe($request);
 
         if (!$cafe) {
@@ -198,11 +182,10 @@ class DashboardController extends Controller
             ], 404);
         }
 
-        $cacheKey = "dashboard_recent_bookings_{$cafe->id}";
+        $branchIds = collect($this->accessibleBranchIds($request));
+        $cacheKey = "dashboard_recent_bookings_{$cafe->id}_" . md5($branchIds->sort()->values()->implode(','));
 
-        $bookings = Cache::remember($cacheKey, 900, function () use ($cafe) {
-            $branchIds = $cafe->branches()->pluck('id');
-
+        $bookings = Cache::remember($cacheKey, 900, function () use ($branchIds) {
             return Booking::whereIn('branch_id', $branchIds)
                 ->with(['user:id,name,avatar', 'match:id,match_date,kick_off', 'payment:id,booking_id,amount'])
                 ->orderBy('created_at', 'desc')
