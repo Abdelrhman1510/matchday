@@ -254,4 +254,75 @@ class User extends Authenticatable
         // Use role-based permission check (same as can())
         return $this->can($permission);
     }
+
+    /**
+     * Full cafe-owner permission catalog (mirrors RolesAndPermissionsSeeder's
+     * cafe_owner set — every cafe permission except platform-level full-admin-access).
+     */
+    public const CAFE_OWNER_PERMISSIONS = [
+        'manage-bookings',
+        'view-bookings',
+        'manage-matches',
+        'manage-staff',
+        'view-analytics',
+        'manage-offers',
+        'manage-menu',
+        'manage-branches',
+        'manage-seating',
+        'manage-subscription',
+        'scan-qr',
+        'check-in-customers',
+        'view-occupancy',
+        'manage-cafe-profile',
+        'manage-inventory',
+        'process-payments',
+    ];
+
+    /**
+     * The effective role for API responses.
+     *
+     * The users.role column only stores the account type (fan / cafe_owner /
+     * staff), so every staff member — manager or not — is stored as 'staff'.
+     * The real cafe sub-role lives on the accepted staff membership. This folds
+     * both into one value: cafe_owner, admin, manager, staff, or the account role.
+     */
+    public function effectiveRole(): string
+    {
+        if ($this->role === 'cafe_owner') {
+            return 'cafe_owner';
+        }
+
+        $membership = $this->staffMemberships()->accepted()->first();
+        if ($membership) {
+            return $membership->role; // admin | manager | staff
+        }
+
+        return $this->role;
+    }
+
+    /**
+     * The effective cafe permissions for API responses.
+     *
+     * Owner → the full cafe-owner catalog; accepted staff → their granted
+     * permissions (Spatie ∪ the custom branch_staff_permissions table);
+     * everyone else → none.
+     *
+     * @return array<int, string>
+     */
+    public function effectivePermissions(): array
+    {
+        if ($this->role === 'cafe_owner') {
+            return self::CAFE_OWNER_PERMISSIONS;
+        }
+
+        $membership = $this->staffMemberships()->accepted()->first();
+        if (!$membership) {
+            return [];
+        }
+
+        $spatie = $this->getAllPermissions()->pluck('name')->all();
+        $custom = Permission::where('user_id', $this->id)->pluck('permission')->all();
+
+        return array_values(array_unique(array_merge($spatie, $custom)));
+    }
 }

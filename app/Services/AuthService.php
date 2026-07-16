@@ -310,9 +310,23 @@ class AuthService
         $user->load(['fanProfile', 'loyaltyCard']);
 
         return [
-            'user' => $user,
+            'user' => $this->formatAuthUser($user),
             'token' => $token,
         ];
+    }
+
+    /**
+     * Shape the authenticated user for API responses: the raw model attributes
+     * plus the effective cafe role (owner/manager/staff/…) and the effective
+     * permission list, so clients get the real role instead of the raw
+     * account-type column.
+     */
+    private function formatAuthUser(User $user): array
+    {
+        return array_merge($user->toArray(), [
+            'role' => $user->effectiveRole(),
+            'permissions' => $user->effectivePermissions(),
+        ]);
     }
 
     /**
@@ -439,7 +453,7 @@ class AuthService
             $user->load(['fanProfile', 'loyaltyCard']);
 
             return [
-                'user' => $user,
+                'user' => $this->formatAuthUser($user),
                 'token' => $token,
             ];
         } catch (\Exception $e) {
@@ -575,7 +589,7 @@ class AuthService
             $user->load(['fanProfile', 'loyaltyCard']);
 
             return [
-                'user' => $user,
+                'user' => $this->formatAuthUser($user),
                 'token' => $token,
             ];
         } catch (\Exception $e) {

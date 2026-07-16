@@ -81,14 +81,9 @@ class OccupancyController extends Controller
 
     public function updateCapacity(Request $request)
     {
-        // Use existing manage-branches permission since it's a branch setting
-        if (!$request->user()->can('manage-cafe-profile')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You do not have permission to update branch capacity.',
-            ], 403);
-        }
-
+        // Authorization is enforced by the route middleware `cafe.permission:manage-seating`
+        // (owner or a staff member granted manage-seating). No redundant in-controller check —
+        // the previous one required manage-cafe-profile, which staff can never be granted.
         $validator = Validator::make($request->all(), [
             'total_capacity' => 'required|integer|min:1|max:10000',
         ]);
