@@ -255,10 +255,13 @@ class SubscriptionService
             'plan' => [
                 'id' => $subscription->plan->id,
                 'name' => $subscription->plan->name,
+                'name_ar' => $subscription->plan->name_ar,
                 'slug' => $subscription->plan->slug,
                 'price' => $subscription->plan->price,
                 'currency' => $subscription->plan->currency,
+                'currency_ar' => \App\Support\Currency::arabicName($subscription->plan->currency),
                 'features' => $subscription->plan->features,
+                'features_ar' => $subscription->plan->features_ar,
                 'max_bookings' => $subscription->plan->max_bookings,
                 'has_analytics' => $subscription->plan->has_analytics,
                 'has_branding' => $subscription->plan->has_branding,

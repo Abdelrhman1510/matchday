@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Support\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,11 +18,14 @@ class BillingTransactionResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->getTitle(),
+            'title_ar' => $this->getTitleAr(),
             'subtitle' => $this->getSubtitle(),
+            'subtitle_ar' => $this->getSubtitleAr(),
             'type' => $this->type,
             'status' => strtoupper($this->status),
             'amount' => (float) $this->amount,
             'currency' => $this->currency,
+            'currency_ar' => Currency::arabicName($this->currency),
             'date' => $this->created_at->format('Y-m-d'),
             'time' => $this->created_at->format('H:i:s'),
             'gateway_ref' => $this->gateway_ref,
@@ -55,6 +59,23 @@ class BillingTransactionResource extends JsonResource
     }
 
     /**
+     * Arabic transaction title based on type.
+     */
+    private function getTitleAr(): string
+    {
+        switch ($this->type) {
+            case 'subscription':
+                return 'دفع الاشتراك';
+            case 'booking':
+                return 'دفع الحجز';
+            case 'cafe_order':
+                return 'دفع طلب المقهى';
+            default:
+                return 'دفعة';
+        }
+    }
+
+    /**
      * Get transaction subtitle with details
      */
     private function getSubtitle(): string
@@ -72,6 +93,29 @@ class BillingTransactionResource extends JsonResource
                 return 'Booking payment';
             case 'cafe_order':
                 return $this->description ?? 'Cafe order';
+            default:
+                return $this->description ?? '';
+        }
+    }
+
+    /**
+     * Arabic transaction subtitle with details.
+     */
+    private function getSubtitleAr(): string
+    {
+        switch ($this->type) {
+            case 'subscription':
+                return $this->description ?? 'تجديد الاشتراك';
+            case 'booking':
+                if ($this->booking) {
+                    $matchInfo = $this->booking->match
+                        ? $this->booking->match->home_team . ' ضد ' . $this->booking->match->away_team
+                        : 'حجز مباراة';
+                    return $matchInfo . ' - ' . $this->booking->total_guests . ' ضيوف';
+                }
+                return 'دفع الحجز';
+            case 'cafe_order':
+                return $this->description ?? 'طلب مقهى';
             default:
                 return $this->description ?? '';
         }

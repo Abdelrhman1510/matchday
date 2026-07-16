@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Support\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,10 +18,13 @@ class SubscriptionPlanResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'name_ar' => $this->name_ar,
             'slug' => $this->slug,
             'price' => (float) $this->price,
             'currency' => $this->currency,
+            'currency_ar' => Currency::arabicName($this->currency),
             'features' => $this->features,
+            'features_ar' => $this->features_ar,
             'max_bookings' => $this->max_bookings,
             'has_analytics' => $this->has_analytics,
             'has_branding' => $this->has_branding,
