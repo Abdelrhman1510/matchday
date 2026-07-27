@@ -65,6 +65,12 @@ return [
             'transport' => 'resend',
         ],
 
+        // Brevo REST API transport (registered in AppServiceProvider). Sends over
+        // HTTPS so it works where outbound SMTP is blocked (e.g. Railway).
+        'brevo' => [
+            'transport' => 'brevo',
+        ],
+
         'sendmail' => [
             'transport' => 'sendmail',
             'path' => env('MAIL_SENDMAIL_PATH', '/usr/sbin/sendmail -bs -i'),

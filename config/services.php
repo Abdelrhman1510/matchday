@@ -46,6 +46,12 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
     ],
 
+    'brevo' => [
+        // Brevo (Sendinblue) REST API v3 key — used by the 'brevo' mail transport
+        // to send email over HTTPS (port 443) where outbound SMTP is blocked.
+        'key' => env('BREVO_API_KEY'),
+    ],
+
     'apple' => [
         'client_id' => env('APPLE_CLIENT_ID'),
         'team_id' => env('APPLE_TEAM_ID'),

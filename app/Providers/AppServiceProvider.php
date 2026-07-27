@@ -15,9 +15,11 @@ use App\Services\Payment\SimulatedPaymentGateway;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Symfony\Component\Mailer\Bridge\Brevo\Transport\BrevoApiTransport;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -50,6 +52,21 @@ class AppServiceProvider extends ServiceProvider
         $this->configureRateLimiting();
         $this->registerEventListeners();
         $this->registerSqliteFunctions();
+        $this->registerMailTransports();
+    }
+
+    /**
+     * Register the Brevo HTTP-API mail transport.
+     *
+     * Lets `MAIL_MAILER=brevo` send over Brevo's REST API (port 443) instead of
+     * SMTP. Needed on hosts that block outbound SMTP ports (e.g. Railway blocks
+     * 587/2525); AWS continues to use the smtp mailer unchanged.
+     */
+    protected function registerMailTransports(): void
+    {
+        Mail::extend('brevo', function () {
+            return new BrevoApiTransport((string) config('services.brevo.key'));
+        });
     }
 
     /**
