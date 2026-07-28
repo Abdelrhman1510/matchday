@@ -424,6 +424,26 @@ class CafeAdminController extends Controller
             ], 422);
         }
 
+        $hasOpenDay = false;
+        foreach ($request->hours as $hourData) {
+            $openTime = $hourData['opens_at'] ?? $hourData['open_time'] ?? null;
+            $isOpen = $hourData['is_open'] ?? ($openTime !== null);
+            if (filter_var($isOpen, FILTER_VALIDATE_BOOLEAN)) {
+                $hasOpenDay = true;
+                break;
+            }
+        }
+
+        if (!$hasOpenDay) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => [
+                    'hours' => ['At least one working day must remain open.'],
+                ],
+            ], 422);
+        }
+
         DB::beginTransaction();
         try {
             // Delete existing hours
