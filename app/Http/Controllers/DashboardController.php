@@ -33,8 +33,9 @@ class DashboardController extends Controller
         if (!$cafe) {
             return response()->json([
                 'success' => false,
-                'message' => 'No cafe found for this owner.',
-            ], 404);
+                'message' => 'You need to create a cafe profile before viewing the dashboard. Please complete your cafe setup first.',
+                'error_code' => 'NO_CAFE_PROFILE',
+            ], 422);
         }
 
         // Scope to the acting user's accessible branches; the cache key includes the
@@ -108,8 +109,9 @@ class DashboardController extends Controller
         if (!$cafe) {
             return response()->json([
                 'success' => false,
-                'message' => 'No cafe found for this owner.',
-            ], 404);
+                'message' => 'You need to create a cafe profile before viewing the dashboard. Please complete your cafe setup first.',
+                'error_code' => 'NO_CAFE_PROFILE',
+            ], 422);
         }
 
         $branchIds = collect($this->accessibleBranchIds($request));
@@ -178,8 +180,9 @@ class DashboardController extends Controller
         if (!$cafe) {
             return response()->json([
                 'success' => false,
-                'message' => 'No cafe found for this owner.',
-            ], 404);
+                'message' => 'You need to create a cafe profile before viewing the dashboard. Please complete your cafe setup first.',
+                'error_code' => 'NO_CAFE_PROFILE',
+            ], 422);
         }
 
         $branchIds = collect($this->accessibleBranchIds($request));
