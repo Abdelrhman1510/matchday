@@ -922,13 +922,25 @@ class CafeAdminController extends Controller
         }
 
         if (!$cafe->current_branch_id) {
-            return response()->json(['success' => false, 'message' => 'No current branch set'], 404);
+            $firstBranch = $cafe->branches()->first();
+            if ($firstBranch) {
+                $cafe->update(['current_branch_id' => $firstBranch->id]);
+                $cafe->current_branch_id = $firstBranch->id;
+            } else {
+                return response()->json(['success' => false, 'message' => 'No current branch set'], 404);
+            }
         }
 
         $branch = $cafe->branches()->find($cafe->current_branch_id);
 
         if (!$branch) {
-            return response()->json(['success' => false, 'message' => 'Current branch not found'], 404);
+            $firstBranch = $cafe->branches()->first();
+            if ($firstBranch) {
+                $cafe->update(['current_branch_id' => $firstBranch->id]);
+                $branch = $firstBranch;
+            } else {
+                return response()->json(['success' => false, 'message' => 'Current branch not found'], 404);
+            }
         }
 
         return response()->json([
