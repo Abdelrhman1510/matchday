@@ -132,7 +132,7 @@ class SeatingAdminController extends Controller
             'total_seats' => 'required|integer|min:1|max:500',
             'extra_cost' => 'sometimes|numeric|min:0',
             'icon' => 'sometimes|nullable|string|max:100',
-            'screen_size' => 'sometimes|nullable|string|max:50',
+            'screen_size' => 'sometimes|nullable|numeric|min:1',
         ]);
 
         if ($validator->fails()) {
@@ -185,7 +185,7 @@ class SeatingAdminController extends Controller
             'total_seats' => 'sometimes|integer|min:1|max:500',
             'extra_cost' => 'sometimes|nullable|numeric|min:0',
             'icon' => 'sometimes|nullable|string|max:100',
-            'screen_size' => 'sometimes|nullable|string|max:50',
+            'screen_size' => 'sometimes|nullable|numeric|min:1',
         ]);
 
         if ($validator->fails()) {
@@ -458,7 +458,7 @@ class SeatingAdminController extends Controller
             'sections.*.total_seats' => 'required|integer|min:1|max:500',
             'sections.*.extra_cost' => 'sometimes|numeric|min:0',
             'sections.*.icon' => 'sometimes|nullable|string|max:100',
-            'sections.*.screen_size' => 'sometimes|nullable|string|max:50',
+            'sections.*.screen_size' => 'sometimes|nullable|numeric|min:1',
         ]);
 
         if ($validator->fails()) {
