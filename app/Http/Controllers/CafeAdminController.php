@@ -41,17 +41,19 @@ class CafeAdminController extends Controller
     public function createCafe(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'name'        => 'required|string|max:255',
             'description' => 'sometimes|string|max:1000',
-            'phone' => 'sometimes|string|max:20',
-            'city' => 'sometimes|string|max:100',
+            'phone'       => ['required', 'string', 'max:20', 'regex:/^\+?[0-9]+$/'],
+            'city'        => 'required|string|max:100',
+        ], [
+            'phone.regex' => 'The Phone Number field must contain only numbers.',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
+                'message' => 'Please check the highlighted fields.',
+                'errors'  => $validator->errors(),
             ], 422);
         }
 
@@ -106,8 +108,10 @@ class CafeAdminController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
             'description' => 'sometimes|string|max:1000',
-            'phone' => 'sometimes|string|max:20',
+            'phone' => ['sometimes', 'string', 'max:20', 'regex:/^\+?[0-9]+$/'],
             'city' => 'sometimes|string|max:100',
+        ], [
+            'phone.regex' => 'The Phone Number field must contain only numbers.',
         ]);
 
         if ($validator->fails()) {
