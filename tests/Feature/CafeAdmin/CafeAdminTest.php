@@ -21,9 +21,10 @@ class CafeAdminTest extends TestCase
         Sanctum::actingAs($owner);
 
         $response = $this->postJson('/api/v1/admin/cafes', [
-            'name' => 'Sports Arena Cafe',
+            'name'        => 'Sports Arena Cafe',
             'description' => 'Best place to watch matches',
-            'phone' => '+966512345678',
+            'phone'       => '+966512345678',
+            'city'        => 'Riyadh',
         ]);
 
         $response->assertStatus(201)

@@ -46,7 +46,11 @@ class CreateCafeTest extends TestCase
         Cafe::factory()->create(['owner_id' => $owner->id]);
         Sanctum::actingAs($owner);
 
-        $this->postJson('/api/v1/cafe-admin/cafe', ['name' => 'Second Cafe'])
+        $this->postJson('/api/v1/cafe-admin/cafe', [
+                'name'  => 'Second Cafe',
+                'phone' => '+966512345678',
+                'city'  => 'Jeddah',
+            ])
             ->assertStatus(400);
     }
 }
