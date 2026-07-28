@@ -459,6 +459,9 @@ class SeatingAdminController extends Controller
             'sections.*.extra_cost' => 'sometimes|numeric|min:0',
             'sections.*.icon' => 'sometimes|nullable|string|max:100',
             'sections.*.screen_size' => 'sometimes|nullable|numeric|min:1',
+        ], [
+            'sections.*.total_seats.min' => 'At least one seat is required for each section.',
+            'sections.*.total_seats.required' => 'At least one seat is required for each section.',
         ]);
 
         if ($validator->fails()) {
