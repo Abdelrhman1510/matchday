@@ -72,8 +72,9 @@ class QrScanController extends Controller
             if (!$cafe) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No cafe found.',
-                ], 404);
+                    'message' => 'Please create a cafe first before using the QR Scanner.',
+                    'error_code' => 'NO_CAFE_PROFILE',
+                ], 422);
             }
         }
 
@@ -190,8 +191,9 @@ class QrScanController extends Controller
         if (!$cafe) {
             return response()->json([
                 'success' => false,
-                'message' => 'No cafe found for this owner.',
-            ], 404);
+                'message' => 'Please create a cafe first before using the QR Scanner.',
+                'error_code' => 'NO_CAFE_PROFILE',
+            ], 422);
         }
 
         // Save temp file for QR decode
@@ -285,8 +287,9 @@ class QrScanController extends Controller
         if (!$cafe) {
             return response()->json([
                 'success' => false,
-                'message' => 'No cafe found for this owner.',
-            ], 404);
+                'message' => 'Please create a cafe first before using the QR Scanner.',
+                'error_code' => 'NO_CAFE_PROFILE',
+            ], 422);
         }
 
         $scans = $this->qrService->getRecentScans($cafe, 10, $this->accessibleBranchIds($request));
@@ -317,8 +320,9 @@ class QrScanController extends Controller
         if (!$cafe) {
             return response()->json([
                 'success' => false,
-                'message' => 'No cafe found for this owner.',
-            ], 404);
+                'message' => 'Please create a cafe first before using the QR Scanner.',
+                'error_code' => 'NO_CAFE_PROFILE',
+            ], 422);
         }
 
         $stats = $this->qrService->getScanStats($cafe, $this->accessibleBranchIds($request));
