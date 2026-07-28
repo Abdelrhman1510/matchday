@@ -179,6 +179,10 @@ class AuthService
             ]);
         }
 
+        // Normalize: strip non-digits and trim whitespace so RTL-reversed input
+        // (common on Android with Arabic locale) still matches the stored code.
+        $otp = preg_replace('/\D/', '', trim($otp));
+
         if ($storedOtp !== $otp) {
             // Brute-force guard: a 6-digit code is only 1,000,000 combinations, so we
             // cap wrong guesses per OTP. After the limit, the code is burned and the
@@ -764,6 +768,9 @@ class AuthService
 
         $storedOtp = Cache::get("otp:{$user->email}");
 
+        // Normalize OTP: strip non-digits and whitespace (BUG-005 — RTL Android input).
+        $otp = preg_replace('/\D/', '', trim($otp));
+
         if (!$storedOtp || $storedOtp !== $otp) {
             throw ValidationException::withMessages([
                 'otp' => ['Invalid or expired OTP.'],
@@ -821,6 +828,9 @@ class AuthService
         }
 
         $storedOtp = Cache::get("otp:{$user->email}");
+
+        // Normalize OTP: strip non-digits and whitespace (BUG-005 — RTL Android input).
+        $otp = preg_replace('/\D/', '', trim($otp));
 
         if (!$storedOtp || $storedOtp !== $otp) {
             throw ValidationException::withMessages([

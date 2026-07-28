@@ -37,7 +37,7 @@ class CompleteRegistrationRequest extends FormRequest
         // verified account. Phone stays unique to prevent duplicate phone numbers.
         return [
             'email' => ['required', 'email', 'max:255'],
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', 'regex:/\p{L}/u'],
             'phone' => ['nullable', 'string', 'min:10', 'regex:/^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/', 'unique:users,phone'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ];
@@ -54,6 +54,7 @@ class CompleteRegistrationRequest extends FormRequest
             'email.required' => 'Email address is required.',
             'email.email' => 'Please provide a valid email address.',
             'name.required' => 'Name is required.',
+            'name.regex'    => 'Name must contain at least one letter.',
             'phone.regex' => 'Please provide a valid phone number.',
             'phone.unique' => 'This phone number is already registered.',
             'password.required' => 'Password is required.',

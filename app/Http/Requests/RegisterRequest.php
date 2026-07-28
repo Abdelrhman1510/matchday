@@ -33,7 +33,7 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', 'regex:/\p{L}/u'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'min:10', 'regex:/^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/', 'unique:users,phone'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
@@ -49,6 +49,7 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name.required' => 'Name is required',
+            'name.regex'    => 'Name must contain at least one letter.',
             'email.required' => 'Email is required',
             'email.email' => 'Please provide a valid email address',
             'email.unique' => 'This email is already registered',
