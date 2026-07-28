@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\OtpThrottleException;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\GoogleLoginRequest;
@@ -69,6 +70,8 @@ class AuthController extends Controller
             $result = $this->authService->requestRegistrationOtp($request->input('email'));
 
             return $this->successResponse([], $result['message'], 200);
+        } catch (OtpThrottleException $e) {
+            return $this->errorResponse($e->getMessage(), 429);
         } catch (ValidationException $e) {
             return $this->errorResponse($e->getMessage(), 422, $e->errors());
         } catch (\Exception $e) {
@@ -398,6 +401,8 @@ class AuthController extends Controller
                 $result['message'],
                 200
             );
+        } catch (OtpThrottleException $e) {
+            return $this->errorResponse($e->getMessage(), 429);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }
@@ -481,6 +486,8 @@ class AuthController extends Controller
                 $result['message'],
                 200
             );
+        } catch (OtpThrottleException $e) {
+            return $this->errorResponse($e->getMessage(), 429);
         } catch (ValidationException $e) {
             return $this->errorResponse(
                 $e->getMessage(),

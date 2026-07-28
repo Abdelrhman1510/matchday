@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\OtpThrottleException;
 use App\Models\User;
 use App\Models\FanProfile;
 use App\Models\LoyaltyCard;
@@ -23,6 +24,40 @@ class AuthService
      * Maximum wrong OTP guesses allowed before the code is invalidated.
      */
     private const MAX_OTP_ATTEMPTS = 5;
+
+    /** Seconds a user must wait between OTP sends for the same identifier. */
+    private const OTP_RESEND_COOLDOWN = 60;
+
+    /** Maximum OTP sends allowed per identifier within a rolling hour. */
+    private const OTP_MAX_PER_HOUR = 5;
+
+    /**
+     * Enforce OTP-send abuse limits per identifier (email/phone): a short cooldown
+     * between sends plus an hourly cap. Prevents unlimited OTP resend / mail-bombing.
+     * Keyed by identifier (not IP) so a distributed attack can't bypass it.
+     *
+     * @throws OtpThrottleException
+     */
+    private function guardOtpResend(string $scope, string $identifier): void
+    {
+        $id = strtolower(trim($identifier));
+        $cooldownKey = "otp_cooldown:{$scope}:{$id}";
+        $countKey = "otp_count:{$scope}:{$id}";
+
+        $endsAt = Cache::get($cooldownKey);
+        if ($endsAt !== null) {
+            $wait = max(1, (int) $endsAt - time());
+            throw new OtpThrottleException("Please wait {$wait} seconds before requesting another code.");
+        }
+
+        if ((int) Cache::get($countKey, 0) >= self::OTP_MAX_PER_HOUR) {
+            throw new OtpThrottleException('Too many code requests. Please try again in an hour.');
+        }
+
+        // Record this send: start the cooldown window and bump the hourly counter.
+        Cache::put($cooldownKey, time() + self::OTP_RESEND_COOLDOWN, self::OTP_RESEND_COOLDOWN);
+        Cache::put($countKey, (int) Cache::get($countKey, 0) + 1, now()->addHour());
+    }
 
     /**
      * Register a new user with the specified role
@@ -107,6 +142,8 @@ class AuthService
                 'email' => ['This email is already registered. Please log in instead.'],
             ]);
         }
+
+        $this->guardOtpResend('reg', $email);
 
         $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         Cache::put("reg_otp:{$email}", $otp, now()->addMinutes(10));
@@ -694,6 +731,7 @@ class AuthService
         $user = User::where('email', $email)->first();
 
         if ($user) {
+            $this->guardOtpResend('pwd_reset', $user->email);
             $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
             Cache::put("otp:{$user->email}", $otp, now()->addMinutes(10));
             $user->notify(new PasswordResetOtp($otp, $user->name, $user->email));
@@ -754,6 +792,8 @@ class AuthService
      */
     public function sendEmailVerificationOtp(User $user): array
     {
+        $this->guardOtpResend('verify', $user->email);
+
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         Cache::put("otp:{$user->email}", $otp, now()->addMinutes(10));
         $user->notify(new EmailVerificationOtp($otp, $user->name, $user->email));
