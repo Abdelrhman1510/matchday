@@ -474,7 +474,9 @@ Route::post('/webhooks/subscription/payment-failed', [\App\Http\Controllers\Subs
 Route::middleware(['auth:sanctum', 'cafe.owner'])->prefix('cafe-admin')->name('cafe-admin.')->group(function () {
 
     // CAFE MANAGEMENT (Endpoints 1-5)
-    Route::post('/cafe', [CafeAdminController::class, 'createCafe'])->middleware('cafe.permission:owner')->name('cafe.create');
+    // No cafe.permission gate here: this is the first-cafe onboarding endpoint, so the
+    // owner has no cafe context to resolve yet. createCafe() itself blocks a second cafe.
+    Route::post('/cafe', [CafeAdminController::class, 'createCafe'])->name('cafe.create');
     Route::put('/cafe', [CafeAdminController::class, 'updateCafe'])->middleware('cafe.permission:manage-cafe-profile')->name('cafe.update');
     Route::post('/cafe/logo', [CafeAdminController::class, 'uploadLogo'])
         ->middleware(['throttle:uploads', 'cafe.permission:manage-cafe-profile'])
