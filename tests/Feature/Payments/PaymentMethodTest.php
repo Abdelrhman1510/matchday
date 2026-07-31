@@ -23,7 +23,7 @@ class PaymentMethodTest extends TestCase
             'card_number' => '4111111111111111',
             'card_holder' => 'John Doe',
             'expiry_month' => '12',
-            'expiry_year' => '2025',
+            'expiry_year' => '2030',
             'cvv' => '123',
         ]);
 

@@ -11,5 +11,13 @@
     "Section updated successfully": "تم تحديث القسم بنجاح",
     "Cannot set additional cost for a section with zero seats.": "لا يمكن تحديد تكلفة إضافية لقسم لا يحتوي على مقاعد.",
     "The field name must contain at least one letter or number.": "يجب أن يحتوي اسم الملعب على حرف أو رقم واحد على الأقل.",
-    "The location name must contain at least one letter or number.": "يجب أن يحتوي اسم الموقع على حرف أو رقم واحد على الأقل."
+    "The location name must contain at least one letter or number.": "يجب أن يحتوي اسم الموقع على حرف أو رقم واحد على الأقل.",
+    "Card has expired.": "انتهت صلاحية البطاقة.",
+    "Invalid expiry date.": "تاريخ الانتهاء غير صالح.",
+    "The card holder name must contain only letters and spaces.": "يجب أن يحتوي اسم حامل البطاقة على أحرف ومسافات فقط.",
+    "The expiry month must be between 01 and 12.": "يجب أن يكون شهر الانتهاء بين 01 و 12.",
+    "The expiry year must be a valid year starting with 20.": "يجب أن يكون عام الانتهاء صالحاً ويبدأ بـ 20.",
+    "The card number must be at least 13 digits.": "يجب أن تتكون البطاقة من 13 رقماً على الأقل.",
+    "The card number must not exceed 19 digits.": "يجب ألا تتجاوز البطاقة 19 رقماً.",
+    "The card number must contain only digits.": "يجب أن تحتوي البطاقة على أرقام فقط."
 }
