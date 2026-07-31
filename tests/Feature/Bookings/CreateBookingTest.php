@@ -82,7 +82,7 @@ class CreateBookingTest extends TestCase
         $this->assertDatabaseHas('bookings', [
             'user_id' => $user->id,
             'match_id' => $match->id,
-            'status' => 'confirmed',
+            'status' => 'pending',
         ]);
 
         $this->assertNotNull($response->json('data.qr_code'));
@@ -311,6 +311,67 @@ class CreateBookingTest extends TestCase
 
         $bookingCode = $response->json('data.booking_code');
         $this->assertMatchesRegularExpression('/^BOOK-[A-Z0-9]{6}$/', $bookingCode);
+    }
+
+    /** @test */
+    public function it_returns_422_immediately_when_more_than_8_seats_selected()
+    {
+        $user = User::factory()->create();
+        LoyaltyCard::factory()->create(['user_id' => $user->id]);
+        $cafe = Cafe::factory()->create();
+        $this->createActiveSubscription($cafe);
+        $branch = Branch::factory()->create(['cafe_id' => $cafe->id]);
+        $match = GameMatch::factory()->create([
+            'branch_id' => $branch->id,
+            'is_published' => true,
+            'seats_available' => 20,
+        ]);
+        $section = SeatingSection::factory()->create(['branch_id' => $branch->id]);
+        // Create 9 seats
+        $seats = Seat::factory()->count(9)->create([
+            'section_id' => $section->id,
+            'is_available' => true,
+        ])->pluck('id')->toArray();
+
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/v1/bookings', [
+            'match_id' => $match->id,
+            'seat_ids' => $seats,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJson(['success' => false])
+            ->assertJsonPath('errors.seat_ids.0', 'You can book a maximum of 8 seats per booking.');
+    }
+
+    /** @test */
+    public function it_returns_422_immediately_when_guests_count_exceeds_8()
+    {
+        $user = User::factory()->create();
+        LoyaltyCard::factory()->create(['user_id' => $user->id]);
+        $cafe = Cafe::factory()->create();
+        $this->createActiveSubscription($cafe);
+        $branch = Branch::factory()->create(['cafe_id' => $cafe->id]);
+        $match = GameMatch::factory()->create([
+            'branch_id' => $branch->id,
+            'is_published' => true,
+            'seats_available' => 20,
+        ]);
+        $section = SeatingSection::factory()->create(['branch_id' => $branch->id]);
+        $seat = Seat::factory()->create(['section_id' => $section->id, 'is_available' => true]);
+
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/v1/bookings', [
+            'match_id' => $match->id,
+            'seat_ids' => [$seat->id],
+            'guests_count' => 9,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJson(['success' => false])
+            ->assertJsonPath('errors.guests_count.0', 'You can book for a maximum of 8 guests per booking.');
     }
 }
 
