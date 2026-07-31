@@ -111,6 +111,7 @@ class OfferAdminController extends Controller
             'discount_percent' => 'nullable|integer|min:1|max:100',
             'original_price' => 'nullable|numeric|min:0',
             'offer_price' => 'nullable|numeric|min:0|lt:original_price',
+            'currency' => 'sometimes|string|size:3|in:SAR,USD,EUR,GBP,AED,KWD,BHD,QAR,OMR',
             'valid_until' => 'nullable|date|after:today',
             'available_for' => 'required|in:all,weekend,prime_time',
             'terms' => 'nullable|string',
@@ -234,6 +235,7 @@ class OfferAdminController extends Controller
             'discount_percent' => 'nullable|integer|min:1|max:100',
             'original_price' => 'nullable|numeric|min:0',
             'offer_price' => 'nullable|numeric|min:0|lt:original_price',
+            'currency' => 'sometimes|string|size:3|in:SAR,USD,EUR,GBP,AED,KWD,BHD,QAR,OMR',
             'valid_until' => 'nullable|date|after:today',
             'available_for' => 'sometimes|in:all,weekend,prime_time',
             'terms' => 'nullable|string',
@@ -430,7 +432,9 @@ class OfferAdminController extends Controller
 
         // Validation
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:active,draft',
+            'status' => 'required|in:active,draft,expired',
+        ], [
+            'status.in' => 'Invalid status. Allowed values are: active, draft, expired.',
         ]);
 
         if ($validator->fails()) {

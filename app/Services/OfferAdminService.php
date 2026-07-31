@@ -134,15 +134,31 @@ class OfferAdminService
     }
 
     /**
-     * Update offer status (active/draft toggle)
+     * Update offer status (active/draft/expired)
      */
     public function updateStatus(Offer $offer, string $status): Offer
     {
-        if (!in_array($status, ['active', 'draft'])) {
-            throw new \InvalidArgumentException('Status must be either "active" or "draft"');
+        $allowed = ['active', 'draft', 'expired'];
+
+        if (!in_array($status, $allowed)) {
+            throw new \InvalidArgumentException(
+                'Invalid status. Allowed values are: ' . implode(', ', $allowed) . '.'
+            );
         }
 
-        $offer->update(['status' => $status]);
+        $updates = ['status' => $status];
+
+        // When manually expiring, set is_active to false for consistency
+        if ($status === 'expired') {
+            $updates['is_active'] = false;
+        }
+
+        // When re-activating from draft/expired, set is_active to true
+        if ($status === 'active') {
+            $updates['is_active'] = true;
+        }
+
+        $offer->update($updates);
 
         // Clear cache
         $this->clearOfferCache($offer->cafe_id);

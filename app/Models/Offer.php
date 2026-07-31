@@ -13,7 +13,7 @@ class Offer extends Model
 
     protected $fillable = [
         'cafe_id', 'branch_id', 'title', 'description', 'image',
-        'original_price', 'offer_price', 'discount_percent',
+        'original_price', 'offer_price', 'currency', 'discount_percent',
         'discount_value', 'discount', 'discount_type',
         'type', 'status', 'is_featured', 'is_active',
         'valid_from', 'valid_until', 'start_date', 'end_date',

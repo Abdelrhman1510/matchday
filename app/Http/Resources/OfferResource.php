@@ -39,6 +39,7 @@ class OfferResource extends JsonResource
             'image' => $image,
             'original_price' => (float) $this->original_price,
             'offer_price' => (float) $this->offer_price,
+            'currency' => $this->currency ?? 'SAR',
             'discount_percent' => $this->discount_percent,
             'type' => $this->type,
             'status' => $this->status,
