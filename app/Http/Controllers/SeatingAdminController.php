@@ -182,7 +182,7 @@ class SeatingAdminController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
             'type' => 'sometimes|string|in:main_screen,vip,premium,standard',
-            'total_seats' => 'sometimes|integer|min:1|max:500',
+            'total_seats' => 'sometimes|integer|min:0|max:500',
             'extra_cost' => 'sometimes|nullable|numeric|min:0',
             'icon' => 'sometimes|nullable|string|max:100',
             'screen_size' => 'sometimes|nullable|numeric|min:1',
@@ -196,7 +196,22 @@ class SeatingAdminController extends Controller
             ], 422);
         }
 
-        $section = $this->seatingService->updateSection($section, $validator->validated());
+        $validated = $validator->validated();
+
+        $newTotalSeats = array_key_exists('total_seats', $validated) ? $validated['total_seats'] : $section->total_seats;
+        $newExtraCost = array_key_exists('extra_cost', $validated) ? $validated['extra_cost'] : $section->extra_cost;
+
+        if ($newTotalSeats === 0 && $newExtraCost > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => [
+                    'extra_cost' => ['Cannot set additional cost for a section with zero seats.']
+                ],
+            ], 422);
+        }
+
+        $section = $this->seatingService->updateSection($section, $validated);
 
         return response()->json([
             'success' => true,
@@ -455,13 +470,10 @@ class SeatingAdminController extends Controller
             'sections' => 'required|array|min:1|max:20',
             'sections.*.name' => 'required|string|max:255',
             'sections.*.type' => 'required|string|in:main_screen,vip,premium,standard',
-            'sections.*.total_seats' => 'required|integer|min:1|max:500',
+            'sections.*.total_seats' => 'required|integer|min:0|max:500',
             'sections.*.extra_cost' => 'sometimes|numeric|min:0',
             'sections.*.icon' => 'sometimes|nullable|string|max:100',
             'sections.*.screen_size' => 'sometimes|nullable|numeric|min:1',
-        ], [
-            'sections.*.total_seats.min' => 'At least one seat is required for each section.',
-            'sections.*.total_seats.required' => 'At least one seat is required for each section.',
         ]);
 
         if ($validator->fails()) {
@@ -472,7 +484,24 @@ class SeatingAdminController extends Controller
             ], 422);
         }
 
-        $result = $this->seatingService->bulkCreateSections($branch, $validator->validated()['sections']);
+        $validated = $validator->validated();
+        
+        $errors = [];
+        foreach ($validated['sections'] as $index => $section) {
+            if (($section['total_seats'] ?? 0) === 0 && ($section['extra_cost'] ?? 0) > 0) {
+                $errors["sections.{$index}.extra_cost"] = ["Cannot set additional cost for a section with zero seats."];
+            }
+        }
+        
+        if (!empty($errors)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $errors,
+            ], 422);
+        }
+
+        $result = $this->seatingService->bulkCreateSections($branch, $validated['sections']);
 
         return response()->json([
             'success' => true,
