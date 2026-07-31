@@ -177,11 +177,11 @@ class SubscriptionEnforcementTest extends TestCase
         $this->createSubscription($this->starterPlan);
         $branch = Branch::factory()->create(['cafe_id' => $this->cafe->id]);
 
-        // Create matches last month — should not count
         for ($i = 0; $i < 5; $i++) {
             GameMatch::factory()->create([
                 'branch_id' => $branch->id,
-                'created_at' => now()->subMonth(),
+                'created_at' => now()->subDays(45),
+                'updated_at' => now()->subDays(45),
             ]);
         }
 

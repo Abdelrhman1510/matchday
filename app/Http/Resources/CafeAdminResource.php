@@ -31,8 +31,8 @@ class CafeAdminResource extends JsonResource
             'updated_at' => $this->updated_at?->toISOString(),
             
             // UI Helper Flags
-            'can_add_branch' => !$this->is_premium || ($this->branches()->count() < 10),
-            'has_active_subscription' => $this->is_premium,
+            'can_add_branch' => app(\App\Services\SubscriptionEnforcementService::class)->canCreateBranch($this->resource)['allowed'],
+            'has_active_subscription' => app(\App\Services\SubscriptionEnforcementService::class)->hasActiveSubscription($this->resource),
             'profile_complete' => $this->isProfileComplete(),
             'total_branches' => $this->branches()->count(),
             
