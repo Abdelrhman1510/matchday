@@ -439,7 +439,7 @@ class CafeAdminController extends Controller
                 'success' => false,
                 'message' => 'Validation failed',
                 'errors' => [
-                    'hours' => ['At least one working day must remain open.'],
+                    'hours' => [__('At least one working day must remain open.')],
                 ],
             ], 422);
         }
@@ -471,7 +471,7 @@ class CafeAdminController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Branch hours updated successfully',
+                'message' => __('Branch hours updated successfully'),
                 'data' => new BranchDetailResource($branch),
             ]);
         } catch (\Exception $e) {
@@ -545,7 +545,7 @@ class CafeAdminController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Amenities added successfully',
+                'message' => __('Amenities added successfully'),
                 'data' => BranchAmenityResource::collection($amenities),
             ], 201);
         } catch (\Exception $e) {
@@ -1064,7 +1064,7 @@ class CafeAdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Amenity added successfully',
+            'message' => __('Amenity added successfully'),
             'data' => new BranchAmenityResource($amenity),
         ], 201);
     }
@@ -1091,7 +1091,7 @@ class CafeAdminController extends Controller
         if (!$branch) {
             return response()->json([
                 'success' => false,
-                'message' => 'Amenity not found or does not belong to your cafe',
+                'message' => __('Amenity not found or does not belong to your cafe'),
             ], 404);
         }
 

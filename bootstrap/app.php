@@ -29,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SecurityHeadersMiddleware::class,
             \App\Http\Middleware\RequestLogMiddleware::class,
             \App\Http\Middleware\ApplyPlatformSettings::class,
+            \App\Http\Middleware\SetLocale::class,
         ]);
 
         // API middleware group
