@@ -113,6 +113,10 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('support')->name('su
 Route::middleware(['throttle:api'])->prefix('teams')->name('teams.')->group(function () {
     Route::get('/popular', [TeamController::class, 'popular'])->name('popular');
     Route::get('/search', [TeamController::class, 'search'])->name('search');
+    // BUG-068: dedicated endpoint - GET /api/v1/teams/by-league/Spanish+League
+    Route::get('/by-league/{league}', [TeamController::class, 'byLeague'])->name('byLeague');
+    // List all distinct leagues available (for populating the league dropdown)
+    Route::get('/leagues', [TeamController::class, 'leagues'])->name('leagues');
     Route::get('/{id}', [TeamController::class, 'show'])->name('show');
     Route::get('/', [TeamController::class, 'index'])->name('index');
 });

@@ -115,4 +115,42 @@ class TeamController extends Controller
             'meta' => (object)[],
         ]);
     }
+
+    /**
+     * Get teams filtered by league — BUG-068
+     * GET /api/v1/teams/by-league/{league}
+     * Example: GET /api/v1/teams/by-league/Spanish+League
+     */
+    public function byLeague(Request $request, string $league): JsonResponse
+    {
+        $teams = $this->teamService->getAllTeams($league, null, $request->query('search'));
+
+        return response()->json([
+            'success' => true,
+            'message' => "Teams for league '{$league}' retrieved successfully",
+            'data' => TeamResource::collection($teams),
+            'meta' => [
+                'total' => $teams->count(),
+                'league' => $league,
+            ],
+        ]);
+    }
+
+    /**
+     * List all distinct leagues available in the database
+     * GET /api/v1/teams/leagues
+     */
+    public function leagues(): JsonResponse
+    {
+        $leagues = $this->teamService->getAvailableLeagues();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Leagues retrieved successfully',
+            'data' => $leagues,
+            'meta' => [
+                'total' => count($leagues),
+            ],
+        ]);
+    }
 }

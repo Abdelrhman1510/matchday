@@ -106,7 +106,7 @@ class StaffController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:6',
             'role' => 'required|in:admin,manager,staff',
             'permissions' => 'nullable|array',
             'permissions.*' => 'string|in:manage-bookings,view-bookings,manage-matches,view-analytics,manage-offers,manage-menu,manage-branches,manage-seating,scan-qr,check-in-customers,view-occupancy,manage-staff',
@@ -127,8 +127,9 @@ class StaffController extends Controller
         if (!$cafe) {
             return response()->json([
                 'success' => false,
-                'message' => 'No cafe found for this owner.',
-            ], 404);
+                'message' => 'You need to create a cafe profile before you can add employees. Please complete your cafe setup first.',
+                'error_code' => 'NO_CAFE_PROFILE',
+            ], 422);
         }
 
         // Branch ownership guard: every branch must belong to this owner's cafe.
@@ -227,7 +228,7 @@ class StaffController extends Controller
             'permissions.*' => 'string|in:manage-bookings,view-bookings,manage-matches,view-analytics,manage-offers,manage-menu,manage-branches,manage-seating,scan-qr,check-in-customers,view-occupancy,manage-staff',
             'branch_ids' => 'sometimes|array|min:1',
             'branch_ids.*' => 'integer|exists:branches,id',
-            'password' => 'nullable|string|min:8',
+            'password' => 'nullable|string|min:6',
         ]);
 
         if ($validator->fails()) {

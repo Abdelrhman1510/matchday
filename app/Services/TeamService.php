@@ -47,7 +47,7 @@ class TeamService
         return Cache::remember('popular_teams', 86400, function () {
             return Team::query()
                 ->where('is_popular', true)
-                ->orderByRaw("FIELD(type, 'national') DESC")
+                ->orderByRaw("CASE WHEN type = 'national' THEN 1 ELSE 0 END DESC")
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->get();
@@ -79,5 +79,21 @@ class TeamService
     public function getTeamById(int $id): ?Team
     {
         return Team::find($id);
+    }
+
+    /**
+     * Get all available leagues (distinct list)
+     */
+    public function getAvailableLeagues(): array
+    {
+        return Cache::remember('available_leagues', 86400, function () {
+            return Team::whereNotNull('league')
+                ->where('league', '!=', '')
+                ->select('league')
+                ->distinct()
+                ->orderBy('league')
+                ->pluck('league')
+                ->toArray();
+        });
     }
 }
