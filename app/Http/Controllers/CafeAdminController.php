@@ -507,8 +507,19 @@ class CafeAdminController extends Controller
         // Amenities are per-branch entities (BranchAmenity: name + icon).
         $validator = Validator::make($request->all(), [
             'amenities' => 'required|array|min:1',
-            'amenities.*.name' => 'required|string|max:100',
+            'amenities.*.name' => [
+                'required',
+                'string',
+                'max:100',
+                'distinct',
+                'regex:/[a-zA-Z0-9\p{Arabic}]/u',
+                \Illuminate\Validation\Rule::unique('branch_amenities', 'name')->where('branch_id', $branch->id)
+            ],
             'amenities.*.icon' => 'required|string|max:50',
+        ], [
+            'amenities.*.name.regex' => 'The facility name must contain at least one letter or number.',
+            'amenities.*.name.unique' => 'This facility has already been added.',
+            'amenities.*.name.distinct' => 'Duplicate facility names are not allowed in the same request.'
         ]);
 
         if ($validator->fails()) {
@@ -1024,8 +1035,17 @@ class CafeAdminController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:100',
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+                'regex:/[a-zA-Z0-9\p{Arabic}]/u',
+                \Illuminate\Validation\Rule::unique('branch_amenities', 'name')->where('branch_id', $branch->id)
+            ],
             'icon' => 'required|string|max:50',
+        ], [
+            'name.regex' => 'The facility name must contain at least one letter or number.',
+            'name.unique' => 'This facility has already been added.'
         ]);
 
         if ($validator->fails()) {
