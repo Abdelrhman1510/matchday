@@ -108,16 +108,6 @@ class MatchAdminController extends Controller
             ], 404);
         }
 
-        // Subscription enforcement: check match limit
-        $check = $this->enforcement->canCreateMatch($cafe);
-        if (!$check['allowed']) {
-            return response()->json([
-                'success' => false,
-                'message' => $check['reason'],
-                'limit' => $check['limit'],
-                'current' => $check['current'],
-            ], 403);
-        }
 
         $validator = Validator::make($request->all(), [
             'branch_id' => 'sometimes|integer',
@@ -131,7 +121,7 @@ class MatchAdminController extends Controller
             'ticket_price' => 'sometimes|numeric|min:0',
             'duration_minutes' => 'sometimes|integer|min:1|max:300',
             'booking_opens_at' => 'sometimes|nullable|date',
-            'booking_closes_at' => 'sometimes|nullable|date',
+            'booking_closes_at' => 'sometimes|nullable|date|after:booking_opens_at',
             'field_name' => [
                 'sometimes',
                 'nullable',
@@ -157,6 +147,17 @@ class MatchAdminController extends Controller
                 'message' => __('Validation failed'),
                 'errors' => $validator->errors(),
             ], 422);
+        }
+
+        // Subscription enforcement: check match limit
+        $check = $this->enforcement->canCreateMatch($cafe);
+        if (!$check['allowed']) {
+            return response()->json([
+                'success' => false,
+                'message' => $check['reason'],
+                'limit' => $check['limit'],
+                'current' => $check['current'],
+            ], 403);
         }
 
         // Use route branchId or request body branch_id
@@ -257,7 +258,7 @@ class MatchAdminController extends Controller
             'ticket_price' => 'sometimes|numeric|min:0',
             'duration_minutes' => 'sometimes|integer|min:1|max:300',
             'booking_opens_at' => 'sometimes|nullable|date',
-            'booking_closes_at' => 'sometimes|nullable|date',
+            'booking_closes_at' => 'sometimes|nullable|date|after:booking_opens_at',
             'field_name' => [
                 'sometimes',
                 'nullable',
