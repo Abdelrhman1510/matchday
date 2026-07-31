@@ -132,14 +132,29 @@ class MatchAdminController extends Controller
             'duration_minutes' => 'sometimes|integer|min:1|max:300',
             'booking_opens_at' => 'sometimes|nullable|date',
             'booking_closes_at' => 'sometimes|nullable|date',
-            'field_name' => 'sometimes|nullable|string|max:100',
-            'venue_name' => 'sometimes|nullable|string|max:255',
+            'field_name' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'max:100',
+                'regex:/[a-zA-Z0-9\p{Arabic}]/u',
+            ],
+            'venue_name' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'max:255',
+                'regex:/[a-zA-Z0-9\p{Arabic}]/u',
+            ],
+        ], [
+            'field_name.regex' => __('The field name must contain at least one letter or number.'),
+            'venue_name.regex' => __('The location name must contain at least one letter or number.'),
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed',
+                'message' => __('Validation failed'),
                 'errors' => $validator->errors(),
             ], 422);
         }
@@ -243,14 +258,29 @@ class MatchAdminController extends Controller
             'duration_minutes' => 'sometimes|integer|min:1|max:300',
             'booking_opens_at' => 'sometimes|nullable|date',
             'booking_closes_at' => 'sometimes|nullable|date',
-            'field_name' => 'sometimes|nullable|string|max:100',
-            'venue_name' => 'sometimes|nullable|string|max:255',
+            'field_name' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'max:100',
+                'regex:/[a-zA-Z0-9\p{Arabic}]/u',
+            ],
+            'venue_name' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'max:255',
+                'regex:/[a-zA-Z0-9\p{Arabic}]/u',
+            ],
+        ], [
+            'field_name.regex' => __('The field name must contain at least one letter or number.'),
+            'venue_name.regex' => __('The location name must contain at least one letter or number.'),
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed',
+                'message' => __('Validation failed'),
                 'errors' => $validator->errors(),
             ], 422);
         }
