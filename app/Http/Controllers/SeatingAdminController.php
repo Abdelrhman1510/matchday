@@ -10,6 +10,7 @@ use App\Http\Resources\SeatingSectionAdminResource;
 use App\Http\Resources\SeatAdminResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class SeatingAdminController extends Controller
 {
@@ -18,6 +19,37 @@ class SeatingAdminController extends Controller
     public function __construct(SeatingAdminService $seatingService)
     {
         $this->seatingService = $seatingService;
+    }
+
+    private function normalizeRequestData(Request $request): void
+    {
+        // Normalize single section payload
+        if ($request->has('totalSeats')) $request->merge(['total_seats' => $request->input('totalSeats')]);
+        if ($request->has('extraCost')) $request->merge(['extra_cost' => $request->input('extraCost')]);
+        if ($request->has('screenSize')) $request->merge(['screen_size' => $request->input('screenSize')]);
+        if ($request->has('type')) {
+            $type = strtolower($request->input('type'));
+            if ($type === 'regular') $type = 'standard';
+            if ($type === 'main screen') $type = 'main_screen';
+            $request->merge(['type' => $type]);
+        }
+
+        // Normalize bulk sections payload
+        if ($request->has('sections') && is_array($request->input('sections'))) {
+            $sections = $request->input('sections');
+            foreach ($sections as &$section) {
+                if (isset($section['totalSeats'])) $section['total_seats'] = $section['totalSeats'];
+                if (isset($section['extraCost'])) $section['extra_cost'] = $section['extraCost'];
+                if (isset($section['screenSize'])) $section['screen_size'] = $section['screenSize'];
+                if (isset($section['type'])) {
+                    $type = strtolower($section['type']);
+                    if ($type === 'regular') $type = 'standard';
+                    if ($type === 'main screen') $type = 'main_screen';
+                    $section['type'] = $type;
+                }
+            }
+            $request->merge(['sections' => $sections]);
+        }
     }
 
     // =========================================
@@ -126,6 +158,8 @@ class SeatingAdminController extends Controller
             return $deny;
         }
 
+        $this->normalizeRequestData($request);
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'type' => 'sometimes|string|in:main_screen,vip,premium,standard',
@@ -178,6 +212,8 @@ class SeatingAdminController extends Controller
         if ($deny = $this->denyIfBranchInaccessible($request, (int) $section->branch_id)) {
             return $deny;
         }
+
+        $this->normalizeRequestData($request);
 
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
@@ -465,6 +501,8 @@ class SeatingAdminController extends Controller
         if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
             return $deny;
         }
+
+        $this->normalizeRequestData($request);
 
         $validator = Validator::make($request->all(), [
             'sections' => 'required|array|min:1|max:20',

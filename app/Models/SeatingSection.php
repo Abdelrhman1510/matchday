@@ -30,6 +30,20 @@ class SeatingSection extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        $updateBranchTotalSeats = function ($section) {
+            if ($section->branch) {
+                $section->branch->update([
+                    'total_seats' => $section->branch->seatingSections()->sum('total_seats')
+                ]);
+            }
+        };
+
+        static::saved($updateBranchTotalSeats);
+        static::deleted($updateBranchTotalSeats);
+    }
+
     // Relationships
     public function branch(): BelongsTo
     {
