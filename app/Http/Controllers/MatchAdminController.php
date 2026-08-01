@@ -166,6 +166,38 @@ class MatchAdminController extends Controller
             'venue_name.regex' => __('The location name must contain at least one letter or number.'),
         ]);
 
+        $validator->after(function ($validator) use ($request) {
+            $matchDate = $request->input('match_date');
+            $kickOff = $request->input('kick_off');
+            $bookingOpensAt = $request->input('booking_opens_at');
+            $bookingClosesAt = $request->input('booking_closes_at');
+
+            if ($matchDate && $kickOff) {
+                try {
+                    $matchDateTime = \Carbon\Carbon::parse($matchDate . ' ' . $kickOff);
+                    if ($matchDateTime->isPast()) {
+                        $validator->errors()->add('kick_off', __('The match time cannot be in the past.'));
+                    }
+
+                    if ($bookingOpensAt) {
+                        $opensAt = \Carbon\Carbon::parse($bookingOpensAt);
+                        if ($opensAt->isAfter($matchDateTime) || $opensAt->equalTo($matchDateTime)) {
+                            $validator->errors()->add('booking_opens_at', __('Booking start time must be before match start time.'));
+                        }
+                    }
+
+                    if ($bookingClosesAt) {
+                        $closesAt = \Carbon\Carbon::parse($bookingClosesAt);
+                        if ($closesAt->isAfter($matchDateTime) || $closesAt->equalTo($matchDateTime)) {
+                            $validator->errors()->add('booking_closes_at', __('Booking end time must be before match start time.'));
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // Ignore parsing errors, caught by main rules
+                }
+            }
+        });
+
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
@@ -304,6 +336,38 @@ class MatchAdminController extends Controller
             'field_name.regex' => __('The field name must contain at least one letter or number.'),
             'venue_name.regex' => __('The location name must contain at least one letter or number.'),
         ]);
+
+        $validator->after(function ($validator) use ($request, $match) {
+            $matchDate = $request->input('match_date', $match->match_date);
+            $kickOff = $request->input('kick_off', $match->kick_off);
+            $bookingOpensAt = $request->input('booking_opens_at', $match->booking_opens_at);
+            $bookingClosesAt = $request->input('booking_closes_at', $match->booking_closes_at);
+
+            if ($matchDate && $kickOff) {
+                try {
+                    $matchDateTime = \Carbon\Carbon::parse($matchDate . ' ' . $kickOff);
+                    if ($matchDateTime->isPast()) {
+                        $validator->errors()->add('kick_off', __('The match time cannot be in the past.'));
+                    }
+
+                    if ($bookingOpensAt) {
+                        $opensAt = \Carbon\Carbon::parse($bookingOpensAt);
+                        if ($opensAt->isAfter($matchDateTime) || $opensAt->equalTo($matchDateTime)) {
+                            $validator->errors()->add('booking_opens_at', __('Booking start time must be before match start time.'));
+                        }
+                    }
+
+                    if ($bookingClosesAt) {
+                        $closesAt = \Carbon\Carbon::parse($bookingClosesAt);
+                        if ($closesAt->isAfter($matchDateTime) || $closesAt->equalTo($matchDateTime)) {
+                            $validator->errors()->add('booking_closes_at', __('Booking end time must be before match start time.'));
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // Ignore parsing errors, caught by main rules
+                }
+            }
+        });
 
         if ($validator->fails()) {
             return response()->json([
