@@ -53,6 +53,7 @@ class ProfileController extends Controller
                 'sometimes',
                 'string',
                 'max:20',
+                'regex:/^\+?[0-9]+$/',
                 \Illuminate\Validation\Rule::unique('users')->ignore($user->id),
             ],
             'email' => [
@@ -63,6 +64,8 @@ class ProfileController extends Controller
                 \Illuminate\Validation\Rule::unique('users')->ignore($user->id),
             ],
             'locale' => ['sometimes', 'string', \Illuminate\Validation\Rule::in(['en', 'ar'])],
+        ], [
+            'phone.regex' => __('The phone number may only contain digits and an optional leading plus sign.')
         ]);
 
         $updatedUser = $this->profileService->updateProfile($user, $validated);
