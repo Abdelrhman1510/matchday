@@ -29,9 +29,16 @@ class RateLimitServiceProvider extends ServiceProvider
                 : Limit::perMinute(30)->by($request->ip());
         });
 
-        // Auth endpoints: 5 requests/min
+        // Auth endpoints: 10 requests/min per identifier+IP combination
         RateLimiter::for('auth', function (Request $request) {
-            return Limit::perMinute(5)->by($request->ip());
+            $identifier = $request->input('email_or_phone')
+                ?? $request->input('email')
+                ?? $request->input('phone')
+                ?? '';
+
+            $key = \Illuminate\Support\Str::lower(trim($identifier)) . '|' . $request->ip();
+
+            return Limit::perMinute(10)->by($key);
         });
 
         // Password reset: 3 requests/min

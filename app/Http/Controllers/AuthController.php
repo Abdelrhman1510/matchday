@@ -22,6 +22,8 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -186,13 +188,56 @@ class AuthController extends Controller
      * @param LoginRequest $request
      * @return JsonResponse
      */
+    /**
+     * Build a unique throttle key based on the login identifier and IP.
+     */
+    protected function loginThrottleKey(Request $request): string
+    {
+        $identifier = $request->input('email_or_phone')
+            ?? $request->input('email')
+            ?? $request->input('phone')
+            ?? '';
+
+        return 'login.' . Str::lower($identifier) . '.' . $request->ip();
+    }
+
+    /**
+     * Maximum failed login attempts before lockout.
+     */
+    protected int $maxLoginAttempts = 5;
+
+    /**
+     * Lockout duration in seconds (15 minutes).
+     */
+    protected int $lockoutSeconds = 900;
+
     public function login(LoginRequest $request): JsonResponse
     {
+        $throttleKey = $this->loginThrottleKey($request);
+
+        // Check if the identifier+IP is already locked out
+        if (RateLimiter::tooManyAttempts($throttleKey, $this->maxLoginAttempts)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            return response()->json([
+                'success' => false,
+                'message' => 'Too many failed login attempts. Please try again in ' . ceil($seconds / 60) . ' minute(s).',
+                'errors' => ['credentials' => ['Account temporarily locked due to too many failed attempts.']],
+                'retry_after_seconds' => $seconds,
+            ], 429);
+        }
+
         try {
+            $identifier = $request->input('email_or_phone')
+                ?? $request->input('email')
+                ?? $request->input('phone');
+
             $result = $this->authService->login(
-                $request->input('email_or_phone'),
+                $identifier,
                 $request->input('password')
             );
+
+            // Successful login — clear any accumulated failed attempts
+            RateLimiter::clear($throttleKey);
 
             return $this->successResponse(
                 [
@@ -202,10 +247,17 @@ class AuthController extends Controller
                 'Login successful'
             );
         } catch (\Illuminate\Auth\AuthenticationException $e) {
-            return $this->errorResponse(
-                $e->getMessage(),
-                401
-            );
+            // Increment failed attempt counter (decays after lockout window)
+            RateLimiter::hit($throttleKey, $this->lockoutSeconds);
+
+            $attemptsLeft = $this->maxLoginAttempts - RateLimiter::attempts($throttleKey);
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => ['credentials' => [$e->getMessage()]],
+                'attempts_remaining' => max(0, $attemptsLeft),
+            ], 401);
         } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
             return $this->errorResponse(
                 $e->getMessage(),
