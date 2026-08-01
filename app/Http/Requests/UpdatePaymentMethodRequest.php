@@ -14,7 +14,7 @@ class UpdatePaymentMethodRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'card_holder' => ['sometimes', 'string', 'max:255'],
+            'card_holder' => ['sometimes', 'string', 'max:255', 'regex:/^[\p{L}\s]+$/u'],
             'expiry_month' => ['sometimes', 'string', 'size:2'],
             'expiry_year' => ['sometimes', 'string', 'size:4'],
             'expires_at' => ['sometimes', 'date_format:Y-m', 'after:today'],
@@ -26,6 +26,7 @@ class UpdatePaymentMethodRequest extends FormRequest
         return [
             'expires_at.date_format' => 'Expiry date must be in YYYY-MM format',
             'expires_at.after' => 'Card has expired',
+            'card_holder.regex' => __('The card holder name must contain only letters and spaces.'),
         ];
     }
 }

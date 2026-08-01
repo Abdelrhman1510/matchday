@@ -21,6 +21,30 @@ class MatchAdminController extends Controller
         $this->enforcement = $enforcement;
     }
 
+    private function normalizeRequestData(Request $request): void
+    {
+        $map = [
+            'homeTeamId' => 'home_team_id',
+            'awayTeamId' => 'away_team_id',
+            'matchDate' => 'match_date',
+            'bookingOpensAt' => 'booking_opens_at',
+            'bookingClosesAt' => 'booking_closes_at',
+            'seatsAvailable' => 'seats_available',
+            'pricePerSeat' => 'price_per_seat',
+            'ticketPrice' => 'ticket_price',
+            'durationMinutes' => 'duration_minutes',
+            'kickOff' => 'kick_off',
+            'fieldName' => 'field_name',
+            'venueName' => 'venue_name',
+        ];
+
+        foreach ($map as $camel => $snake) {
+            if ($request->has($camel)) {
+                $request->merge([$snake => $request->input($camel)]);
+            }
+        }
+    }
+
     // =========================================
     // HELPER: Get owner's cafe
     // =========================================
@@ -108,6 +132,7 @@ class MatchAdminController extends Controller
             ], 404);
         }
 
+        $this->normalizeRequestData($request);
 
         $validator = Validator::make($request->all(), [
             'branch_id' => 'sometimes|integer',
@@ -246,6 +271,8 @@ class MatchAdminController extends Controller
         if ($deny = $this->denyIfBranchInaccessible($request, (int) $match->branch_id)) {
             return $deny;
         }
+
+        $this->normalizeRequestData($request);
 
         $validator = Validator::make($request->all(), [
             'home_team_id' => 'sometimes|integer|exists:teams,id',

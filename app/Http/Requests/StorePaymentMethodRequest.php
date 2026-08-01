@@ -70,8 +70,8 @@ class StorePaymentMethodRequest extends FormRequest
             'card_holder.regex' => __('The card holder name must contain only letters and spaces.'),
             'expiry_month.regex' => __('The expiry month must be between 01 and 12.'),
             'expiry_year.regex' => __('The expiry year must be a valid year starting with 20.'),
-            'card_number.min' => __('The card number must be at least 13 digits.'),
-            'card_number.max' => __('The card number must not exceed 19 digits.'),
+            'card_number.min' => __('Card number must be between 13 and 19 digits.'),
+            'card_number.max' => __('Card number must be between 13 and 19 digits.'),
             'card_number.regex' => __('The card number must contain only digits.'),
         ];
     }
