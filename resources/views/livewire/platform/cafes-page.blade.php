@@ -170,7 +170,7 @@
                 <input type="text" wire:model.live.debounce.300ms="search"
                     placeholder="{{ __('platform.cafes.search') }}"
                     class="w-full px-4 py-2 pl-10 bg-[#0a0524] border border-[#1e164e] rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-[#c8ff00]">
-                <svg class="w-5 h-5 text-slate-500 absolute left-3 top-2.5" fill="none" stroke="currentColor"
+                <svg class="w-5 h-5 text-slate-500 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor"
                     viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -323,7 +323,7 @@
                             <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-100"
                                 x-transition:enter-start="opacity-0 translate-y-2 scale-95"
                                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                                class="absolute right-0 bottom-[calc(100%+0.5rem)] w-48 bg-[#0a0524] border border-[#1e164e] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.8)] z-50 py-2">
+                                class="absolute right-0 bottom-[calc(100%+0.5rem)] w-max min-w-[12rem] bg-[#0a0524] border border-[#1e164e] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.8)] z-50 py-2">
                                 <a href="{{ route('platform.cafes.show', $cafe) }}"
                                     class="flex items-center gap-2.5 px-4 py-2 text-sm text-white hover:bg-[#1a0e40] transition-colors">
                                     <svg class="w-4 h-4 flex-shrink-0 text-slate-400" fill="none" stroke="currentColor"
