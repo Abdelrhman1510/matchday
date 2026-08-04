@@ -24,8 +24,6 @@ class DashboardPage extends Component
     use WithPagination;
 
     public $period = 'last_30_days';
-    public $chartPeriod = 'month';
-    public $searchMatches = '';
     public $periodUpdateCount = 0; // Force re-render on period change
     public $showAllActivity = false; // Toggle to show all activity
 
@@ -213,13 +211,10 @@ class DashboardPage extends Component
         // Increment counter to force component re-render
         $this->periodUpdateCount++;
 
-        // The component will automatically re-render due to wire:model.live
-        // Charts will be updated via the render method
-    }
-
-    public function updatedChartPeriod()
-    {
-        $this->dispatch('updateChart', period: $this->chartPeriod);
+        $this->dispatch('dashboard-updated', 
+            bookingsData: $this->getBookingsChartData(),
+            revenueData: $this->getRevenueChartData()
+        );
     }
 
     public function toggleActivityView()
@@ -368,37 +363,44 @@ class DashboardPage extends Component
 
     private function getBookingsChartData()
     {
-        $period = $this->chartPeriod;
+        $period = $this->period;
 
-        if ($period === 'week') {
+        if ($period === 'last_7_days') {
             $data = Booking::selectRaw('DATE(created_at) as date, COUNT(*) as count')
                 ->whereBetween('created_at', [Carbon::now()->subDays(6), Carbon::now()])
                 ->groupBy('date')
                 ->orderBy('date')
                 ->get();
-
             return [
                 'labels' => $data->pluck('date')->map(fn($d) => Carbon::parse($d)->format('D'))->toArray(),
                 'values' => $data->pluck('count')->toArray(),
             ];
-        } elseif ($period === 'year') {
+        } elseif ($period === 'this_year') {
             $data = Booking::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
                 ->whereYear('created_at', Carbon::now()->year)
                 ->groupBy('month')
                 ->orderBy('month')
                 ->get();
-
             return [
                 'labels' => $data->pluck('month')->map(fn($m) => Carbon::create()->month($m)->format('M'))->toArray(),
                 'values' => $data->pluck('count')->toArray(),
             ];
-        } else { // month
+        } elseif ($period === 'this_month') {
+            $data = Booking::selectRaw('DATE(created_at) as date, COUNT(*) as count')
+                ->whereBetween('created_at', [Carbon::now()->startOfMonth(), Carbon::now()])
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+            return [
+                'labels' => $data->pluck('date')->map(fn($d) => Carbon::parse($d)->format('M j'))->toArray(),
+                'values' => $data->pluck('count')->toArray(),
+            ];
+        } else { // last_30_days
             $data = Booking::selectRaw('DATE(created_at) as date, COUNT(*) as count')
                 ->whereBetween('created_at', [Carbon::now()->subDays(29), Carbon::now()])
                 ->groupBy('date')
                 ->orderBy('date')
                 ->get();
-
             return [
                 'labels' => $data->pluck('date')->map(fn($d) => Carbon::parse($d)->format('M j'))->toArray(),
                 'values' => $data->pluck('count')->toArray(),
@@ -408,17 +410,53 @@ class DashboardPage extends Component
 
     private function getRevenueChartData()
     {
-        $data = Payment::selectRaw('MONTH(created_at) as month, SUM(amount) as total')
-            ->whereIn('status', ['paid', 'completed'])
-            ->whereYear('created_at', Carbon::now()->year)
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
+        $period = $this->period;
 
-        return [
-            'labels' => $data->pluck('month')->map(fn($m) => Carbon::create()->month($m)->format('M'))->toArray(),
-            'values' => $data->pluck('total')->toArray(),
-        ];
+        if ($period === 'last_7_days') {
+            $data = Payment::selectRaw('DATE(created_at) as date, SUM(amount) as total')
+                ->whereIn('status', ['paid', 'completed'])
+                ->whereBetween('created_at', [Carbon::now()->subDays(6), Carbon::now()])
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+            return [
+                'labels' => $data->pluck('date')->map(fn($d) => Carbon::parse($d)->format('D'))->toArray(),
+                'values' => $data->pluck('total')->toArray(),
+            ];
+        } elseif ($period === 'this_year') {
+            $data = Payment::selectRaw('MONTH(created_at) as month, SUM(amount) as total')
+                ->whereIn('status', ['paid', 'completed'])
+                ->whereYear('created_at', Carbon::now()->year)
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get();
+            return [
+                'labels' => $data->pluck('month')->map(fn($m) => Carbon::create()->month($m)->format('M'))->toArray(),
+                'values' => $data->pluck('total')->toArray(),
+            ];
+        } elseif ($period === 'this_month') {
+            $data = Payment::selectRaw('DATE(created_at) as date, SUM(amount) as total')
+                ->whereIn('status', ['paid', 'completed'])
+                ->whereBetween('created_at', [Carbon::now()->startOfMonth(), Carbon::now()])
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+            return [
+                'labels' => $data->pluck('date')->map(fn($d) => Carbon::parse($d)->format('M j'))->toArray(),
+                'values' => $data->pluck('total')->toArray(),
+            ];
+        } else { // last_30_days
+            $data = Payment::selectRaw('DATE(created_at) as date, SUM(amount) as total')
+                ->whereIn('status', ['paid', 'completed'])
+                ->whereBetween('created_at', [Carbon::now()->subDays(29), Carbon::now()])
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+            return [
+                'labels' => $data->pluck('date')->map(fn($d) => Carbon::parse($d)->format('M j'))->toArray(),
+                'values' => $data->pluck('total')->toArray(),
+            ];
+        }
     }
 
     private function getRecentActivity($limit = 5)

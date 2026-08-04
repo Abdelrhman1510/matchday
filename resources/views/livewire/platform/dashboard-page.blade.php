@@ -150,6 +150,12 @@
                     this.$watch('labels', () => this.initChart());
                     this.$watch('values', () => this.initChart());
                 },
+                updateData(detail) {
+                    if (detail && detail.bookingsData) {
+                        this.labels = detail.bookingsData.labels;
+                        this.values = detail.bookingsData.values;
+                    }
+                },
                 initChart() {
                     if (typeof window.Chart === 'undefined') {
                         setTimeout(() => this.initChart(), 100);
@@ -202,19 +208,11 @@
                         }
                     });
                 }
-            }" class="bg-[#1e293b] border border-[#1e164e] rounded-xl p-6">
+            }" @dashboard-updated.window="updateData($event.detail)" class="bg-[#1e293b] border border-[#1e164e] rounded-xl p-6">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-lg font-bold text-white uppercase tracking-wide">
                     {{ __('platform.dashboard.bookings_over_time') }}
                 </h3>
-                <div class="flex gap-2">
-                    <button wire:click="$set('chartPeriod', 'week')"
-                        class="px-3 py-1 text-xs font-semibold rounded {{ $chartPeriod === 'week' ? 'bg-[#c8ff00] text-black' : 'text-slate-400 hover:text-white' }}">{{ __('platform.dashboard.week') }}</button>
-                    <button wire:click="$set('chartPeriod', 'month')"
-                        class="px-3 py-1 text-xs font-semibold rounded {{ $chartPeriod === 'month' ? 'bg-[#c8ff00] text-black' : 'text-slate-400 hover:text-white' }}">{{ __('platform.dashboard.month') }}</button>
-                    <button wire:click="$set('chartPeriod', 'year')"
-                        class="px-3 py-1 text-xs font-semibold rounded {{ $chartPeriod === 'year' ? 'bg-[#c8ff00] text-black' : 'text-slate-400 hover:text-white' }}">{{ __('platform.dashboard.year') }}</button>
-                </div>
             </div>
             <div class="relative h-[250px]" wire:ignore>
                 <canvas x-ref="canvas"></canvas>
@@ -230,6 +228,12 @@
                     this.$nextTick(() => this.initChart());
                     this.$watch('labels', () => this.initChart());
                     this.$watch('values', () => this.initChart());
+                },
+                updateData(detail) {
+                    if (detail && detail.revenueData) {
+                        this.labels = detail.revenueData.labels;
+                        this.values = detail.revenueData.values;
+                    }
                 },
                 initChart() {
                     if (typeof window.Chart === 'undefined') {
@@ -287,7 +291,7 @@
                         }
                     });
                 }
-            }" class="bg-[#1e293b] border border-[#1e164e] rounded-xl p-6">
+            }" @dashboard-updated.window="updateData($event.detail)" class="bg-[#1e293b] border border-[#1e164e] rounded-xl p-6">
             <div class="mb-6">
                 <h3 class="text-lg font-bold text-white uppercase tracking-wide">
                     {{ __('platform.dashboard.revenue_growth') }}
