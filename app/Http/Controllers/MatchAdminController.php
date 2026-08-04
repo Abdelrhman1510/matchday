@@ -174,20 +174,21 @@ class MatchAdminController extends Controller
 
             if ($matchDate && $kickOff) {
                 try {
-                    $matchDateTime = \Carbon\Carbon::parse($matchDate . ' ' . $kickOff);
+                    $timezone = 'Asia/Riyadh';
+                    $matchDateTime = \Carbon\Carbon::parse($matchDate . ' ' . $kickOff, $timezone);
                     if ($matchDateTime->isPast()) {
                         $validator->errors()->add('kick_off', __('The match time cannot be in the past.'));
                     }
 
                     if ($bookingOpensAt) {
-                        $opensAt = \Carbon\Carbon::parse($bookingOpensAt);
+                        $opensAt = \Carbon\Carbon::parse($bookingOpensAt, $timezone);
                         if ($opensAt->isAfter($matchDateTime) || $opensAt->equalTo($matchDateTime)) {
                             $validator->errors()->add('booking_opens_at', __('Booking start time must be before match start time.'));
                         }
                     }
 
                     if ($bookingClosesAt) {
-                        $closesAt = \Carbon\Carbon::parse($bookingClosesAt);
+                        $closesAt = \Carbon\Carbon::parse($bookingClosesAt, $timezone);
                         if ($closesAt->isAfter($matchDateTime) || $closesAt->equalTo($matchDateTime)) {
                             $validator->errors()->add('booking_closes_at', __('Booking end time must be before match start time.'));
                         }
@@ -345,20 +346,21 @@ class MatchAdminController extends Controller
 
             if ($matchDate && $kickOff) {
                 try {
-                    $matchDateTime = \Carbon\Carbon::parse($matchDate . ' ' . $kickOff);
+                    $timezone = 'Asia/Riyadh';
+                    $matchDateTime = \Carbon\Carbon::parse($matchDate . ' ' . $kickOff, $timezone);
                     if ($matchDateTime->isPast()) {
                         $validator->errors()->add('kick_off', __('The match time cannot be in the past.'));
                     }
 
                     if ($bookingOpensAt) {
-                        $opensAt = \Carbon\Carbon::parse($bookingOpensAt);
+                        $opensAt = \Carbon\Carbon::parse($bookingOpensAt, $timezone);
                         if ($opensAt->isAfter($matchDateTime) || $opensAt->equalTo($matchDateTime)) {
                             $validator->errors()->add('booking_opens_at', __('Booking start time must be before match start time.'));
                         }
                     }
 
                     if ($bookingClosesAt) {
-                        $closesAt = \Carbon\Carbon::parse($bookingClosesAt);
+                        $closesAt = \Carbon\Carbon::parse($bookingClosesAt, $timezone);
                         if ($closesAt->isAfter($matchDateTime) || $closesAt->equalTo($matchDateTime)) {
                             $validator->errors()->add('booking_closes_at', __('Booking end time must be before match start time.'));
                         }
