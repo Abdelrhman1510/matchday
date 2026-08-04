@@ -119,6 +119,12 @@ class AuthService
         // failure doesn't roll back the user creation
         $this->sendEmailVerificationOtp($result['user']);
 
+        // Bust the platform admin dashboard stats cache so "Total Users"
+        // reflects the new registration immediately (BUG-001).
+        foreach (['7days', '30days', '90days', '1year'] as $period) {
+            Cache::forget('dashboard_stats_' . $period);
+        }
+
         return $result;
     }
 
@@ -175,7 +181,7 @@ class AuthService
 
         if (!$storedOtp) {
             throw ValidationException::withMessages([
-                'otp' => ['Invalid or expired verification code. Please request a new one.'],
+                'otp' => ['Your verification code has expired. Please request a new one.'],
             ]);
         }
 
@@ -231,7 +237,7 @@ class AuthService
      */
     public function completeRegistration(array $data, string $role = 'fan'): array
     {
-        $email = $data['email'];
+        $email = strtolower(trim($data['email']));
 
         if (!Cache::get("reg_verified:{$email}")) {
             throw ValidationException::withMessages([
@@ -328,8 +334,15 @@ class AuthService
      */
     public function login(string $emailOrPhone, string $password): array
     {
+        $emailOrPhone = trim($emailOrPhone);
+        
         // Determine if input is email or phone
-        $field = filter_var($emailOrPhone, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+        $isEmail = filter_var($emailOrPhone, FILTER_VALIDATE_EMAIL);
+        $field = $isEmail ? 'email' : 'phone';
+
+        if ($isEmail) {
+            $emailOrPhone = strtolower($emailOrPhone);
+        }
 
         // Find user
         $user = User::where($field, $emailOrPhone)->first();
@@ -771,9 +784,15 @@ class AuthService
         // Normalize OTP: strip non-digits and whitespace (BUG-005 — RTL Android input).
         $otp = preg_replace('/\D/', '', trim($otp));
 
-        if (!$storedOtp || $storedOtp !== $otp) {
+        if (!$storedOtp) {
             throw ValidationException::withMessages([
-                'otp' => ['Invalid or expired OTP.'],
+                'otp' => ['Your OTP has expired. Please request a new one.'],
+            ]);
+        }
+
+        if ($storedOtp !== $otp) {
+            throw ValidationException::withMessages([
+                'otp' => ['Invalid OTP. Please check the code and try again.'],
             ]);
         }
 
@@ -832,9 +851,15 @@ class AuthService
         // Normalize OTP: strip non-digits and whitespace (BUG-005 — RTL Android input).
         $otp = preg_replace('/\D/', '', trim($otp));
 
-        if (!$storedOtp || $storedOtp !== $otp) {
+        if (!$storedOtp) {
             throw ValidationException::withMessages([
-                'otp' => ['Invalid or expired OTP.'],
+                'otp' => ['Your OTP has expired. Please request a new one.'],
+            ]);
+        }
+
+        if ($storedOtp !== $otp) {
+            throw ValidationException::withMessages([
+                'otp' => ['Invalid OTP. Please check the code and try again.'],
             ]);
         }
 

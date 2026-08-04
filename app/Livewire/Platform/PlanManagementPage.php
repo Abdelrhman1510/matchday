@@ -101,14 +101,32 @@ class PlanManagementPage extends Component
     public function savePlan()
     {
         $this->validate([
-            'formName' => 'required|string|max:255',
-            'formPrice' => 'required|numeric|min:0',
+            'formName'               => 'required|string|min:3|max:255',
+            'formNameAr'             => 'nullable|string|min:3|max:255',
+            'formPrice'              => 'required|numeric|min:1',
+            'formMaxBranches'        => 'nullable|integer|min:1|max:1000',
+            'formMaxMatchesPerMonth' => 'nullable|integer|min:1|max:10000',
+            'formMaxBookingsPerMonth'=> 'nullable|integer|min:1|max:100000',
+            'formMaxBookings'        => 'nullable|integer|min:1|max:100000',
+            'formMaxStaffMembers'    => 'nullable|integer|min:1|max:1000',
+            'formMaxOffers'          => 'nullable|integer|min:1|max:10000',
+            'formCommissionRate'     => 'nullable|numeric|min:0|max:100',
         ], [
-            'formName.required' => __('platform.validation.name_required'),
-            'formName.max' => __('platform.validation.name_max'),
-            'formPrice.required' => __('platform.validation.price_required'),
-            'formPrice.numeric' => __('platform.validation.price_numeric'),
-            'formPrice.min' => __('platform.validation.price_min'),
+            'formName.required'               => __('platform.validation.name_required'),
+            'formName.min'                    => __('The plan name must be at least 3 characters.'),
+            'formName.max'                    => __('platform.validation.name_max'),
+            'formNameAr.min'                  => __('The Arabic plan name must be at least 3 characters.'),
+            'formPrice.required'              => __('platform.validation.price_required'),
+            'formPrice.numeric'               => __('platform.validation.price_numeric'),
+            'formPrice.min'                   => __('The price must be at least 1 (free plans are not allowed).'),
+            'formMaxBranches.min'             => __('Branch limit must be at least 1.'),
+            'formMaxMatchesPerMonth.min'      => __('Match limit must be at least 1.'),
+            'formMaxBookingsPerMonth.min'     => __('Bookings per month limit must be at least 1.'),
+            'formMaxBookings.min'             => __('Max bookings must be at least 1.'),
+            'formMaxStaffMembers.min'         => __('Staff member limit must be at least 1.'),
+            'formMaxOffers.min'               => __('Offers limit must be at least 1.'),
+            'formCommissionRate.min'          => __('Commission rate cannot be negative.'),
+            'formCommissionRate.max'          => __('Commission rate cannot exceed 100%.'),
         ]);
 
         $featuresArray = array_filter(
