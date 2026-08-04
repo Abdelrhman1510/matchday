@@ -17,7 +17,16 @@ class EnsureCafePermission
         $ctx = $user ? $this->resolver->resolve($user) : null;
 
         if (!$ctx) {
-            return response()->json(['success' => false, 'message' => 'No cafe found.'], 404);
+            $isQrRoute = $request->is('*scan-qr*') || $request->routeIs('*.scan-qr.*');
+            $message = $isQrRoute 
+                ? 'Please create a cafe first before using the QR Scanner.' 
+                : 'No cafe found.';
+
+            return response()->json([
+                'success' => false,
+                'message' => $message,
+                'error_code' => 'NO_CAFE_PROFILE'
+            ], 422);
         }
 
         // Reuse downstream (controllers read the same context).
