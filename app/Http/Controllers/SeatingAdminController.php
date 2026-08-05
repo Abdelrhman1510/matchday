@@ -119,7 +119,7 @@ class SeatingAdminController extends Controller
         if (!$branch) {
             return response()->json([
                 'success' => false,
-                'message' => 'Branch not found or does not belong to your cafe',
+                'message' => __('Branch not found or does not belong to your cafe'),
             ], 404);
         }
 
@@ -131,7 +131,7 @@ class SeatingAdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Sections retrieved successfully',
+            'message' => __('Sections retrieved successfully'),
             'data' => [
                 'sections' => SeatingSectionAdminResource::collection($result['sections']),
                 'summary' => $result['summary'],
@@ -150,7 +150,7 @@ class SeatingAdminController extends Controller
         if (!$branch) {
             return response()->json([
                 'success' => false,
-                'message' => 'Branch not found or does not belong to your cafe',
+                'message' => __('Branch not found or does not belong to your cafe'),
             ], 404);
         }
 
@@ -172,7 +172,7 @@ class SeatingAdminController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed',
+                'message' => __('Validation failed'),
                 'errors' => $validator->errors(),
             ], 422);
         }
@@ -205,7 +205,7 @@ class SeatingAdminController extends Controller
         if (!$section) {
             return response()->json([
                 'success' => false,
-                'message' => 'Section not found or does not belong to your cafe',
+                'message' => __('Section not found or does not belong to your cafe'),
             ], 404);
         }
 
@@ -227,7 +227,7 @@ class SeatingAdminController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed',
+                'message' => __('Validation failed'),
                 'errors' => $validator->errors(),
             ], 422);
         }
@@ -240,7 +240,7 @@ class SeatingAdminController extends Controller
         if ($newTotalSeats === 0 && $newExtraCost > 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed',
+                'message' => __('Validation failed'),
                 'errors' => [
                     'extra_cost' => ['Cannot set additional cost for a section with zero seats.']
                 ],
@@ -251,7 +251,7 @@ class SeatingAdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Section updated successfully',
+            'message' => __('Section updated successfully'),
             'data' => new SeatingSectionAdminResource($section),
         ]);
     }
@@ -267,7 +267,7 @@ class SeatingAdminController extends Controller
         if (!$section) {
             return response()->json([
                 'success' => false,
-                'message' => 'Section not found or does not belong to your cafe',
+                'message' => __('Section not found or does not belong to your cafe'),
             ], 404);
         }
 
@@ -305,7 +305,7 @@ class SeatingAdminController extends Controller
         if (!$section) {
             return response()->json([
                 'success' => false,
-                'message' => 'Section not found or does not belong to your cafe',
+                'message' => __('Section not found or does not belong to your cafe'),
             ], 404);
         }
 
@@ -317,7 +317,7 @@ class SeatingAdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Seats retrieved successfully',
+            'message' => __('Seats retrieved successfully'),
             'data' => [
                 'seats' => SeatAdminResource::collection($result['seats']),
                 'section' => $result['section'],
@@ -337,7 +337,7 @@ class SeatingAdminController extends Controller
         if (!$section) {
             return response()->json([
                 'success' => false,
-                'message' => 'Section not found or does not belong to your cafe',
+                'message' => __('Section not found or does not belong to your cafe'),
             ], 404);
         }
 
@@ -358,7 +358,7 @@ class SeatingAdminController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed',
+                'message' => __('Validation failed'),
                 'errors' => $validator->errors(),
             ], 422);
         }
@@ -385,7 +385,7 @@ class SeatingAdminController extends Controller
             if (!isset($validated['count'])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Validation failed',
+                    'message' => __('Validation failed'),
                     'errors' => ['count' => ['Either count or seats array is required.']],
                 ], 422);
             }
@@ -414,7 +414,7 @@ class SeatingAdminController extends Controller
         if (!$seat) {
             return response()->json([
                 'success' => false,
-                'message' => 'Seat not found or does not belong to your cafe',
+                'message' => __('Seat not found or does not belong to your cafe'),
             ], 404);
         }
 
@@ -432,7 +432,7 @@ class SeatingAdminController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed',
+                'message' => __('Validation failed'),
                 'errors' => $validator->errors(),
             ], 422);
         }
@@ -441,7 +441,7 @@ class SeatingAdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Seat updated successfully',
+            'message' => __('Seat updated successfully'),
             'data' => new SeatAdminResource($seat),
         ]);
     }
@@ -457,7 +457,7 @@ class SeatingAdminController extends Controller
         if (!$seat) {
             return response()->json([
                 'success' => false,
-                'message' => 'Seat not found or does not belong to your cafe',
+                'message' => __('Seat not found or does not belong to your cafe'),
             ], 404);
         }
 
@@ -494,7 +494,7 @@ class SeatingAdminController extends Controller
         if (!$branch) {
             return response()->json([
                 'success' => false,
-                'message' => 'Branch not found or does not belong to your cafe',
+                'message' => __('Branch not found or does not belong to your cafe'),
             ], 404);
         }
 
@@ -517,7 +517,7 @@ class SeatingAdminController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed',
+                'message' => __('Validation failed'),
                 'errors' => $validator->errors(),
             ], 422);
         }
@@ -534,7 +534,7 @@ class SeatingAdminController extends Controller
         if (!empty($errors)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed',
+                'message' => __('Validation failed'),
                 'errors' => $errors,
             ], 422);
         }
@@ -561,7 +561,7 @@ class SeatingAdminController extends Controller
         if (!$branch) {
             return response()->json([
                 'success' => false,
-                'message' => 'Branch not found or does not belong to your cafe.',
+                'message' => __('Branch not found or does not belong to your cafe.'),
             ], 404);
         }
 
@@ -569,7 +569,7 @@ class SeatingAdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Seating layout retrieved',
+            'message' => __('Seating layout retrieved'),
             'data' => $sections->map(function ($section) {
                 return [
                     'section_id' => $section->id,
@@ -597,7 +597,7 @@ class SeatingAdminController extends Controller
         if (!$seat) {
             return response()->json([
                 'success' => false,
-                'message' => 'Seat not found or does not belong to your cafe.',
+                'message' => __('Seat not found or does not belong to your cafe.'),
             ], 404);
         }
 
@@ -605,7 +605,7 @@ class SeatingAdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Seat availability toggled',
+            'message' => __('Seat availability toggled'),
             'data' => new SeatAdminResource($seat),
         ]);
     }

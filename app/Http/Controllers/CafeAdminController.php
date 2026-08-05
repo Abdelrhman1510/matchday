@@ -78,7 +78,7 @@ class CafeAdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Cafe created successfully',
+            'message' => __('Cafe created successfully'),
             'data' => new CafeAdminResource($cafe),
         ], 201);
     }
@@ -129,7 +129,7 @@ class CafeAdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Cafe updated successfully',
+            'message' => __('Cafe updated successfully'),
             'data' => new CafeAdminResource($cafe),
         ]);
     }
@@ -380,7 +380,7 @@ class CafeAdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Branch created successfully. Proceed to configure hours.',
+            'message' => __('Branch created successfully. Proceed to configure hours.'),
             'data' => new BranchDetailResource($branch),
         ], 201);
     }
@@ -638,7 +638,7 @@ class CafeAdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Branch updated successfully',
+            'message' => __('Branch updated successfully'),
             'data' => new BranchDetailResource($branch),
         ]);
     }
@@ -681,7 +681,7 @@ class CafeAdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Branch deleted successfully',
+            'message' => __('Branch deleted successfully'),
         ]);
     }
 
@@ -712,7 +712,7 @@ class CafeAdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Branch status updated successfully',
+            'message' => __('Branch status updated successfully'),
             'data' => new BranchDetailResource($branch),
         ]);
     }
@@ -1103,7 +1103,7 @@ class CafeAdminController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Amenity removed successfully',
+            'message' => __('Amenity removed successfully'),
         ]);
     }
 
