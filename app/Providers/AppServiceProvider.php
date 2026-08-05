@@ -53,6 +53,25 @@ class AppServiceProvider extends ServiceProvider
         $this->registerEventListeners();
         $this->registerSqliteFunctions();
         $this->registerMailTransports();
+        $this->registerCacheInvalidation();
+    }
+
+    /**
+     * Keep cached read-models in sync with writes.
+     *
+     * getBranchOverview() (the "Seating & Facilities" data) caches the branch —
+     * including its seating sections and totals — for 5 minutes. Bust that cache
+     * whenever a section is created/updated/deleted so seat-count changes made in
+     * Seat Management show up immediately instead of after the TTL (BUG-036).
+     */
+    protected function registerCacheInvalidation(): void
+    {
+        $bustBranchOverview = function ($section) {
+            \Illuminate\Support\Facades\Cache::forget("branch_overview_{$section->branch_id}");
+        };
+
+        \App\Models\SeatingSection::saved($bustBranchOverview);
+        \App\Models\SeatingSection::deleted($bustBranchOverview);
     }
 
     /**
