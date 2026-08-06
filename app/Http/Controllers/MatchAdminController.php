@@ -235,7 +235,24 @@ class MatchAdminController extends Controller
             return $deny;
         }
 
-        $match = $this->matchService->createMatch($branch->id, $validator->validated());
+        $validated = $validator->validated();
+
+        // BUG-068: when a league is selected, both teams must belong to it. Prevents
+        // creating a match with teams from a different league (inconsistent data).
+        if (!empty($validated['league'])) {
+            $teams = \App\Models\Team::whereIn('id', [$validated['home_team_id'], $validated['away_team_id']])->get();
+            foreach ($teams as $team) {
+                if ($team->league !== $validated['league']) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('Both teams must belong to the selected league.'),
+                        'errors' => ['home_team_id' => [__('Both teams must belong to the selected league.')]],
+                    ], 422);
+                }
+            }
+        }
+
+        $match = $this->matchService->createMatch($branch->id, $validated);
 
         return response()->json([
             'success' => true,

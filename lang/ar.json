@@ -4,6 +4,7 @@
     "Amenity removed successfully": "تمت إزالة المرفق بنجاح",
     "Amenity not found or does not belong to your cafe": "المرفق غير موجود أو لا ينتمي إلى المقهى الخاص بك",
     "Validation failed": "فشل التحقق",
+    "Both teams must belong to the selected league.": "يجب أن ينتمي كلا الفريقين إلى الدوري المحدد.",
     "Branch hours updated successfully": "تم تحديث ساعات عمل الفرع بنجاح",
     "At least one working day must remain open.": "يجب أن يظل يوم عمل واحد على الأقل مفتوحاً.",
     "The facility name must contain at least one letter or number.": "يجب أن يحتوي اسم المرفق على حرف أو رقم واحد على الأقل.",
