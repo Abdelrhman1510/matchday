@@ -98,14 +98,37 @@ class SeatingAdminService
                 'screen_size' => array_key_exists('screen_size', $data) ? $data['screen_size'] : null,
             ], fn($v) => $v !== null));
 
-            // If total_seats increased, generate additional seats
+            // Handle total_seats changes
             $newTotalSeats = $data['total_seats'] ?? $oldTotalSeats;
+            
             if ($newTotalSeats > $oldTotalSeats) {
+                // Generate additional seats
                 $currentMax = $section->seats()->count();
                 $additionalSeats = $newTotalSeats - $currentMax;
                 if ($additionalSeats > 0) {
                     $this->generateSeats($section, $additionalSeats, $currentMax);
                 }
+            } elseif ($newTotalSeats < $oldTotalSeats) {
+                // Delete excess seats from the end
+                $seatsToRemoveCount = $oldTotalSeats - $newTotalSeats;
+                $seatsToRemove = $section->seats()->orderBy('id', 'desc')->take($seatsToRemoveCount)->get();
+                $seatIds = $seatsToRemove->pluck('id');
+
+                // Check for active bookings on these seats
+                $activeBookingsCount = \Illuminate\Support\Facades\DB::table('booking_seats')
+                    ->join('bookings', 'bookings.id', '=', 'booking_seats.booking_id')
+                    ->whereIn('booking_seats.seat_id', $seatIds)
+                    ->whereIn('bookings.status', ['confirmed', 'pending'])
+                    ->whereNull('bookings.deleted_at')
+                    ->count();
+
+                if ($activeBookingsCount > 0) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'total_seats' => ['Cannot decrease seats: some of the seats to be removed have active bookings.']
+                    ]);
+                }
+
+                $section->seats()->whereIn('id', $seatIds)->delete();
             }
 
             // If type changed, update labels for seats that follow the prefix pattern
