@@ -14,6 +14,15 @@ class BranchDetailResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // Check if the authenticated user has any active booking at this branch
+        $isBooked = false;
+        if ($request->user()) {
+            $isBooked = $request->user()->bookings()
+                ->whereHas('match', fn($q) => $q->where('branch_id', $this->id))
+                ->whereIn('status', ['confirmed', 'pending', 'checked_in'])
+                ->exists();
+        }
+
         return [
             'id' => $this->id,
             'cafe_id' => $this->cafe_id,
@@ -26,6 +35,7 @@ class BranchDetailResource extends JsonResource
             'area' => $this->area,
             'total_seats' => $this->total_seats,
             'is_open' => $this->is_open,
+            'is_booked' => $isBooked,
             'current_status' => $this->current_status,
             'status_color' => $this->status_color,
             'created_at' => $this->created_at?->toISOString(),

@@ -22,7 +22,7 @@ class BranchController extends Controller
      * GET /api/v1/branches/{id}
      * Get branch detail with hours, amenities, sections, and current matches
      */
-    public function show(int $id): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
         $branch = $this->branchService->getBranchById($id);
 
