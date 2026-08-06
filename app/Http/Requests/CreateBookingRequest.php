@@ -20,6 +20,26 @@ class CreateBookingRequest extends FormRequest
     }
 
     /**
+     * Handle a failed validation attempt.
+     */
+    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
+    {
+        $errors = $validator->errors()->messages();
+        $firstMessage = 'Validation failed';
+        
+        if (!empty($errors)) {
+            $firstKey = array_key_first($errors);
+            $firstMessage = $errors[$firstKey][0];
+        }
+
+        throw new \Illuminate\Http\Exceptions\HttpResponseException(response()->json([
+            'success' => false,
+            'message' => $firstMessage,
+            'errors' => $errors,
+        ], 422));
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      */
     public function rules(): array
