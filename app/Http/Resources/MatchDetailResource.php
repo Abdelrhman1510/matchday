@@ -19,19 +19,38 @@ class MatchDetailResource extends JsonResource
         if ($request->user()) {
             $userId = $request->user()->id;
             $matchId = $this->id;
-            
-            // Debug logging
+
             \Log::info("Checking is_booked for user {$userId} and match {$matchId}");
-            
+
             $isBooked = $request->user()->bookings()
                 ->where('match_id', $this->id)
                 ->whereIn('status', ['confirmed', 'pending', 'checked_in'])
                 ->exists();
-                
+
             \Log::info("is_booked result: " . ($isBooked ? 'true' : 'false'));
         } else {
             \Log::info("No authenticated user in MatchDetailResource");
         }
+
+        // Determine can_book:
+        // - Match must be published and status = upcoming
+        // - Must be within the booking window (if set)
+        // - Must have seats available
+        // - User must not already have a booking for this match
+        $now = now();
+        $withinWindow = true;
+        if ($this->booking_opens_at && $now->lt($this->booking_opens_at)) {
+            $withinWindow = false;
+        }
+        if ($this->booking_closes_at && $now->gt($this->booking_closes_at)) {
+            $withinWindow = false;
+        }
+
+        $canBook = $this->is_published
+            && $this->status === 'upcoming'
+            && $withinWindow
+            && $this->seats_available > 0
+            && !$isBooked;
 
         return [
             'id' => $this->id,
@@ -41,6 +60,7 @@ class MatchDetailResource extends JsonResource
             'kick_off' => $this->kick_off,
             'status' => $this->status,
             'is_booked' => $isBooked,
+            'can_book' => $canBook,
             'duration_minutes' => $this->duration_minutes,
             'home_team' => [
                 'id' => $this->homeTeam->id,
