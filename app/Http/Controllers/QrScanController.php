@@ -35,7 +35,7 @@ class QrScanController extends Controller
         if (!$request->user()->can('scan-qr')) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to scan QR codes.',
+                'message' => __('You do not have permission to scan QR codes.'),
             ], 403);
         }
 
@@ -47,7 +47,7 @@ class QrScanController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed.',
+                'message' => __('Validation failed'),
                 'errors' => $validator->errors(),
             ], 422);
         }
@@ -63,8 +63,8 @@ class QrScanController extends Controller
             if (!$booking) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Booking not found for this QR code.',
-                    'errors' => ['qr_data' => ['Invalid QR code. No booking found.']],
+                    'message' => __('Booking not found for this QR code.'),
+                    'errors' => ['qr_data' => [__('Invalid QR code. No booking found.')]],
                 ], 422);
             }
             // If booking found, get cafe from booking's branch
@@ -72,7 +72,7 @@ class QrScanController extends Controller
             if (!$cafe) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Please create a cafe first before using the QR Scanner.',
+                    'message' => __('Please create a cafe first before using the QR Scanner.'),
                     'error_code' => 'NO_CAFE_PROFILE',
                 ], 422);
             }
@@ -91,7 +91,7 @@ class QrScanController extends Controller
             if (!$bookingAccessible) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'You do not have permission to perform this action.',
+                    'message' => __('You do not have permission to perform this action.'),
                 ], 403);
             }
         }
@@ -171,7 +171,7 @@ class QrScanController extends Controller
         if (!$request->user()->can('scan-qr')) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to scan QR codes.',
+                'message' => __('You do not have permission to scan QR codes.'),
             ], 403);
         }
 
@@ -182,7 +182,7 @@ class QrScanController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validation failed.',
+                'message' => __('Validation failed'),
                 'errors' => $validator->errors(),
             ], 422);
         }
@@ -191,7 +191,7 @@ class QrScanController extends Controller
         if (!$cafe) {
             return response()->json([
                 'success' => false,
-                'message' => 'Please create a cafe first before using the QR Scanner.',
+                'message' => __('Please create a cafe first before using the QR Scanner.'),
                 'error_code' => 'NO_CAFE_PROFILE',
             ], 422);
         }
@@ -204,7 +204,7 @@ class QrScanController extends Controller
         if (!$decodedText) {
             return response()->json([
                 'success' => false,
-                'message' => 'Could not decode QR code from the uploaded image. Please ensure the image contains a clear QR code, or use the text-based scan endpoint instead.',
+                'message' => __('Could not decode QR code from the uploaded image. Please ensure the image contains a clear QR code, or use the text-based scan endpoint instead.'),
             ], 422);
         }
 
@@ -220,7 +220,7 @@ class QrScanController extends Controller
             if (!$bookingAccessible) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'You do not have permission to perform this action.',
+                    'message' => __('You do not have permission to perform this action.'),
                 ], 403);
             }
         }
@@ -279,7 +279,7 @@ class QrScanController extends Controller
         if (!$request->user()->can('scan-qr')) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to scan QR codes.',
+                'message' => __('You do not have permission to scan QR codes.'),
             ], 403);
         }
 
@@ -287,7 +287,7 @@ class QrScanController extends Controller
         if (!$cafe) {
             return response()->json([
                 'success' => false,
-                'message' => 'Please create a cafe first before using the QR Scanner.',
+                'message' => __('Please create a cafe first before using the QR Scanner.'),
                 'error_code' => 'NO_CAFE_PROFILE',
             ], 422);
         }
@@ -296,7 +296,7 @@ class QrScanController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Recent scans retrieved successfully',
+            'message' => __('Recent scans retrieved successfully'),
             'data' => $scans,
         ]);
     }
@@ -312,7 +312,7 @@ class QrScanController extends Controller
         if (!$request->user()->can('scan-qr')) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to scan QR codes.',
+                'message' => __('You do not have permission to scan QR codes.'),
             ], 403);
         }
 
@@ -320,7 +320,7 @@ class QrScanController extends Controller
         if (!$cafe) {
             return response()->json([
                 'success' => false,
-                'message' => 'Please create a cafe first before using the QR Scanner.',
+                'message' => __('Please create a cafe first before using the QR Scanner.'),
                 'error_code' => 'NO_CAFE_PROFILE',
             ], 422);
         }
@@ -329,7 +329,7 @@ class QrScanController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Today's QR scan statistics",
+            'message' => __("Today's QR scan statistics"),
             'data' => $stats,
         ]);
     }

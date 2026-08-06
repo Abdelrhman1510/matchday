@@ -45,5 +45,34 @@
     "The expiry year must be a valid year starting with 20.": "يجب أن يكون عام الانتهاء صالحاً ويبدأ بـ 20.",
     "The card number must be at least 13 digits.": "يجب أن تتكون البطاقة من 13 رقماً على الأقل.",
     "The card number must not exceed 19 digits.": "يجب ألا تتجاوز البطاقة 19 رقماً.",
-    "The card number must contain only digits.": "يجب أن تحتوي البطاقة على أرقام فقط."
+    "The card number must contain only digits.": "يجب أن تحتوي البطاقة على أرقام فقط.",
+
+    "You do not have permission to scan QR codes.": "ليس لديك صلاحية لمسح رموز QR.",
+    "Please create a cafe first before using the QR Scanner.": "يرجى إنشاء مقهى أولاً قبل استخدام ماسح QR.",
+    "Booking not found for this QR code.": "لم يتم العثور على حجز لرمز QR هذا.",
+    "Invalid QR code. No booking found.": "رمز QR غير صالح. لم يتم العثور على حجز.",
+    "You do not have permission to perform this action.": "ليس لديك صلاحية لتنفيذ هذا الإجراء.",
+    "Could not decode QR code from the uploaded image. Please ensure the image contains a clear QR code, or use the text-based scan endpoint instead.": "تعذر قراءة رمز QR من الصورة المرفوعة. يرجى التأكد من أن الصورة تحتوي على رمز QR واضح، أو استخدم نقطة المسح النصي بدلاً من ذلك.",
+    "Recent scans retrieved successfully": "تم استرجاع عمليات المسح الأخيرة بنجاح",
+    "Today's QR scan statistics": "إحصائيات مسح QR اليوم",
+
+    "Both teams must belong to the same league.": "يجب أن ينتمي كلا الفريقين إلى نفس الدوري.",
+    "Both teams must belong to the same league as the home team.": "يجب أن ينتمي كلا الفريقين إلى نفس دوري الفريق المضيف.",
+    "Both teams must belong to the selected league.": "يجب أن ينتمي كلا الفريقين إلى الدوري المحدد.",
+
+    "The match time cannot be in the past.": "لا يمكن أن يكون وقت المباراة في الماضي.",
+    "Booking start time must be before match start time.": "يجب أن يكون وقت بدء الحجز قبل وقت بدء المباراة.",
+    "Booking end time must be before match start time.": "يجب أن يكون وقت انتهاء الحجز قبل وقت بدء المباراة.",
+    "Match created successfully (unpublished)": "تم إنشاء المباراة بنجاح (غير منشورة)",
+    "Match updated successfully": "تم تحديث المباراة بنجاح",
+
+    "Cannot decrease seats: some of the seats to be removed have active bookings.": "لا يمكن تقليل المقاعد: بعض المقاعد المراد إزالتها لديها حجوزات نشطة.",
+
+    "You already have a booking for this match.": "لديك حجز بالفعل لهذه المباراة.",
+    "This match is not available for booking.": "هذه المباراة غير متاحة للحجز.",
+    "Only upcoming matches can be booked.": "يمكن حجز المباريات القادمة فقط.",
+    "Booking for this match has not opened yet.": "لم يبدأ الحجز لهذه المباراة بعد.",
+    "Booking for this match has closed.": "انتهى الحجز لهذه المباراة.",
+    "Not enough seats available for this match.": "لا توجد مقاعد كافية متاحة لهذه المباراة.",
+    "Guests count must match the number of seats selected.": "يجب أن يتطابق عدد الضيوف مع عدد المقاعد المختارة."
 }
