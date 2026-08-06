@@ -271,6 +271,10 @@ class AuthService
 
             if ($existing) {
                 // Claim a still-unverified, pending registration row in place.
+                // BUG-082: Force-delete any cafes this unverified user may already own
+                // so a re-registering cafe owner never sees old cafe details pre-filled.
+                $existing->ownedCafes()->forceDelete();
+
                 $user = $existing;
                 $user->name = $data['name'];
                 $user->phone = $data['phone'] ?? $user->phone;

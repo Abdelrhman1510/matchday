@@ -16,12 +16,14 @@ class FaqController extends Controller
      */
     public function index(): JsonResponse
     {
+        // BUG-084: Fetch Arabic columns as well so toLocalizedArray() can pick
+        // the right language for this request's locale (set by SetLocale middleware).
         $faqs = Faq::active()
             ->ordered()
-            ->get(['id', 'question', 'answer', 'category', 'sort_order']);
+            ->get(['id', 'question', 'question_ar', 'answer', 'answer_ar', 'category', 'sort_order']);
 
         return $this->successResponse([
-            'faqs' => $faqs,
+            'faqs' => $faqs->map(fn (Faq $faq) => $faq->toLocalizedArray()),
         ], 'FAQs retrieved successfully.');
     }
 }
