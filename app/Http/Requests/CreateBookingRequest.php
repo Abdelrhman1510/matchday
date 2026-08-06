@@ -26,9 +26,11 @@ class CreateBookingRequest extends FormRequest
     {
         return [
             'match_id' => ['required', 'integer', Rule::exists('game_matches', 'id')],
-            'seat_ids' => ['required', 'array', 'min:1', 'max:8'],
+            // No per-booking seat/guest cap: bounded only by real seat availability
+            // (checked in withValidator) — see BUG-074.
+            'seat_ids' => ['required', 'array', 'min:1'],
             'seat_ids.*' => ['required', 'integer', Rule::exists('seats', 'id')],
-            'guests_count' => ['sometimes', 'integer', 'min:1', 'max:8'],
+            'guests_count' => ['sometimes', 'integer', 'min:1'],
             'special_requests' => ['nullable', 'string', 'max:500'],
         ];
     }
@@ -152,11 +154,9 @@ class CreateBookingRequest extends FormRequest
             'seat_ids.required' => 'At least one seat must be selected.',
             'seat_ids.array' => 'Seat IDs must be an array.',
             'seat_ids.min' => 'At least one seat must be selected.',
-            'seat_ids.max' => 'You can book a maximum of 8 seats per booking.',
             'seat_ids.*.exists' => 'One or more selected seats are invalid.',
             'guests_count.required' => 'Number of guests is required.',
             'guests_count.min' => 'At least one guest is required.',
-            'guests_count.max' => 'You can book for a maximum of 8 guests per booking.',
             'special_requests.max' => 'Special requests cannot exceed 500 characters.',
         ];
     }

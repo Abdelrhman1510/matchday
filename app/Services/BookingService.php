@@ -23,7 +23,7 @@ class BookingService
      */
     public function createBooking(User $user, array $data): Booking
     {
-        return DB::transaction(function () use ($user, $data) {
+        $booking = DB::transaction(function () use ($user, $data) {
             // Get match with relationships
             $match = GameMatch::with(['branch.seatingSections'])
                 ->findOrFail($data['match_id']);
@@ -77,17 +77,28 @@ class BookingService
             $qrCode = $this->generateQrCode($booking);
             $booking->update(['qr_code' => $qrCode]);
 
-            // Award loyalty points
-            $this->awardLoyaltyPoints($user, $booking);
+            // Award loyalty points — a reward, never fatal to the booking itself.
+            try {
+                $this->awardLoyaltyPoints($user, $booking);
+            } catch (\Throwable $e) {
+                \Log::warning("Loyalty award failed for booking {$booking->id}: {$e->getMessage()}");
+            }
 
             // Create pending payment
             $this->createPayment($booking);
 
-            // Dispatch event
-            event(new BookingCreated($booking));
-
-            return $booking->load(['match.homeTeam', 'match.awayTeam', 'match.branch.cafe', 'seats.section', 'payment']);
+            return $booking;
         });
+
+        // Post-commit side effects. Notifications run synchronously (QUEUE_CONNECTION=sync),
+        // so a send failure here must NOT roll back an already-committed booking (BUG-073).
+        try {
+            event(new BookingCreated($booking));
+        } catch (\Throwable $e) {
+            \Log::warning("BookingCreated side effects failed for booking {$booking->id}: {$e->getMessage()}");
+        }
+
+        return $booking->load(['match.homeTeam', 'match.awayTeam', 'match.branch.cafe', 'seats.section', 'payment']);
     }
 
     /**

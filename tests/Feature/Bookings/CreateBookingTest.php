@@ -314,8 +314,10 @@ class CreateBookingTest extends TestCase
     }
 
     /** @test */
-    public function it_returns_422_immediately_when_more_than_8_seats_selected()
+    public function it_allows_more_than_8_seats_when_availability_permits()
     {
+        // BUG-074: the hard 8-seat/guest cap was removed. Bookings are now bounded
+        // only by real seat availability, so a 9-seat booking must succeed.
         $user = User::factory()->create();
         LoyaltyCard::factory()->create(['user_id' => $user->id]);
         $cafe = Cafe::factory()->create();
@@ -338,16 +340,18 @@ class CreateBookingTest extends TestCase
         $response = $this->postJson('/api/v1/bookings', [
             'match_id' => $match->id,
             'seat_ids' => $seats,
+            'guests_count' => 9,
         ]);
 
-        $response->assertStatus(422)
-            ->assertJson(['success' => false])
-            ->assertJsonPath('errors.seat_ids.0', 'You can book a maximum of 8 seats per booking.');
+        $response->assertStatus(201)
+            ->assertJson(['success' => true]);
     }
 
     /** @test */
-    public function it_returns_422_immediately_when_guests_count_exceeds_8()
+    public function it_rejects_a_booking_that_exceeds_seat_availability()
     {
+        // BUG-074: with the hard cap gone, availability is the real bound. A request
+        // for more seats than the match has available must still be rejected.
         $user = User::factory()->create();
         LoyaltyCard::factory()->create(['user_id' => $user->id]);
         $cafe = Cafe::factory()->create();
@@ -356,22 +360,24 @@ class CreateBookingTest extends TestCase
         $match = GameMatch::factory()->create([
             'branch_id' => $branch->id,
             'is_published' => true,
-            'seats_available' => 20,
+            'seats_available' => 3,
         ]);
         $section = SeatingSection::factory()->create(['branch_id' => $branch->id]);
-        $seat = Seat::factory()->create(['section_id' => $section->id, 'is_available' => true]);
+        $seats = Seat::factory()->count(5)->create([
+            'section_id' => $section->id,
+            'is_available' => true,
+        ])->pluck('id')->toArray();
 
         Sanctum::actingAs($user);
 
         $response = $this->postJson('/api/v1/bookings', [
             'match_id' => $match->id,
-            'seat_ids' => [$seat->id],
-            'guests_count' => 9,
+            'seat_ids' => $seats,
+            'guests_count' => 5,
         ]);
 
         $response->assertStatus(422)
-            ->assertJson(['success' => false])
-            ->assertJsonPath('errors.guests_count.0', 'You can book for a maximum of 8 guests per booking.');
+            ->assertJson(['success' => false]);
     }
 }
 
