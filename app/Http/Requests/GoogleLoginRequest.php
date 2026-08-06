@@ -23,6 +23,7 @@ class GoogleLoginRequest extends FormRequest
     {
         return [
             'google_token' => ['required', 'string'],
+            'role' => ['nullable', 'string', 'in:fan,cafe_owner'],
         ];
     }
 

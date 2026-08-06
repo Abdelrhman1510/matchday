@@ -392,9 +392,7 @@ class AuthService
      *
      * @param string $googleToken
      * @return array
-     * @throws ValidationException
-     */
-    public function loginWithGoogle(string $googleToken): array
+     * @throws ValidationExce    public function loginWithGoogle(string $googleToken, ?string $role = null): array
     {
         try {
             // A Google ID token is a JWT (base64url segments + dots) and never contains
@@ -402,7 +400,7 @@ class AuthService
             // valid token isn't rejected with "Wrong number of segments".
             $googleToken = preg_replace('/\s+/', '', $googleToken);
 
-            // Verify the Google ID token against Google's published JWKS — the
+            // Verify the Google ID token against Google's published JWKS - the
             // same lightweight path we use for Apple, so we don't need the heavy
             // google/apiclient dependency. JWT::decode checks the RS256 signature
             // and expiry; we then assert the issuer and audience ourselves.
@@ -447,35 +445,44 @@ class AuthService
                 ->first();
 
             if (!$user) {
+                if (!$role) {
+                    // BUG-080: Mandatory role selection for new users
+                    throw ValidationException::withMessages([
+                        'role' => ['Account type selection is required for new users.'],
+                    ]);
+                }
+
                 // Create new user
-                $user = DB::transaction(function () use ($googleUser) {
+                $user = DB::transaction(function () use ($googleUser, $role) {
                     $user = User::create([
                         'name' => $googleUser['name'],
                         'email' => $googleUser['email'],
                         'google_id' => $googleUser['sub'],
                         'avatar' => $googleUser['picture'] ? ['url' => $googleUser['picture'], 'source' => 'google'] : null,
                         'password' => Hash::make(uniqid()), // Random password for OAuth users
-                        'role' => 'fan',
+                        'role' => $role,
                         'is_active' => true,
                         'email_verified_at' => $googleUser['email_verified'] ? now() : null,
-                    ]);
+                    ]);             ]);
 
-                    // Create fan profile
-                    FanProfile::create([
-                        'user_id' => $user->id,
-                        'member_since' => now(),
-                        'total_bookings' => 0,
-                        'is_verified' => false,
-                    ]);
+                    if ($role === 'fan') {
+                        // Create fan profile
+                        FanProfile::create([
+                            'user_id' => $user->id,
+                            'member_since' => now(),
+                            'total_bookings' => 0,
+                            'is_verified' => false,
+                        ]);
 
-                    // Create loyalty card
-                    LoyaltyCard::create([
-                        'user_id' => $user->id,
-                        'card_number' => $this->generateLoyaltyCardNumber(),
-                        'points' => 0,
-                        'tier' => 'bronze',
-                        'issued_date' => now(),
-                    ]);
+                        // Create loyalty card
+                        LoyaltyCard::create([
+                            'user_id' => $user->id,
+                            'card_number' => $this->generateLoyaltyCardNumber(),
+                            'points' => 0,
+                            'tier' => 'bronze',
+                            'issued_date' => now(),
+                        ]);
+                    }
 
                     return $user;
                 });
@@ -530,7 +537,7 @@ class AuthService
      * @return array
      * @throws ValidationException
      */
-    public function loginWithApple(string $appleToken, ?string $name = null): array
+    public function loginWithApple(string $appleToken, ?string $name = null, ?string $role = null): array
     {
         try {
             // Fetch Apple's public keys
@@ -595,34 +602,43 @@ class AuthService
             }
 
             if (!$user) {
+                if (!$role) {
+                    // BUG-080: Mandatory role selection for new users
+                    throw ValidationException::withMessages([
+                        'role' => ['Account type selection is required for new users.'],
+                    ]);
+                }
+
                 // Create new user
-                $user = DB::transaction(function () use ($email, $name, $appleUserId) {
+                $user = DB::transaction(function () use ($email, $name, $appleUserId, $role) {
                     $user = User::create([
                         'name' => $name ?? ($email ? explode('@', $email)[0] : 'Apple User'),
                         'email' => $email ?? $appleUserId . '@privaterelay.appleid.com',
                         'apple_id' => $appleUserId,
                         'password' => Hash::make(uniqid()), // Random password for OAuth users
-                        'role' => 'fan',
+                        'role' => $role,
                         'is_active' => true,
                         'email_verified_at' => now(), // Auto-verify OAuth users
                     ]);
 
-                    // Create fan profile
-                    FanProfile::create([
-                        'user_id' => $user->id,
-                        'member_since' => now(),
-                        'total_bookings' => 0,
-                        'is_verified' => false,
-                    ]);
+                    if ($role === 'fan') {
+                        // Create fan profile
+                        FanProfile::create([
+                            'user_id' => $user->id,
+                            'member_since' => now(),
+                            'total_bookings' => 0,
+                            'is_verified' => false,
+                        ]);
 
-                    // Create loyalty card
-                    LoyaltyCard::create([
-                        'user_id' => $user->id,
-                        'card_number' => $this->generateLoyaltyCardNumber(),
-                        'points' => 0,
-                        'tier' => 'bronze',
-                        'issued_date' => now(),
-                    ]);
+                        // Create loyalty card
+                        LoyaltyCard::create([
+                            'user_id' => $user->id,
+                            'card_number' => $this->generateLoyaltyCardNumber(),
+                            'points' => 0,
+                            'tier' => 'bronze',
+                            'issued_date' => now(),
+                        ]);
+                    }
 
                     return $user;
                 });

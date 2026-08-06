@@ -24,6 +24,7 @@ class AppleLoginRequest extends FormRequest
         return [
             'apple_token' => ['required', 'string'],
             'name' => ['nullable', 'string', 'max:255'],
+            'role' => ['nullable', 'string', 'in:fan,cafe_owner'],
         ];
     }
 

@@ -283,7 +283,10 @@ class AuthController extends Controller
     public function loginWithGoogle(GoogleLoginRequest $request): JsonResponse
     {
         try {
-            $result = $this->authService->loginWithGoogle($request->input('google_token'));
+            $result = $this->authService->loginWithGoogle(
+                $request->input('google_token'),
+                $request->input('role')
+            );
 
             return $this->successResponse(
                 [
@@ -314,7 +317,8 @@ class AuthController extends Controller
         try {
             $result = $this->authService->loginWithApple(
                 $request->input('apple_token'),
-                $request->input('name')
+                $request->input('name'),
+                $request->input('role')
             );
 
             return $this->successResponse(
