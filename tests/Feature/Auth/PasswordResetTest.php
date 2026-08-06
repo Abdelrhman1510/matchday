@@ -234,4 +234,45 @@ class PasswordResetTest extends TestCase
         // Verify OTP is cleared
         $this->assertNull(Cache::get("pwd_reset_otp:{$user->email}"));
     }
+
+    /**
+     * BUG-051 regression: Samsung Galaxy A10 (Android 11, Arabic locale) injects
+     * invisible Unicode RTL marks or surrounding spaces around the OTP digits.
+     * Before the fix, the raw input had length > 6 so the size:6 rule rejected it
+     * immediately, producing "Invalid OTP" for a correct code.
+     * After the fix, prepareForValidation() strips non-digits/whitespace first.
+     *
+     * @test
+     */
+    public function it_accepts_otp_with_surrounding_whitespace()
+    {
+        $user = User::factory()->create(['email' => 'test@example.com']);
+        Cache::put("pwd_reset_otp:{$user->email}", '123456', now()->addMinutes(10));
+
+        $response = $this->postJson('/api/v1/auth/reset-password', [
+            'email'                 => 'test@example.com',
+            'otp'                   => '  123456  ',   // leading + trailing spaces
+            'password'              => 'new_password123',
+            'password_confirmation' => 'new_password123',
+        ]);
+
+        $response->assertStatus(200)->assertJson(['success' => true]);
+    }
+
+    /** @test */
+    public function it_accepts_otp_with_rtl_unicode_marks()
+    {
+        // U+200F RIGHT-TO-LEFT MARK — silently injected by Arabic keyboard on Android.
+        $user = User::factory()->create(['email' => 'test@example.com']);
+        Cache::put("pwd_reset_otp:{$user->email}", '123456', now()->addMinutes(10));
+
+        $response = $this->postJson('/api/v1/auth/reset-password', [
+            'email'                 => 'test@example.com',
+            'otp'                   => "\u{200F}123456\u{200F}",
+            'password'              => 'new_password123',
+            'password_confirmation' => 'new_password123',
+        ]);
+
+        $response->assertStatus(200)->assertJson(['success' => true]);
+    }
 }

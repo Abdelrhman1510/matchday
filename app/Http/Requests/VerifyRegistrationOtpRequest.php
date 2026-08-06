@@ -15,13 +15,21 @@ class VerifyRegistrationOtpRequest extends FormRequest
     }
 
     /**
-     * Normalize the email before validation so it matches the casing used when
-     * the OTP was requested (cache keys are case-sensitive).
+     * Normalize inputs before validation so they match exactly what the server stored:
+     * - Email: lowercase + trim (cache keys are case-sensitive).
+     * - OTP: strip non-digits + trim whitespace (BUG-051 / BUG-005 — Android keyboards,
+     *   especially on Samsung Galaxy with Arabic/RTL locale, inject invisible Unicode
+     *   marks or surrounding spaces that inflate the raw length past 6 chars, making
+     *   the size:6 rule reject a correct OTP before the service ever sees it).
      */
     protected function prepareForValidation(): void
     {
         if ($this->has('email')) {
             $this->merge(['email' => strtolower(trim((string) $this->input('email')))]);
+        }
+
+        if ($this->has('otp')) {
+            $this->merge(['otp' => preg_replace('/\D/', '', trim((string) $this->input('otp')))]);
         }
     }
 

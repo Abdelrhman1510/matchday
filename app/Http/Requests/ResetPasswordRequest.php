@@ -16,13 +16,21 @@ class ResetPasswordRequest extends FormRequest
     }
 
     /**
-     * Normalize the email before validation (lowercase + trim) so it matches the
-     * stored account and the case-sensitive OTP cache key.
+     * Normalize inputs before validation:
+     * - Email: lowercase + trim so it matches the cache key.
+     * - OTP: strip non-digits and trim whitespace (BUG-051 / BUG-005 — Android
+     *   keyboards, especially on Samsung Galaxy with Arabic locale, inject invisible
+     *   RTL marks or surrounding spaces that inflate the raw length beyond 6 chars,
+     *   causing the size:6 rule to reject a correct OTP before the service sees it).
      */
     protected function prepareForValidation(): void
     {
         if ($this->has('email')) {
             $this->merge(['email' => strtolower(trim((string) $this->input('email')))]);
+        }
+
+        if ($this->has('otp')) {
+            $this->merge(['otp' => preg_replace('/\D/', '', trim((string) $this->input('otp')))]);
         }
     }
 

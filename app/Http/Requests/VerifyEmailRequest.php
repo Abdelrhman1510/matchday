@@ -15,10 +15,17 @@ class VerifyEmailRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * Normalize the OTP before validation (BUG-051 / BUG-005):
+     * Strip non-digit characters and trim whitespace so Android keyboards that
+     * inject invisible RTL marks or spaces don't cause size:6 to reject a correct code.
      */
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('otp')) {
+            $this->merge(['otp' => preg_replace('/\D/', '', trim((string) $this->input('otp')))]);
+        }
+    }
+
     public function rules(): array
     {
         return [
