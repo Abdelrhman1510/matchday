@@ -750,7 +750,9 @@ class AuthService
         if ($user) {
             $this->guardOtpResend('pwd_reset', $user->email);
             $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-            Cache::put("otp:{$user->email}", $otp, now()->addMinutes(10));
+            // BUG-079: use a dedicated key so the password-reset OTP never
+            // overwrites (or is accepted as) the email-verification OTP.
+            Cache::put("pwd_reset_otp:{$user->email}", $otp, now()->addMinutes(10));
             $user->notify(new PasswordResetOtp($otp, $user->name, $user->email));
         }
 
@@ -779,12 +781,12 @@ class AuthService
             ]);
         }
 
-        $storedOtp = Cache::get("otp:{$user->email}");
+        $storedOtp = Cache::get("pwd_reset_otp:{$user->email}");
 
         // Normalize OTP: strip non-digits and whitespace (BUG-005 — RTL Android input).
         $otp = preg_replace('/\D/', '', trim($otp));
 
-        if (!$storedOtp) {
+        if ($storedOtp === null) {
             throw ValidationException::withMessages([
                 'otp' => ['Your OTP has expired. Please request a new one.'],
             ]);
@@ -799,7 +801,7 @@ class AuthService
         $user->password = Hash::make($password);
         $user->save();
 
-        Cache::forget("otp:{$user->email}");
+        Cache::forget("pwd_reset_otp:{$user->email}");
 
         // Revoke all existing tokens for security
         $user->tokens()->delete();
@@ -821,7 +823,8 @@ class AuthService
         $this->guardOtpResend('verify', $user->email);
 
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        Cache::put("otp:{$user->email}", $otp, now()->addMinutes(10));
+        // BUG-079: dedicated key so this OTP is isolated from the password-reset OTP.
+        Cache::put("email_verify_otp:{$user->email}", $otp, now()->addMinutes(10));
         $user->notify(new EmailVerificationOtp($otp, $user->name, $user->email));
 
         return [
@@ -846,12 +849,14 @@ class AuthService
             ]);
         }
 
-        $storedOtp = Cache::get("otp:{$user->email}");
+        $storedOtp = Cache::get("email_verify_otp:{$user->email}");
 
         // Normalize OTP: strip non-digits and whitespace (BUG-005 — RTL Android input).
         $otp = preg_replace('/\D/', '', trim($otp));
 
-        if (!$storedOtp) {
+        // BUG-079: use strict null check — only null means "expired/not found".
+        // A falsy OTP value (e.g. "0") must not be mistaken for an absent key.
+        if ($storedOtp === null) {
             throw ValidationException::withMessages([
                 'otp' => ['Your OTP has expired. Please request a new one.'],
             ]);
@@ -866,7 +871,7 @@ class AuthService
         $user->email_verified_at = now();
         $user->save();
 
-        Cache::forget("otp:{$user->email}");
+        Cache::forget("email_verify_otp:{$user->email}");
 
         return [
             'message' => 'Email has been verified successfully.',
