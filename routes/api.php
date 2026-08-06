@@ -235,7 +235,9 @@ Route::middleware(['throttle:auth'])->prefix('auth')->name('auth.')->group(funct
     // Verify-first registration (email -> OTP -> profile). No account is created
     // until the email is proven, which prevents unverified email squatting.
     Route::post('/register/request-otp', [AuthController::class, 'requestRegistrationOtp'])->name('register.request-otp');
-    Route::post('/register/verify-otp', [AuthController::class, 'verifyRegistrationOtp'])->name('register.verify-otp');
+    // Unified OTP verification for registration and password reset
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->name('verify-otp');
+    Route::post('/register/verify-otp', [AuthController::class, 'verifyOtp'])->name('register.verify-otp');
     Route::post('/register/complete', [AuthController::class, 'completeRegistration'])->name('register.complete');
     // Cafe owner shares request-otp + verify-otp; only the final complete step differs.
     Route::post('/register/cafe-owner/complete', [AuthController::class, 'completeCafeOwnerRegistration'])->name('register.cafe-owner.complete');

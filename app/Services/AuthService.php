@@ -175,9 +175,12 @@ class AuthService
      * @return array
      * @throws ValidationException
      */
-    public function verifyRegistrationOtp(string $email, string $otp): array
+    public function verifyOtp(string $email, string $otp, string $type = 'register'): array
     {
-        $storedOtp = Cache::get("reg_otp:{$email}");
+        $cacheKey = $type === 'password_reset' ? "pwd_reset_otp:{$email}" : "reg_otp:{$email}";
+        $attemptsKey = $type === 'password_reset' ? "pwd_reset_otp_attempts:{$email}" : "reg_otp_attempts:{$email}";
+
+        $storedOtp = Cache::get($cacheKey);
 
         if (!$storedOtp) {
             throw ValidationException::withMessages([
@@ -193,11 +196,11 @@ class AuthService
             // Brute-force guard: a 6-digit code is only 1,000,000 combinations, so we
             // cap wrong guesses per OTP. After the limit, the code is burned and the
             // user must request a fresh one (which is itself rate-limited at the route).
-            $attempts = (int) Cache::get("reg_otp_attempts:{$email}", 0) + 1;
+            $attempts = (int) Cache::get($attemptsKey, 0) + 1;
 
             if ($attempts >= self::MAX_OTP_ATTEMPTS) {
-                Cache::forget("reg_otp:{$email}");
-                Cache::forget("reg_otp_attempts:{$email}");
+                Cache::forget($cacheKey);
+                Cache::forget($attemptsKey);
 
                 throw ValidationException::withMessages([
                     'otp' => ['Too many incorrect attempts. Please request a new verification code.'],
@@ -205,7 +208,7 @@ class AuthService
             }
 
             // Track attempts only as long as the OTP itself is valid (10 min).
-            Cache::put("reg_otp_attempts:{$email}", $attempts, now()->addMinutes(10));
+            Cache::put($attemptsKey, $attempts, now()->addMinutes(10));
 
             $remaining = self::MAX_OTP_ATTEMPTS - $attempts;
             throw ValidationException::withMessages([
@@ -213,12 +216,22 @@ class AuthService
             ]);
         }
 
-        Cache::forget("reg_otp:{$email}");
-        Cache::forget("reg_otp_attempts:{$email}");
-        Cache::put("reg_verified:{$email}", true, now()->addMinutes(30));
+        if ($type === 'register') {
+            Cache::forget($cacheKey);
+            Cache::forget($attemptsKey);
+            Cache::put("reg_verified:{$email}", true, now()->addMinutes(30));
+
+            return [
+                'message' => 'Email verified. Please complete your registration.',
+            ];
+        }
+
+        // For password reset, we just verify the OTP is correct and clear attempts.
+        // We DO NOT forget the OTP from cache, because the /reset-password endpoint still needs to verify it.
+        Cache::forget($attemptsKey);
 
         return [
-            'message' => 'Email verified. Please complete your registration.',
+            'message' => 'OTP verified successfully. You can now reset your password.',
         ];
     }
 

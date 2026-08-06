@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class VerifyRegistrationOtpRequest extends FormRequest
+class VerifyOtpRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -43,6 +43,7 @@ class VerifyRegistrationOtpRequest extends FormRequest
         return [
             'email' => ['required', 'email', 'max:255'],
             'otp' => ['required', 'string', 'size:6'],
+            'type' => ['nullable', 'string', 'in:register,password_reset'],
         ];
     }
 

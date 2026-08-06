@@ -11,8 +11,8 @@ use App\Http\Requests\CafeOwnerRegisterRequest;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Requests\VerifyEmailRequest;
+use App\Http\Requests\VerifyOtpRequest;
 use App\Http\Requests\RequestRegistrationOtpRequest;
-use App\Http\Requests\VerifyRegistrationOtpRequest;
 use App\Http\Requests\CompleteRegistrationRequest;
 use App\Http\Resources\UserProfileResource;
 use App\Services\AuthService;
@@ -87,12 +87,13 @@ class AuthController extends Controller
      * @param VerifyRegistrationOtpRequest $request
      * @return JsonResponse
      */
-    public function verifyRegistrationOtp(VerifyRegistrationOtpRequest $request): JsonResponse
+    public function verifyOtp(VerifyOtpRequest $request): JsonResponse
     {
         try {
-            $result = $this->authService->verifyRegistrationOtp(
+            $result = $this->authService->verifyOtp(
                 $request->input('email'),
-                $request->input('otp')
+                $request->input('otp'),
+                $request->input('type', 'register')
             );
 
             return $this->successResponse([], $result['message'], 200);
