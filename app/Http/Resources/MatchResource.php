@@ -29,6 +29,23 @@ class MatchResource extends JsonResource
             $isSaved = $request->user()->savedMatches()->where('match_id', $this->id)->exists();
         }
 
+        // can_book: match must be published, upcoming, within booking window,
+        // have seats available, and user must not already have an active booking
+        $now = now();
+        $withinWindow = true;
+        if ($this->booking_opens_at && $now->lt($this->booking_opens_at)) {
+            $withinWindow = false;
+        }
+        if ($this->booking_closes_at && $now->gt($this->booking_closes_at)) {
+            $withinWindow = false;
+        }
+
+        $canBook = $this->is_published
+            && $this->status === 'upcoming'
+            && $withinWindow
+            && $this->seats_available > 0
+            && !$isBooked;
+
         return [
             'id' => $this->id,
             'league' => $this->league,
@@ -37,6 +54,7 @@ class MatchResource extends JsonResource
             'kick_off' => $this->kick_off,
             'status' => $this->status,
             'is_booked' => $isBooked,
+            'can_book' => $canBook,
             'is_saved' => $isSaved,
             'home_team' => $this->when($this->relationLoaded('homeTeam'), function () {
                 return [
