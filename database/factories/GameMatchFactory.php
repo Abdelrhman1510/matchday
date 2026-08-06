@@ -12,11 +12,13 @@ class GameMatchFactory extends Factory
 
     public function definition(): array
     {
+        $league = fake()->randomElement(['Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1']);
+
         return [
             'branch_id' => Branch::factory(),
-            'home_team_id' => Team::factory(),
-            'away_team_id' => Team::factory(),
-            'league' => fake()->randomElement(['Premier League', 'La Liga', 'Serie A', 'Bundesliga']),
+            'home_team_id' => Team::factory()->state(['league' => $league]),
+            'away_team_id' => Team::factory()->state(['league' => $league]),
+            'league' => $league,
             'match_date' => fake()->dateTimeBetween('now', '+30 days')->format('Y-m-d'),
             'kick_off' => fake()->time('H:i'),
             'status' => 'upcoming',

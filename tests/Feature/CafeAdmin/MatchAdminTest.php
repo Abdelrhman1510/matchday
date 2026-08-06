@@ -43,8 +43,8 @@ class MatchAdminTest extends TestCase
         $cafe = Cafe::factory()->create(['owner_id' => $owner->id]);
         $this->createActiveSubscription($cafe);
         $branch = Branch::factory()->create(['cafe_id' => $cafe->id]);
-        $homeTeam = Team::factory()->create();
-        $awayTeam = Team::factory()->create();
+        $homeTeam = Team::factory()->create(['league' => 'Test League']);
+        $awayTeam = Team::factory()->create(['league' => 'Test League']);
         Sanctum::actingAs($owner);
 
         $response = $this->postJson("/api/v1/admin/branches/{$branch->id}/matches", [
@@ -274,8 +274,8 @@ class MatchAdminTest extends TestCase
         $cafe = Cafe::factory()->create(['owner_id' => $owner->id]);
         $this->createActiveSubscription($cafe);
         $branch = Branch::factory()->create(['cafe_id' => $cafe->id]);
-        $homeTeam = Team::factory()->create();
-        $awayTeam = Team::factory()->create();
+        $homeTeam = Team::factory()->create(['league' => 'Test League']);
+        $awayTeam = Team::factory()->create(['league' => 'Test League']);
         Sanctum::actingAs($owner);
 
         $response = $this->postJson("/api/v1/admin/branches/{$branch->id}/matches", [

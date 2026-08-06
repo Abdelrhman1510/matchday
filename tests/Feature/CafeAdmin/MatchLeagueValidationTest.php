@@ -34,7 +34,7 @@ class MatchLeagueValidationTest extends TestCase
     }
 
     /** @test */
-    public function match_creation_rejects_teams_not_in_the_selected_league()
+    public function match_creation_rejects_teams_not_in_same_league()
     {
         [$owner, $branch] = $this->ownerWithBranch();
         $spanish = Team::factory()->create(['league' => 'Spanish League']);
@@ -45,7 +45,23 @@ class MatchLeagueValidationTest extends TestCase
             'home_team_id' => $spanish->id,
             'away_team_id' => $egyptian->id,
             'match_date' => now()->addDays(5)->format('Y-m-d H:i:s'),
-            'league' => 'Spanish League',
+        ])->assertStatus(422)
+            ->assertJsonPath('errors.away_team_id.0', 'Both teams must belong to the same league as the home team.');
+    }
+
+    /** @test */
+    public function match_creation_rejects_teams_not_in_selected_league()
+    {
+        [$owner, $branch] = $this->ownerWithBranch();
+        $spanish1 = Team::factory()->create(['league' => 'Spanish League']);
+        $spanish2 = Team::factory()->create(['league' => 'Spanish League']);
+        Sanctum::actingAs($owner);
+
+        $this->postJson("/api/v1/admin/branches/{$branch->id}/matches", [
+            'home_team_id' => $spanish1->id,
+            'away_team_id' => $spanish2->id,
+            'match_date' => now()->addDays(5)->format('Y-m-d H:i:s'),
+            'league' => 'English Premier League',
         ])->assertStatus(422)
             ->assertJsonPath('errors.home_team_id.0', 'Both teams must belong to the selected league.');
     }

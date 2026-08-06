@@ -237,12 +237,23 @@ class MatchAdminController extends Controller
 
         $validated = $validator->validated();
 
-        // BUG-068: when a league is selected, both teams must belong to it. Prevents
-        // creating a match with teams from a different league (inconsistent data).
-        if (!empty($validated['league'])) {
-            $teams = \App\Models\Team::whereIn('id', [$validated['home_team_id'], $validated['away_team_id']])->get();
-            foreach ($teams as $team) {
-                if ($team->league !== $validated['league']) {
+        // BUG-068: enforce that both teams belong to the same league,
+        // and if a league is explicitly provided, they belong to that league.
+        $teams = \App\Models\Team::whereIn('id', [$validated['home_team_id'], $validated['away_team_id']])->get();
+        if ($teams->count() === 2) {
+            $homeTeam = $teams->firstWhere('id', $validated['home_team_id']);
+            $awayTeam = $teams->firstWhere('id', $validated['away_team_id']);
+            
+            if ($homeTeam && $awayTeam) {
+                if ($homeTeam->league !== $awayTeam->league) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('Both teams must belong to the same league.'),
+                        'errors' => ['away_team_id' => [__('Both teams must belong to the same league as the home team.')]],
+                    ], 422);
+                }
+                
+                if (!empty($validated['league']) && $homeTeam->league !== $validated['league']) {
                     return response()->json([
                         'success' => false,
                         'message' => __('Both teams must belong to the selected league.'),
@@ -406,6 +417,31 @@ class MatchAdminController extends Controller
                 'message' => 'Validation failed',
                 'errors' => ['away_team_id' => ['Home team and away team must be different.']],
             ], 422);
+        }
+
+        // BUG-068: Validate teams belong to the same league
+        $teams = \App\Models\Team::whereIn('id', [$homeId, $awayId])->get();
+        if ($teams->count() === 2) {
+            $homeTeam = $teams->firstWhere('id', $homeId);
+            $awayTeam = $teams->firstWhere('id', $awayId);
+            if ($homeTeam && $awayTeam) {
+                if ($homeTeam->league !== $awayTeam->league) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('Both teams must belong to the same league.'),
+                        'errors' => ['away_team_id' => [__('Both teams must belong to the same league as the home team.')]],
+                    ], 422);
+                }
+
+                $league = $validated['league'] ?? $match->league;
+                if (!empty($league) && $homeTeam->league !== $league) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => __('Both teams must belong to the selected league.'),
+                        'errors' => ['home_team_id' => [__('Both teams must belong to the selected league.')]],
+                    ], 422);
+                }
+            }
         }
 
         $result = $this->matchService->updateMatch($match, $validated);
