@@ -53,10 +53,8 @@ class BranchTest extends TestCase
         $cafe = Cafe::factory()->create();
         $branch = Branch::factory()->create(['cafe_id' => $cafe->id]);
         
-        $amenity1 = Amenity::factory()->create(['name' => 'WiFi']);
-        $amenity2 = Amenity::factory()->create(['name' => 'Parking']);
-        
-        $branch->amenities()->attach([$amenity1->id, $amenity2->id]);
+        $branch->amenities()->create(['name' => 'WiFi']);
+        $branch->amenities()->create(['name' => 'Parking']);
 
         $response = $this->getJson("/api/v1/branches/{$branch->id}");
 

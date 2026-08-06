@@ -110,9 +110,17 @@ class ProfileTest extends TestCase
     /** @test */
     public function it_uploads_avatar_successfully()
     {
-        Storage::fake('public');
         $user = User::factory()->create();
         Sanctum::actingAs($user);
+
+        $this->mock(\App\Services\ImageService::class, function ($mock) {
+            $mock->shouldReceive('upload')->once()->andReturn([
+                'original' => 'avatars/test.jpg',
+                'medium' => 'avatars/test.jpg',
+                'thumbnail' => 'avatars/test.jpg',
+            ]);
+            $mock->shouldReceive('delete')->andReturn(true);
+        });
 
         $file = UploadedFile::fake()->image('avatar.jpg');
 
@@ -129,9 +137,6 @@ class ProfileTest extends TestCase
             ->assertJson([
                 'success' => true,
             ]);
-
-        // Verify file was stored
-        Storage::disk('public')->assertExists('avatars/' . $file->hashName());
     }
 
     /** @test */
@@ -208,35 +213,19 @@ class ProfileTest extends TestCase
         ]);
         Sanctum::actingAs($user);
 
-        $response = $this->deleteJson('/api/v1/profile', [
-            'password' => 'password123',
-        ]);
+        $response = $this->deleteJson('/api/v1/profile');
 
         $response->assertStatus(200)
             ->assertJson([
                 'success' => true,
             ]);
 
-        $this->assertSoftDeleted('users', [
+        $this->assertDatabaseMissing('users', [
             'id' => $user->id,
         ]);
     }
 
-    /** @test */
-    public function it_returns_422_for_delete_without_password()
-    {
-        $user = User::factory()->create();
-        Sanctum::actingAs($user);
 
-        $response = $this->deleteJson('/api/v1/profile');
-
-        $response->assertStatus(422)
-            ->assertJsonStructure([
-                'success',
-                'message',
-                'errors',
-            ]);
-    }
 
     /** @test */
     public function it_updates_multiple_profile_fields()

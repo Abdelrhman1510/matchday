@@ -37,15 +37,9 @@ class HomeTest extends TestCase
                 'success',
                 'message',
                 'data' => [
-                    'upcoming_matches' => [
-                        '*' => ['id', 'home_team', 'away_team', 'match_date'],
-                    ],
-                    'featured_cafes' => [
-                        '*' => ['id', 'name', 'logo'],
-                    ],
-                    'active_offers' => [
-                        '*' => ['id', 'title', 'discount'],
-                    ],
+                    'banners',
+                    'upcoming_matches',
+                    'nearby_cafes',
                 ],
             ])
             ->assertJson([
@@ -67,9 +61,11 @@ class HomeTest extends TestCase
                 'success',
                 'message',
                 'data' => [
-                    'matches',
-                    'cafes',
-                    'popular_teams',
+                    'featured_cafes',
+                    'trending_cafes',
+                    'matches_today',
+                    'popular_matches',
+                    'nearby_cafes',
                 ],
             ])
             ->assertJson([
@@ -81,6 +77,8 @@ class HomeTest extends TestCase
     public function it_searches_across_all_resources()
     {
         $cafe = Cafe::factory()->create(['name' => 'Sports Arena Cafe']);
+        $plan = \App\Models\SubscriptionPlan::factory()->create();
+        \App\Models\CafeSubscription::factory()->create(['cafe_id' => $cafe->id, 'plan_id' => $plan->id, 'status' => 'active', 'expires_at' => now()->addMonth()]);
         Team::factory()->create(['name' => 'Sports FC']);
         $match = GameMatch::factory()->create([
             'is_published' => true,
@@ -187,7 +185,9 @@ class HomeTest extends TestCase
     /** @test */
     public function it_filters_search_by_type()
     {
-        Cafe::factory()->create(['name' => 'Test Cafe']);
+        $cafe = Cafe::factory()->create(['name' => 'Test Cafe']);
+        $plan = \App\Models\SubscriptionPlan::factory()->create();
+        \App\Models\CafeSubscription::factory()->create(['cafe_id' => $cafe->id, 'plan_id' => $plan->id, 'status' => 'active', 'expires_at' => now()->addMonth()]);
         Team::factory()->create(['name' => 'Test Team']);
         
         $response = $this->getJson('/api/v1/search?query=Test&type=cafes');

@@ -90,7 +90,7 @@ class PasswordResetTest extends TestCase
 
         // Simulate OTP in cache
         $otp = '123456';
-        Cache::put("password_reset_otp:{$user->email}", $otp, now()->addMinutes(15));
+        Cache::put("otp:{$user->email}", $otp, now()->addMinutes(15));
 
         $response = $this->postJson('/api/v1/auth/reset-password', [
             'email' => 'test@example.com',
@@ -121,7 +121,7 @@ class PasswordResetTest extends TestCase
             'email' => 'test@example.com',
         ]);
 
-        Cache::put("password_reset_otp:{$user->email}", '123456', now()->addMinutes(15));
+        Cache::put("otp:{$user->email}", '123456', now()->addMinutes(15));
 
         $response = $this->postJson('/api/v1/auth/reset-password', [
             'email' => 'test@example.com',
@@ -172,7 +172,7 @@ class PasswordResetTest extends TestCase
         ]);
 
         $otp = '123456';
-        Cache::put("password_reset_otp:{$user->email}", $otp, now()->addMinutes(15));
+        Cache::put("otp:{$user->email}", $otp, now()->addMinutes(15));
 
         $response = $this->postJson('/api/v1/auth/reset-password', [
             'email' => 'test@example.com',
@@ -197,7 +197,7 @@ class PasswordResetTest extends TestCase
         ]);
 
         $otp = '123456';
-        Cache::put("password_reset_otp:{$user->email}", $otp, now()->addMinutes(15));
+        Cache::put("otp:{$user->email}", $otp, now()->addMinutes(15));
 
         $response = $this->postJson('/api/v1/auth/reset-password', [
             'email' => 'test@example.com',
@@ -222,7 +222,7 @@ class PasswordResetTest extends TestCase
         ]);
 
         $otp = '123456';
-        Cache::put("password_reset_otp:{$user->email}", $otp, now()->addMinutes(15));
+        Cache::put("otp:{$user->email}", $otp, now()->addMinutes(15));
 
         $this->postJson('/api/v1/auth/reset-password', [
             'email' => 'test@example.com',
@@ -232,6 +232,6 @@ class PasswordResetTest extends TestCase
         ]);
 
         // Verify OTP is cleared
-        $this->assertNull(Cache::get("password_reset_otp:{$user->email}"));
+        $this->assertNull(Cache::get("otp:{$user->email}"));
     }
 }
