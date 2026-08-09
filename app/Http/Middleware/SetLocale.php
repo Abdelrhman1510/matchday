@@ -32,7 +32,13 @@ class SetLocale
         }
 
         // 2) Otherwise use the Accept-Language header (e.g. 'ar' from 'ar-EG').
-        if ($lang === null) {
+        //    ONLY for API requests. Web requests (the platform dashboard) take
+        //    their locale from the platform_language setting via
+        //    ApplyPlatformSettings; letting the browser's Accept-Language
+        //    override it makes Livewire XHR requests — which resolve the header
+        //    differently than the top-level navigation — render the lazy-loaded
+        //    content in a different language than the surrounding page.
+        if ($lang === null && $request->is('api/*')) {
             $header = $request->header('Accept-Language');
             if ($header) {
                 $candidate = substr($header, 0, 2);
