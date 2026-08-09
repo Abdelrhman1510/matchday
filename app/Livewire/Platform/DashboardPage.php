@@ -26,6 +26,10 @@ class DashboardPage extends Component
     public $period = 'last_30_days';
     public $periodUpdateCount = 0; // Force re-render on period change
     public $showAllActivity = false; // Toggle to show all activity
+    // Bound to the "recent matches" search box (wire:model.live) and read in
+    // render(). Must be a declared public property or Livewire throws
+    // PublicPropertyNotFoundException and 500s on the dashboard's update request.
+    public $searchMatches = '';
 
     public function placeholder()
     {
