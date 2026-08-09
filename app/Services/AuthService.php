@@ -553,27 +553,33 @@ class AuthService
     public function loginWithApple(string $appleToken, ?string $name = null, ?string $role = null): array
     {
         try {
+            // An Apple identity token is a JWT and never contains whitespace.
+            // Strip any spaces/newlines that sneak in via copy-paste so a valid
+            // token isn't rejected with "Invalid Apple token format".
+            $appleToken = preg_replace('/\s+/', '', $appleToken);
+
             // Fetch Apple's public keys
             $keysResponse = Http::get('https://appleid.apple.com/auth/keys');
-            
+
             if ($keysResponse->failed()) {
                 throw new \Exception('Failed to fetch Apple public keys');
             }
-            
+
             $keys = $keysResponse->json()['keys'];
-            
-            // Parse the JWT header to get the key ID
+
+            // Parse the JWT header to get the key ID. JWT segments are base64URL
+            // encoded (- and _ instead of + and /), so decode accordingly.
             $tokenParts = explode('.', $appleToken);
             if (count($tokenParts) !== 3) {
                 throw new \Exception('Invalid Apple token format');
             }
-            
-            $header = json_decode(base64_decode($tokenParts[0]), true);
-            
+
+            $header = json_decode(JWT::urlsafeB64Decode($tokenParts[0]), true);
+
             if (!isset($header['kid'])) {
                 throw new \Exception('Missing key ID in token header');
             }
-            
+
             // Find the matching public key
             $publicKey = null;
             foreach ($keys as $key) {
@@ -582,27 +588,28 @@ class AuthService
                     break;
                 }
             }
-            
+
             if (!$publicKey) {
                 throw new \Exception('Unable to find matching public key');
             }
-            
-            // Verify and decode the JWT
+
+            // Verify and decode the JWT. JWT::decode already checks the RS256
+            // signature and expiry (throwing on failure).
             $payload = JWT::decode($appleToken, $publicKey);
-            
+
             // Validate the token
             if ($payload->iss !== 'https://appleid.apple.com') {
                 throw new \Exception('Invalid issuer');
             }
-            
-            if ($payload->aud !== config('services.apple.client_id')) {
+
+            // Audience must be one of OUR Apple clients (iOS bundle ID, web
+            // Services ID). Fail closed: an empty allowlist (misconfiguration)
+            // must reject the token, never accept an otherwise-valid one.
+            $allowedClientIds = config('services.apple.client_ids', []);
+            if (empty($allowedClientIds) || !in_array($payload->aud ?? null, $allowedClientIds, true)) {
                 throw new \Exception('Invalid audience');
             }
-            
-            if ($payload->exp < time()) {
-                throw new \Exception('Token expired');
-            }
-            
+
             // Extract user data
             $appleUserId = $payload->sub;
             $email = $payload->email ?? null;

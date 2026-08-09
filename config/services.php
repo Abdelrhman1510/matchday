@@ -54,6 +54,13 @@ return [
 
     'apple' => [
         'client_id' => env('APPLE_CLIENT_ID'),
+        // Every audience whose Apple identity token we accept: the iOS app's
+        // bundle ID (native "Sign in with Apple") and any web Services ID.
+        // Comma-separated in APPLE_CLIENT_IDS; falls back to APPLE_CLIENT_ID.
+        'client_ids' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('APPLE_CLIENT_IDS', (string) env('APPLE_CLIENT_ID')))
+        ))),
         'team_id' => env('APPLE_TEAM_ID'),
         'key_id' => env('APPLE_KEY_ID'),
         'private_key' => env('APPLE_PRIVATE_KEY'),
