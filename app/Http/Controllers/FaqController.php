@@ -20,7 +20,7 @@ class FaqController extends Controller
         // the right language for this request's locale (set by SetLocale middleware).
         $faqs = Faq::active()
             ->ordered()
-            ->get(['id', 'question', 'question_ar', 'answer', 'answer_ar', 'category', 'sort_order']);
+            ->get(['id', 'question', 'question_ar', 'answer', 'answer_ar', 'category', 'category_ar', 'sort_order']);
 
         return $this->successResponse([
             'faqs' => $faqs->map(fn (Faq $faq) => $faq->toLocalizedArray()),

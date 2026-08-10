@@ -16,6 +16,7 @@ class Faq extends Model
         'answer',
         'answer_ar',
         'category',
+        'category_ar',
         'sort_order',
         'is_active',
     ];
@@ -24,7 +25,7 @@ class Faq extends Model
     {
         return [
             'sort_order' => 'integer',
-            'is_active' => 'boolean',
+            'is_active'  => 'boolean',
         ];
     }
 
@@ -63,11 +64,15 @@ class Faq extends Model
             ? $this->answer_ar
             : $this->answer;
 
+        $category = ($locale === 'ar' && !empty($this->category_ar))
+            ? $this->category_ar
+            : $this->category;
+
         return [
             'id'         => $this->id,
             'question'   => $question,
             'answer'     => $answer,
-            'category'   => $this->category,
+            'category'   => $category,
             'sort_order' => $this->sort_order,
         ];
     }
