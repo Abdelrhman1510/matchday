@@ -218,8 +218,11 @@ class MatchAdminController extends Controller
             ], 403);
         }
 
-        // Use route branchId or request body branch_id
-        $resolvedBranchId = $branchId ?? $request->branch_id;
+        // Use route branchId or request body branch_id, fallback to first branch if none provided
+        $resolvedBranchId = $branchId ?? $request->input('branch_id');
+        if (!$resolvedBranchId && $cafe->branches()->exists()) {
+            $resolvedBranchId = $cafe->branches()->first()->id;
+        }
 
         // Verify branch belongs to this cafe
         $branch = $cafe->branches()->find($resolvedBranchId);
