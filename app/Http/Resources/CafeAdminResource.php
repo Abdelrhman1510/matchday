@@ -21,7 +21,7 @@ class CafeAdminResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'phone' => $this->phone,
-            'city' => $this->city,
+            'city' => !empty($this->city) ? $this->city : $this->branches()->first()?->city,
             'logo' => $this->formatLogo($this->logo),
             'is_premium' => $this->is_premium,
             'subscription_plan' => $this->subscription_plan,

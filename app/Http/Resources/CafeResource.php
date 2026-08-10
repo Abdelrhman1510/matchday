@@ -48,7 +48,7 @@ class CafeResource extends JsonResource
                 : null,
             'description' => $this->description,
             'phone' => $this->phone,
-            'city' => $this->city,
+            'city' => !empty($this->city) ? $this->city : $this->branches()->first()?->city,
             'is_premium' => $this->is_premium,
             'avg_rating' => (float) $this->avg_rating,
             'total_reviews' => $this->total_reviews,

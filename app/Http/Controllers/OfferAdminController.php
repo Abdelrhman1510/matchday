@@ -116,6 +116,7 @@ class OfferAdminController extends Controller
             'available_for' => 'required|in:all,weekend,prime_time',
             'terms' => 'nullable|string',
             'is_featured' => 'boolean',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -132,6 +133,10 @@ class OfferAdminController extends Controller
             $data['is_active'] = true;
 
             $offer = $this->offerService->create($cafe, $data);
+
+            if ($request->hasFile('image')) {
+                $offer = $this->offerService->uploadImage($offer, $request->file('image'));
+            }
 
             return response()->json([
                 'success' => true,
@@ -244,6 +249,7 @@ class OfferAdminController extends Controller
             'available_for' => 'sometimes|in:all,weekend,prime_time',
             'terms' => 'nullable|string',
             'is_featured' => 'boolean',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -256,6 +262,10 @@ class OfferAdminController extends Controller
 
         try {
             $updatedOffer = $this->offerService->update($offer, $validator->validated());
+
+            if ($request->hasFile('image')) {
+                $updatedOffer = $this->offerService->uploadImage($updatedOffer, $request->file('image'));
+            }
 
             return response()->json([
                 'success' => true,
