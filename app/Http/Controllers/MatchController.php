@@ -127,7 +127,7 @@ class MatchController extends Controller
      * GET /api/v1/matches/{id}
      * Get match full detail with booking stats
      */
-    public function show(int $id): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
         $match = $this->matchService->getMatchById($id);
 

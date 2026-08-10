@@ -168,7 +168,10 @@ Route::middleware(['throttle:api'])->prefix('matches')->name('matches.')->group(
     });
 
     Route::get('/{id}/seating', [MatchController::class, 'seating'])->name('seating');
-    Route::get('/{id}', [MatchController::class, 'show'])->name('show');
+    // auth:sanctum here resolves $request->user() from the Bearer token when present,
+    // enabling is_booked to be computed correctly. Unauthenticated requests are not
+    // rejected — Sanctum returns null for the user if no token is sent.
+    Route::middleware('auth:sanctum')->get('/{id}', [MatchController::class, 'show'])->name('show');
     Route::get('/', [MatchController::class, 'index'])->name('index');
 });
 
