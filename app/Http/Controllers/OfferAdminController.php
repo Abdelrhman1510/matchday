@@ -127,7 +127,11 @@ class OfferAdminController extends Controller
         }
 
         try {
-            $offer = $this->offerService->create($cafe, $validator->validated());
+            $data = $validator->validated();
+            $data['status'] = 'active';
+            $data['is_active'] = true;
+
+            $offer = $this->offerService->create($cafe, $data);
 
             return response()->json([
                 'success' => true,

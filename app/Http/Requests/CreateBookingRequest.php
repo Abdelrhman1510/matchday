@@ -70,36 +70,36 @@ class CreateBookingRequest extends FormRequest
             $match = GameMatch::with(['branch.seatingSections.seats'])->find($this->match_id);
             
             if (!$match) {
-                $validator->errors()->add('match_id', 'Match not found.');
+                $validator->errors()->add('match_id', __('Match not found.'));
                 return;
             }
 
             if (!$match->is_published) {
-                $validator->errors()->add('match_id', 'This match is not available for booking.');
+                $validator->errors()->add('match_id', __('This match is not available for booking.'));
                 return;
             }
 
             // Validate match is upcoming
             if ($match->status !== 'upcoming') {
-                $validator->errors()->add('match_id', 'Only upcoming matches can be booked.');
+                $validator->errors()->add('match_id', __('Only upcoming matches can be booked.'));
                 return;
             }
 
             // Validate within booking window
             $now = now();
             if ($match->booking_opens_at && $now->lt($match->booking_opens_at)) {
-                $validator->errors()->add('match_id', 'Booking for this match has not opened yet.');
+                $validator->errors()->add('match_id', __('Booking for this match has not opened yet.'));
                 return;
             }
 
             if ($match->booking_closes_at && $now->gt($match->booking_closes_at)) {
-                $validator->errors()->add('match_id', 'Booking for this match has closed.');
+                $validator->errors()->add('match_id', __('Booking for this match has closed.'));
                 return;
             }
 
             // Validate guests count matches seat count (only if explicitly provided)
-            if ($this->has('guests_count') && $this->guests_count !== count($this->seat_ids)) {
-                $validator->errors()->add('guests_count', 'Guests count must match the number of seats selected.');
+            if ($this->has('guests_count') && $this->guests_count != count($this->seat_ids)) {
+                $validator->errors()->add('guests_count', __('Guests count must match the number of seats selected.'));
                 return;
             }
 
@@ -140,7 +140,7 @@ class CreateBookingRequest extends FormRequest
 
             if (!empty($bookedSeats)) {
                 $bookedSeatLabels = $seats->whereIn('id', $bookedSeats)->pluck('label')->join(', ');
-                $validator->errors()->add('seat_ids', "The following seats are already booked for this match: {$bookedSeatLabels}");
+                $validator->errors()->add('seat_ids', __("The following seats are already booked for this match: {$bookedSeatLabels}"));
                 return;
             }
 
@@ -151,13 +151,13 @@ class CreateBookingRequest extends FormRequest
                 ->exists();
 
             if ($existingBooking) {
-                $validator->errors()->add('match_id', 'You already have a booking for this match.');
+                $validator->errors()->add('match_id', __('You already have a booking for this match.'));
                 return;
             }
 
             // Check if enough seats available on match
             if ($match->seats_available < count($seatIds)) {
-                $validator->errors()->add('seat_ids', 'Not enough seats available for this match.');
+                $validator->errors()->add('seat_ids', __('Not enough seats available for this match.'));
                 return;
             }
         });
