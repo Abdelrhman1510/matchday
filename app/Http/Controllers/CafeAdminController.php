@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\CafeAdminResource;
 use App\Http\Resources\BranchListResource;
 use App\Http\Resources\BranchDetailResource;
+use App\Http\Resources\BranchHourResource;
 use App\Http\Resources\BranchAmenityResource;
 
 class CafeAdminController extends Controller
@@ -383,6 +384,33 @@ class CafeAdminController extends Controller
             'message' => __('Branch created successfully. Proceed to configure hours.'),
             'data' => new BranchDetailResource($branch),
         ], 201);
+    }
+
+    /**
+     * Get branch hours
+     * GET /api/v1/cafe-admin/branches/{id}/hours
+     */
+    public function getBranchHours(Request $request, string $id)
+    {
+        $cafe = $this->actingCafe($request);
+
+        if (!$cafe) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No cafe found for this owner',
+            ], 404);
+        }
+
+        $branch = $cafe->branches()->findOrFail($id);
+
+        if ($deny = $this->denyIfBranchInaccessible($request, (int) $branch->id)) {
+            return $deny;
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => BranchHourResource::collection($branch->hours),
+        ]);
     }
 
     /**

@@ -391,7 +391,8 @@ Route::middleware(['auth:sanctum', 'cafe.owner'])->prefix('admin')->name('admin.
     Route::get('/branches/{id}', [CafeAdminController::class, 'getBranch'])->name('branches.show');
     Route::put('/branches/{id}', [CafeAdminController::class, 'updateBranch'])->name('branches.update');
     Route::delete('/branches/{id}', [CafeAdminController::class, 'deleteBranch'])->name('branches.delete');
-    Route::post('/branches/{id}/hours', [CafeAdminController::class, 'updateBranchHours'])->name('branches.hours');
+    Route::get('/branches/{id}/hours', [CafeAdminController::class, 'getBranchHours'])->name('branches.hours.show');
+    Route::post('/branches/{id}/hours', [CafeAdminController::class, 'updateBranchHours'])->name('branches.hours.update');
     Route::post('/branches/{id}/amenities', [CafeAdminController::class, 'addAmenitiesBulk'])->name('branches.amenities');
     Route::get('/branches/{id}/overview', [CafeAdminController::class, 'getBranchOverview'])->name('branches.overview');
     Route::get('/branches/{id}/setup-progress', [CafeAdminController::class, 'getBranchSetupProgress'])->name('branches.setup');
@@ -493,6 +494,7 @@ Route::middleware(['auth:sanctum', 'cafe.owner'])->prefix('cafe-admin')->name('c
     // BRANCH CRUD (Endpoints 6-14)
     Route::get('/branches', [CafeAdminController::class, 'listBranches'])->name('branches.index');
     Route::post('/branches', [CafeAdminController::class, 'createBranch'])->middleware('cafe.permission:manage-branches')->name('branches.create');
+    Route::get('/branches/{id}/hours', [CafeAdminController::class, 'getBranchHours'])->middleware('cafe.permission:manage-branches');
     Route::put('/branches/{id}/hours', [CafeAdminController::class, 'updateBranchHours'])->middleware('cafe.permission:manage-branches')->name('branches.hours');
     Route::post('/branches/{id}/amenities/bulk', [CafeAdminController::class, 'addAmenitiesBulk'])->middleware('cafe.permission:manage-branches')->name('branches.amenities.bulk');
     Route::get('/branches/{id}', [CafeAdminController::class, 'getBranch'])->name('branches.show');
