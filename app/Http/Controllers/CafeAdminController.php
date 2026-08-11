@@ -71,7 +71,7 @@ class CafeAdminController extends Controller
             'name' => $request->name,
             'description' => $request->description ?? '',
             'phone' => $request->phone ?? '',
-            'city' => $request->city ?? '',
+            'city' => $request->city,
             'is_premium' => false,
             'avg_rating' => 0,
             'total_reviews' => 0,
