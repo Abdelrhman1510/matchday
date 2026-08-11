@@ -19,27 +19,27 @@ class PlanManagementPage extends Component
     public $planToDeleteName = '';
 
     // ─── Form Fields ─────────────────────────────────────────────────
-    public $formName = '';
-    public $formNameAr = '';
-    public $formPrice = '';
-    public $formFeatures = '';
-    public $formFeaturesAr = '';
-    public $formMaxBookings = '';
-    public $formIsActive = true;
-    public $formHasAnalytics = false;
-    public $formHasBranding = false;
-    public $formHasPrioritySupport = false;
+    public string $formName = '';
+    public string $formNameAr = '';
+    public ?float $formPrice = null;
+    public string $formFeatures = '';
+    public string $formFeaturesAr = '';
+    public ?int $formMaxBookings = null;
+    public bool $formIsActive = true;
+    public bool $formHasAnalytics = false;
+    public bool $formHasBranding = false;
+    public bool $formHasPrioritySupport = false;
 
     // New limit fields
-    public $formMaxBranches = '';
-    public $formMaxMatchesPerMonth = '';
-    public $formMaxBookingsPerMonth = '';
-    public $formMaxStaffMembers = '';
-    public $formMaxOffers = '';
-    public $formHasChat = false;
-    public $formHasQrScanner = false;
-    public $formHasOccupancyTracking = false;
-    public $formCommissionRate = '';
+    public ?int $formMaxBranches = null;
+    public ?int $formMaxMatchesPerMonth = null;
+    public ?int $formMaxBookingsPerMonth = null;
+    public ?int $formMaxStaffMembers = null;
+    public ?int $formMaxOffers = null;
+    public bool $formHasChat = false;
+    public bool $formHasQrScanner = false;
+    public bool $formHasOccupancyTracking = false;
+    public ?float $formCommissionRate = null;
 
     // ─── Lifecycle ───────────────────────────────────────────────────
 
@@ -104,7 +104,8 @@ class PlanManagementPage extends Component
         $this->validate([
             'formName'               => 'required|string|min:3|max:255',
             'formNameAr'             => 'nullable|string|min:3|max:255',
-            'formPrice'              => 'required|numeric|min:1',
+            // gt:0 ensures price is strictly greater than 0 regardless of type coercion
+            'formPrice'              => 'required|numeric|gt:0|max:999999',
             'formMaxBranches'        => 'nullable|integer|min:1|max:1000',
             'formMaxMatchesPerMonth' => 'nullable|integer|min:1|max:10000',
             'formMaxBookingsPerMonth'=> 'nullable|integer|min:1|max:100000',
@@ -119,7 +120,7 @@ class PlanManagementPage extends Component
             'formNameAr.min'                  => __('The Arabic plan name must be at least 3 characters.'),
             'formPrice.required'              => __('platform.validation.price_required'),
             'formPrice.numeric'               => __('platform.validation.price_numeric'),
-            'formPrice.min'                   => __('The price must be at least 1 (free plans are not allowed).'),
+            'formPrice.gt'                    => __('The price must be greater than 0 (free plans are not allowed).'),
             'formMaxBranches.min'             => __('Branch limit must be at least 1.'),
             'formMaxMatchesPerMonth.min'      => __('Match limit must be at least 1.'),
             'formMaxBookingsPerMonth.min'     => __('Bookings per month limit must be at least 1.'),
@@ -240,23 +241,23 @@ class PlanManagementPage extends Component
         $this->editingPlanId = null;
         $this->formName = '';
         $this->formNameAr = '';
-        $this->formPrice = '';
+        $this->formPrice = null;
         $this->formFeatures = '';
         $this->formFeaturesAr = '';
-        $this->formMaxBookings = '';
+        $this->formMaxBookings = null;
         $this->formIsActive = true;
         $this->formHasAnalytics = false;
         $this->formHasBranding = false;
         $this->formHasPrioritySupport = false;
-        $this->formMaxBranches = '';
-        $this->formMaxMatchesPerMonth = '';
-        $this->formMaxBookingsPerMonth = '';
-        $this->formMaxStaffMembers = '';
-        $this->formMaxOffers = '';
+        $this->formMaxBranches = null;
+        $this->formMaxMatchesPerMonth = null;
+        $this->formMaxBookingsPerMonth = null;
+        $this->formMaxStaffMembers = null;
+        $this->formMaxOffers = null;
         $this->formHasChat = false;
         $this->formHasQrScanner = false;
         $this->formHasOccupancyTracking = false;
-        $this->formCommissionRate = '';
+        $this->formCommissionRate = null;
     }
 
     public function render()
