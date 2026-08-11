@@ -58,34 +58,12 @@ class BookingController extends Controller
                 'data' => new BookingDetailResource($booking),
             ], Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            // Classify as a user-facing 422 for known business-logic errors
-            $userErrorKeywords = [
-                'already booked',
-                'not available',
-                'already booked for this match',
-                'not enough seats',
-                'seat',
-                'booking',
-                'cancelled',
-                'closed',
-                'not open',
-                'limit',
-                'expired',
-            ];
-
-            $message = $e->getMessage();
-            $isUserError = false;
-            foreach ($userErrorKeywords as $keyword) {
-                if (str_contains(strtolower($message), strtolower($keyword))) {
-                    $isUserError = true;
-                    break;
-                }
-            }
-
+            // Return 400 so the frontend app displays the actual error message 
+            // instead of treating a 500 status as a generic crash.
             return response()->json([
                 'success' => false,
-                'message' => $message,
-            ], $isUserError ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_INTERNAL_SERVER_ERROR);
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
         }
     }
 

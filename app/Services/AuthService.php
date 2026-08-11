@@ -536,6 +536,10 @@ class AuthService
                 'user' => $this->formatAuthUser($user),
                 'token' => $token,
             ];
+        } catch (ValidationException $e) {
+            // Re-throw clean validation errors (missing role, deactivated account, etc.)
+            // without wrapping them in the generic "Failed to authenticate with Google" message.
+            throw $e;
         } catch (\Exception $e) {
             \Log::error('Google OAuth error: ' . $e->getMessage());
             throw ValidationException::withMessages([
