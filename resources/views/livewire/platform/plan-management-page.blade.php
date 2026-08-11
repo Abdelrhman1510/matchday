@@ -188,14 +188,14 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-white mb-1.5">{{ __('platform.plans.name') }} <span class="text-red-400">*</span></label>
-                            <input type="text" wire:model="formName" placeholder="e.g. Starter, Pro, Elite"
-                                class="w-full px-4 py-2.5 bg-[#0f172a] border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-[#c8ff00] focus:ring-1 focus:ring-[#c8ff00] outline-none">
+                            <input type="text" wire:model.blur="formName" placeholder="e.g. Starter, Pro, Elite"
+                                class="w-full px-4 py-2.5 bg-[#0f172a] border {{ $errors->has('formName') ? 'border-red-500' : 'border-slate-700' }} rounded-lg text-white placeholder-slate-500 focus:border-[#c8ff00] focus:ring-1 focus:ring-[#c8ff00] outline-none">
                             @error('formName') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-white mb-1.5">{{ __('platform.plans.price') }} ({{ __('platform.common.sar') }}) <span class="text-red-400">*</span></label>
-                            <input type="number" wire:model="formPrice" step="0.01" min="0" placeholder="0.00"
-                                class="w-full px-4 py-2.5 bg-[#0f172a] border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-[#c8ff00] focus:ring-1 focus:ring-[#c8ff00] outline-none">
+                            <input type="number" wire:model.blur="formPrice" step="0.01" min="0" placeholder="0.00"
+                                class="w-full px-4 py-2.5 bg-[#0f172a] border {{ $errors->has('formPrice') ? 'border-red-500' : 'border-slate-700' }} rounded-lg text-white placeholder-slate-500 focus:border-[#c8ff00] focus:ring-1 focus:ring-[#c8ff00] outline-none">
                             @error('formPrice') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
@@ -213,33 +213,39 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                             <div>
                                 <label class="block text-[10px] text-slate-400 uppercase mb-1">{{ __('platform.plans.max_branches') }}</label>
-                                <input type="number" wire:model="formMaxBranches" min="0" placeholder="∞"
-                                    class="w-full px-3 py-2 bg-[#0f172a] border border-slate-700 rounded-lg text-white text-sm placeholder-slate-600 focus:border-[#c8ff00] outline-none">
+                                <input type="number" wire:model.blur="formMaxBranches" min="0" placeholder="∞"
+                                    class="w-full px-3 py-2 bg-[#0f172a] border {{ $errors->has('formMaxBranches') ? 'border-red-500' : 'border-slate-700' }} rounded-lg text-white text-sm placeholder-slate-600 focus:border-[#c8ff00] outline-none">
+                                @error('formMaxBranches') <p class="text-red-400 text-[10px] mt-1">{{ $message }}</p> @enderror
                             </div>
                             <div>
                                 <label class="block text-[10px] text-slate-400 uppercase mb-1">{{ __('platform.plans.max_matches') }}</label>
-                                <input type="number" wire:model="formMaxMatchesPerMonth" min="0" placeholder="∞"
-                                    class="w-full px-3 py-2 bg-[#0f172a] border border-slate-700 rounded-lg text-white text-sm placeholder-slate-600 focus:border-[#c8ff00] outline-none">
+                                <input type="number" wire:model.blur="formMaxMatchesPerMonth" min="0" placeholder="∞"
+                                    class="w-full px-3 py-2 bg-[#0f172a] border {{ $errors->has('formMaxMatchesPerMonth') ? 'border-red-500' : 'border-slate-700' }} rounded-lg text-white text-sm placeholder-slate-600 focus:border-[#c8ff00] outline-none">
+                                @error('formMaxMatchesPerMonth') <p class="text-red-400 text-[10px] mt-1">{{ $message }}</p> @enderror
                             </div>
                             <div>
                                 <label class="block text-[10px] text-slate-400 uppercase mb-1">{{ __('platform.plans.max_bookings') }}</label>
-                                <input type="number" wire:model="formMaxBookingsPerMonth" min="0" placeholder="∞"
-                                    class="w-full px-3 py-2 bg-[#0f172a] border border-slate-700 rounded-lg text-white text-sm placeholder-slate-600 focus:border-[#c8ff00] outline-none">
+                                <input type="number" wire:model.blur="formMaxBookingsPerMonth" min="0" placeholder="∞"
+                                    class="w-full px-3 py-2 bg-[#0f172a] border {{ $errors->has('formMaxBookingsPerMonth') ? 'border-red-500' : 'border-slate-700' }} rounded-lg text-white text-sm placeholder-slate-600 focus:border-[#c8ff00] outline-none">
+                                @error('formMaxBookingsPerMonth') <p class="text-red-400 text-[10px] mt-1">{{ $message }}</p> @enderror
                             </div>
                             <div>
                                 <label class="block text-[10px] text-slate-400 uppercase mb-1">{{ __('platform.plans.max_staff') }}</label>
-                                <input type="number" wire:model="formMaxStaffMembers" min="0" placeholder="∞"
-                                    class="w-full px-3 py-2 bg-[#0f172a] border border-slate-700 rounded-lg text-white text-sm placeholder-slate-600 focus:border-[#c8ff00] outline-none">
+                                <input type="number" wire:model.blur="formMaxStaffMembers" min="0" placeholder="∞"
+                                    class="w-full px-3 py-2 bg-[#0f172a] border {{ $errors->has('formMaxStaffMembers') ? 'border-red-500' : 'border-slate-700' }} rounded-lg text-white text-sm placeholder-slate-600 focus:border-[#c8ff00] outline-none">
+                                @error('formMaxStaffMembers') <p class="text-red-400 text-[10px] mt-1">{{ $message }}</p> @enderror
                             </div>
                             <div>
                                 <label class="block text-[10px] text-slate-400 uppercase mb-1">{{ __('platform.plans.max_offers') }}</label>
-                                <input type="number" wire:model="formMaxOffers" min="0" placeholder="∞"
-                                    class="w-full px-3 py-2 bg-[#0f172a] border border-slate-700 rounded-lg text-white text-sm placeholder-slate-600 focus:border-[#c8ff00] outline-none">
+                                <input type="number" wire:model.blur="formMaxOffers" min="0" placeholder="∞"
+                                    class="w-full px-3 py-2 bg-[#0f172a] border {{ $errors->has('formMaxOffers') ? 'border-red-500' : 'border-slate-700' }} rounded-lg text-white text-sm placeholder-slate-600 focus:border-[#c8ff00] outline-none">
+                                @error('formMaxOffers') <p class="text-red-400 text-[10px] mt-1">{{ $message }}</p> @enderror
                             </div>
                             <div>
                                 <label class="block text-[10px] text-slate-400 uppercase mb-1">{{ __('platform.plans.commission_rate') }}</label>
-                                <input type="number" wire:model="formCommissionRate" min="0" max="100" step="0.01" placeholder="Default"
-                                    class="w-full px-3 py-2 bg-[#0f172a] border border-slate-700 rounded-lg text-white text-sm placeholder-slate-600 focus:border-[#c8ff00] outline-none">
+                                <input type="number" wire:model.blur="formCommissionRate" min="0" max="100" step="0.01" placeholder="Default"
+                                    class="w-full px-3 py-2 bg-[#0f172a] border {{ $errors->has('formCommissionRate') ? 'border-red-500' : 'border-slate-700' }} rounded-lg text-white text-sm placeholder-slate-600 focus:border-[#c8ff00] outline-none">
+                                @error('formCommissionRate') <p class="text-red-400 text-[10px] mt-1">{{ $message }}</p> @enderror
                             </div>
                         </div>
                         <p class="text-[10px] text-slate-500 mt-2">{{ __('platform.plans.limits_hint') }}</p>
@@ -288,6 +294,18 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- Validation Error Summary --}}
+                @if($errors->any())
+                    <div class="mx-6 mb-1 p-3 bg-red-900/30 border border-red-700/50 rounded-lg">
+                        <p class="text-red-400 text-xs font-semibold mb-1">⚠ Please fix the following errors:</p>
+                        <ul class="list-disc list-inside space-y-0.5">
+                            @foreach($errors->all() as $error)
+                                <li class="text-red-400 text-xs">{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
                 {{-- Modal Footer --}}
                 <div class="flex gap-3 p-6 border-t border-slate-700 sticky bottom-0 bg-[#1e293b]">
