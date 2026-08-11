@@ -3,6 +3,7 @@
 namespace App\Livewire\Platform;
 
 use App\Models\SubscriptionPlan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
@@ -174,6 +175,10 @@ class PlanManagementPage extends Component
             session()->flash('message', __('platform.flash.plan_updated'));
         }
 
+        // Bust the API cache so the mobile Subscriptions page reflects
+        // the change immediately (disabled plans stop showing, new ones appear).
+        Cache::forget('subscription_plans_active');
+
         $this->closeModal();
         $this->loadPlans();
     }
@@ -184,6 +189,8 @@ class PlanManagementPage extends Component
     {
         $plan = SubscriptionPlan::findOrFail($planId);
         $plan->update(['is_active' => !$plan->is_active]);
+        // Bust API cache immediately so the mobile app stops showing disabled plans.
+        Cache::forget('subscription_plans_active');
         $this->loadPlans();
         session()->flash('message', $plan->is_active ? __('platform.flash.plan_activated') : __('platform.flash.plan_deactivated'));
     }
@@ -217,6 +224,8 @@ class PlanManagementPage extends Component
     {
         if ($this->planToDeleteId) {
             SubscriptionPlan::destroy($this->planToDeleteId);
+            // Bust API cache so deleted plan vanishes from the mobile app immediately.
+            Cache::forget('subscription_plans_active');
             session()->flash('message', __('platform.flash.plan_deleted', ['name' => $this->planToDeleteName]));
         }
 
