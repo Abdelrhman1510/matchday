@@ -337,13 +337,6 @@
                 {{ __('platform.cafe_detail.branches') }}
                 <span class="px-2 py-0.5 bg-[#1a0e40] border border-[#1e164e] text-[#c8ff00] text-xs font-black rounded">{{ count($branches) }}</span>
             </h2>
-            <button wire:click="addBranch"
-                class="flex items-center gap-1.5 px-4 py-2 bg-[#c8ff00] hover:bg-[#d4ff33] text-black text-xs font-bold rounded-lg transition-colors">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                {{ __('platform.cafe_detail.add_branch') }}
-            </button>
         </div>
 
         @php
