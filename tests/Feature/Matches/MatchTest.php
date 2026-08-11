@@ -129,6 +129,10 @@ class MatchTest extends TestCase
             'is_published' => true,
         ]);
 
+        // GET /matches/{id} requires authentication (it computes per-user
+        // can_book / is_booked).
+        Sanctum::actingAs(User::factory()->create());
+
         $response = $this->getJson("/api/v1/matches/{$match->id}");
 
         $response->assertStatus(200)
@@ -189,6 +193,8 @@ class MatchTest extends TestCase
     /** @test */
     public function it_returns_404_for_nonexistent_match()
     {
+        Sanctum::actingAs(User::factory()->create());
+
         $response = $this->getJson('/api/v1/matches/99999');
 
         $response->assertStatus(404)

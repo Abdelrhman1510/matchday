@@ -17,19 +17,10 @@ class MatchDetailResource extends JsonResource
         // Check if user has a booking for this match
         $isBooked = false;
         if ($request->user()) {
-            $userId = $request->user()->id;
-            $matchId = $this->id;
-
-            \Log::info("Checking is_booked for user {$userId} and match {$matchId}");
-
             $isBooked = $request->user()->bookings()
                 ->where('match_id', $this->id)
                 ->whereIn('status', ['confirmed', 'pending', 'checked_in'])
                 ->exists();
-
-            \Log::info("is_booked result: " . ($isBooked ? 'true' : 'false'));
-        } else {
-            \Log::info("No authenticated user in MatchDetailResource");
         }
 
         // Determine can_book:

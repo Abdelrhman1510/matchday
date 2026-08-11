@@ -71,7 +71,11 @@ class MatchAdminService
                 'league' => $data['league'] ?? 'TBD',
                 'match_date' => $data['match_date'],
                 'kick_off' => $data['kick_off'] ?? null,
-                'seats_available' => $data['seats_available'] ?? 0,
+                // A match with 0 seats can never be booked (can_book requires
+                // seats_available > 0). When the creator doesn't specify a
+                // capacity, fall back to the branch's real seat count so the
+                // match is bookable by default (BUG-091).
+                'seats_available' => $data['seats_available'] ?? $this->defaultSeatsForBranch($branchId),
                 'price_per_seat' => $data['price_per_seat'] ?? ($data['ticket_price'] ?? 0),
                 'ticket_price' => $data['ticket_price'] ?? ($data['price_per_seat'] ?? 0),
                 'duration_minutes' => $data['duration_minutes'] ?? 90,
@@ -91,6 +95,29 @@ class MatchAdminService
 
             return $match;
         });
+    }
+
+    /**
+     * The number of seats a new match should default to: the branch's real
+     * bookable seat count, falling back to its denormalized total_seats column.
+     * Returns 0 only when the branch has no seats configured at all.
+     */
+    private function defaultSeatsForBranch(int $branchId): int
+    {
+        $branch = \App\Models\Branch::with('seatingSections.seats')->find($branchId);
+        if (!$branch) {
+            return 0;
+        }
+
+        $available = $branch->seatingSections->sum(
+            fn ($section) => $section->seats->where('is_available', true)->count()
+        );
+
+        if ($available > 0) {
+            return (int) $available;
+        }
+
+        return max(0, (int) $branch->total_seats);
     }
 
     /**
