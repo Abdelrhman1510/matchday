@@ -64,6 +64,24 @@ class MatchAdminService
     public function createMatch(int $branchId, array $data): GameMatch
     {
         return DB::transaction(function () use ($branchId, $data) {
+            $bookingClosesAt = $data['booking_closes_at'] ?? null;
+            
+            // If the user didn't specify when booking closes, default to the kickoff time
+            // rather than letting it expire too early.
+            if (empty($bookingClosesAt) && !empty($data['match_date'])) {
+                try {
+                    $matchDateTime = \Carbon\Carbon::parse($data['match_date'], 'Asia/Riyadh');
+                    if (!empty($data['kick_off'])) {
+                        $matchDateTime->setTimeFromTimeString($data['kick_off']);
+                    } else {
+                        $matchDateTime->endOfDay();
+                    }
+                    $bookingClosesAt = $matchDateTime->toDateTimeString();
+                } catch (\Exception $e) {
+                    // Ignore parse errors, leave as null
+                }
+            }
+
             $match = GameMatch::create([
                 'branch_id' => $branchId,
                 'home_team_id' => $data['home_team_id'],
@@ -80,7 +98,7 @@ class MatchAdminService
                 'ticket_price' => $data['ticket_price'] ?? ($data['price_per_seat'] ?? 0),
                 'duration_minutes' => $data['duration_minutes'] ?? 90,
                 'booking_opens_at' => $data['booking_opens_at'] ?? null,
-                'booking_closes_at' => $data['booking_closes_at'] ?? null,
+                'booking_closes_at' => $bookingClosesAt,
                 'field_name' => $data['field_name'] ?? null,
                 'venue_name' => $data['venue_name'] ?? null,
                 'is_published' => false,
