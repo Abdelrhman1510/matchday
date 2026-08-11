@@ -405,7 +405,9 @@ class AuthService
      *
      * @param string $googleToken
      * @return array
-     * @throws ValidationExce    public function loginWithGoogle(string $googleToken, ?string $role = null): array
+     * @throws ValidationException
+     */
+    public function loginWithGoogle(string $googleToken, ?string $role = null): array
     {
         try {
             // A Google ID token is a JWT (base64url segments + dots) and never contains
@@ -476,7 +478,7 @@ class AuthService
                         'role' => $role,
                         'is_active' => true,
                         'email_verified_at' => $googleUser['email_verified'] ? now() : null,
-                    ]);             ]);
+                    ]);
 
                     if ($role === 'fan') {
                         // Create fan profile
