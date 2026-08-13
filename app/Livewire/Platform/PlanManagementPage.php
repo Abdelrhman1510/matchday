@@ -68,16 +68,19 @@ class PlanManagementPage extends Component
 
         $this->isCreating = false;
         $this->editingPlanId = $plan->id;
-        $this->formName = $plan->name;
-        $this->formNameAr = $plan->name_ar;
+        // name_ar (and defensively name) are nullable columns; the form
+        // properties are non-nullable strings, so coalesce null to '' to avoid
+        // a TypeError (500) when editing a plan with no Arabic name.
+        $this->formName = $plan->name ?? '';
+        $this->formNameAr = $plan->name_ar ?? '';
         $this->formPrice = $plan->price;
         $this->formFeatures = is_array($plan->features) ? implode("\n", $plan->features) : '';
         $this->formFeaturesAr = is_array($plan->features_ar) ? implode("\n", $plan->features_ar) : '';
         $this->formMaxBookings = $plan->max_bookings;
-        $this->formIsActive = $plan->is_active;
-        $this->formHasAnalytics = $plan->has_analytics;
-        $this->formHasBranding = $plan->has_branding;
-        $this->formHasPrioritySupport = $plan->has_priority_support;
+        $this->formIsActive = (bool) $plan->is_active;
+        $this->formHasAnalytics = (bool) $plan->has_analytics;
+        $this->formHasBranding = (bool) $plan->has_branding;
+        $this->formHasPrioritySupport = (bool) $plan->has_priority_support;
 
         // New fields
         $this->formMaxBranches = $plan->max_branches;
@@ -85,9 +88,9 @@ class PlanManagementPage extends Component
         $this->formMaxBookingsPerMonth = $plan->max_bookings_per_month;
         $this->formMaxStaffMembers = $plan->max_staff_members;
         $this->formMaxOffers = $plan->max_offers;
-        $this->formHasChat = $plan->has_chat;
-        $this->formHasQrScanner = $plan->has_qr_scanner;
-        $this->formHasOccupancyTracking = $plan->has_occupancy_tracking;
+        $this->formHasChat = (bool) $plan->has_chat;
+        $this->formHasQrScanner = (bool) $plan->has_qr_scanner;
+        $this->formHasOccupancyTracking = (bool) $plan->has_occupancy_tracking;
         $this->formCommissionRate = $plan->commission_rate;
 
         $this->showModal = true;

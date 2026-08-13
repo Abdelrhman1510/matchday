@@ -4,7 +4,9 @@ namespace Tests\Feature\Platform;
 
 use App\Livewire\Platform\CafeDetailPage;
 use App\Livewire\Platform\MatchesPage;
+use App\Livewire\Platform\PlanManagementPage;
 use App\Models\Branch;
+use App\Models\SubscriptionPlan;
 use App\Models\Cafe;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -52,5 +54,19 @@ class PlatformActionsTest extends TestCase
         $this->assertTrue($component->showAll);
         $component->toggleShowAll();
         $this->assertFalse($component->showAll);
+    }
+
+    /** @test */
+    public function editing_a_plan_with_a_null_arabic_name_opens_without_error()
+    {
+        // Regression: name_ar is nullable but $formNameAr is a non-nullable
+        // string property, so editing such a plan threw a TypeError (500).
+        $plan = SubscriptionPlan::factory()->create(['name_ar' => null]);
+
+        Livewire::test(PlanManagementPage::class)
+            ->call('openEditModal', $plan->id)
+            ->assertSet('showModal', true)
+            ->assertSet('formNameAr', '')
+            ->assertOk();
     }
 }
