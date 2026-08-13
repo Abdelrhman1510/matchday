@@ -582,34 +582,6 @@
         </div>
     </div>
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script>
-    (function () {
-        // Listen for download events from Livewire
-        window.addEventListener('download-pdf', event => {
-            const element = document.createElement('div');
-            element.innerHTML = event.detail.html;
-            const opt = {
-                margin: 10,
-                filename: event.detail.filename,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
-        });
-
-        window.addEventListener('download-csv', event => {
-            const blob = new Blob([event.detail.csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', event.detail.filename);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-    })();
-</script>
+{{-- PDF and CSV exports are now generated server-side and returned as Livewire
+     download responses (see CafeDetailPage::exportToPDF/exportToCSV), so the
+     html2pdf CDN script and browser-event listeners are no longer needed. --}}

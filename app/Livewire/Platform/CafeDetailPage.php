@@ -9,6 +9,7 @@ use App\Models\Payment;
 use App\Models\GameMatch;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Lazy;
@@ -69,14 +70,22 @@ class CafeDetailPage extends Component
             ->whereBetween('created_at', [Carbon::now()->startOfMonth(), Carbon::now()])
             ->get();
 
-        $html = view('exports.cafe-analytics-pdf', [
+        // Render the PDF server-side with dompdf and return it as a Livewire
+        // download response. The previous client-side html2pdf approach relied
+        // on a CDN script and rendered a detached DOM node that html2canvas
+        // couldn't measure, so the button did nothing.
+        $pdf = Pdf::loadView('exports.cafe-analytics-pdf', [
             'cafe' => $this->cafe,
             'performanceStats' => $performanceStats,
             'bookings' => $bookings,
-            'generatedAt' => Carbon::now()->format('F d, Y H:i')
-        ])->render();
+            'generatedAt' => Carbon::now()->format('F d, Y H:i'),
+        ]);
 
-        $this->dispatch('download-pdf', html: $html, filename: 'cafe-analytics-' . $this->cafe->id . '.pdf');
+        $filename = 'cafe-analytics-' . $this->cafe->id . '.pdf';
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, $filename, ['Content-Type' => 'application/pdf']);
     }
 
     public function exportToCSV()
@@ -103,18 +112,17 @@ class CafeDetailPage extends Component
             );
         }
 
-        $this->dispatch('download-csv', csv: $csv, filename: 'cafe-bookings-' . $this->cafe->id . '.csv');
+        $filename = 'cafe-bookings-' . $this->cafe->id . '.csv';
+
+        return response()->streamDownload(function () use ($csv) {
+            echo $csv;
+        }, $filename, ['Content-Type' => 'text/csv']);
     }
 
     public function exportBulk($format = 'pdf')
     {
-        if ($format === 'pdf') {
-            $this->exportToPDF();
-        } else {
-            $this->exportToCSV();
-        }
-
-        session()->flash('message', __('platform.flash.export_completed', ['format' => $format]));
+        // Return the download response so Livewire actually triggers the file.
+        return $format === 'pdf' ? $this->exportToPDF() : $this->exportToCSV();
     }
 
     private function getPerformanceStats()

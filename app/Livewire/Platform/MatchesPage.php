@@ -13,7 +13,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Lazy;
 
 #[Lazy]
-#[Layout('layouts.platform', ['title' => 'Matches Intelligence'])]
+#[Layout('layouts.platform', ['title' => 'Matches'])]
 class MatchesPage extends Component
 {
     public function placeholder()
@@ -22,6 +22,8 @@ class MatchesPage extends Component
     }
 
     public $period = 30; // days
+    // "View All" toggles the Most Watched list between the top 3 and the full set.
+    public $showAll = false;
 
     public function updatedPeriod()
     {
@@ -92,7 +94,7 @@ class MatchesPage extends Component
                 }
             ])
             ->orderByDesc('total_bookings')
-            ->limit(3)
+            ->limit($this->showAll ? 24 : 3)
             ->get()
             ->map(function ($match) {
                 $totalSeats = $match->branch->total_seats ?? 1;
