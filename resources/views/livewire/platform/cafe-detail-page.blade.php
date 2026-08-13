@@ -27,8 +27,10 @@
                 style="background-image: url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&auto=format&fit=crop&q=80');">
             </div>
             <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-[#0e0735]/90"></div>
-            <!-- Back button -->
-            <a href="{{ url()->previous() }}"
+            <!-- Back button: always returns to the Cafes list. Using a fixed
+                 route instead of url()->previous(), which re-resolves to this
+                 page itself after any Livewire update and just reloads it. -->
+            <a href="{{ route('platform.cafes') }}"
                 class="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-black/40 backdrop-blur-sm text-white text-xs font-semibold rounded-lg border border-white/20 hover:bg-black/60 transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
