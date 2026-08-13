@@ -114,7 +114,7 @@
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-xl font-black font-bungee text-white uppercase tracking-wider"
                 style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">{{ __('platform.matches.most_watched') }}</h2>
-            <button type="button" wire:click="$toggle('showAll')" class="text-[#c8ff00] text-sm font-bold hover:underline flex items-center gap-1">
+            <button type="button" wire:click="toggleShowAll" class="text-[#c8ff00] text-sm font-bold hover:underline flex items-center gap-1">
                 {{ $showAll ? __('platform.common.show_less') : __('platform.matches.view_all') }}
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3">

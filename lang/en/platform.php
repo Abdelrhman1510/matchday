@@ -152,7 +152,7 @@ return [
 
     // ── Matches ───────────────────────────────────────────────────────────────
     'matches' => [
-        'title' => 'Matches',
+        'title' => 'Matches Management',
         'subtitle' => 'Real-time insights • Match performance • Booking patterns',
         'last_30_days' => 'Last 30 Days',
         'last_60_days' => 'Last 60 Days',

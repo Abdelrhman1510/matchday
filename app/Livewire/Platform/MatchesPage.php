@@ -13,7 +13,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Lazy;
 
 #[Lazy]
-#[Layout('layouts.platform', ['title' => 'Matches'])]
+#[Layout('layouts.platform', ['title' => 'Matches Management'])]
 class MatchesPage extends Component
 {
     public function placeholder()
@@ -29,6 +29,14 @@ class MatchesPage extends Component
     {
         // Dispatch browser event to update charts
         $this->dispatch('period-updated');
+    }
+
+    // Toggles the Most Watched list between the top 3 and the full set. A real
+    // method rather than the $toggle magic action, which this Livewire version
+    // does not provide (only $refresh/$set/$sync/$commit) — calling it 500s.
+    public function toggleShowAll()
+    {
+        $this->showAll = ! $this->showAll;
     }
 
     private function getStats()
