@@ -75,7 +75,7 @@
         <div class="max-w-5xl mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <a href="/" class="flex items-center gap-3">
-                    <img src="{{ asset('images/tab3_icon.png') }}" alt="Shaja3" class="w-9 h-9 rounded-lg object-cover">
+                    <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaja3" class="w-9 h-9 rounded-lg object-cover">
                     <span class="text-2xl font-bungee text-white tracking-wide">Shaja3</span>
                 </a>
                 <a href="#" class="hidden sm:inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
@@ -345,7 +345,7 @@
         <div class="max-w-5xl mx-auto px-6 py-8">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="flex items-center gap-2">
-                    <img src="{{ asset('images/tab3_icon.png') }}" alt="Shaja3" class="w-7 h-7 rounded object-cover">
+                    <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaja3" class="w-7 h-7 rounded object-cover">
                     <span class="font-bungee text-white">Shaja3</span>
                 </div>
                 <p class="text-sm text-slate-500">&copy; {{ date('Y') }} Shaja3. All rights reserved.</p>

@@ -107,7 +107,7 @@
             <div class="p-6 border-b border-custom">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
-                        <img src="{{ asset('images/logo - tab3 - png -03.png') }}" alt="Shaja3"
+                        <img src="{{ asset('images/shaja3_logo.png') }}" alt="Shaja3"
                             class="h-20 w-auto max-w-[190px] object-contain" />
                     </div>
                     <!-- Close sidebar button -->

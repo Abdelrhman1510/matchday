@@ -58,7 +58,7 @@
                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td style="vertical-align:middle;">
-                                        <img src="{{ asset('images/tab3_icon.png') }}" alt="Shaja3" width="48" height="48" style="display:block; width:48px; height:48px; border-radius:10px; border:0; outline:none; text-decoration:none;">
+                                        <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaja3" width="48" height="48" style="display:block; width:48px; height:48px; border-radius:10px; border:0; outline:none; text-decoration:none;">
                                     </td>
                                     <td style="padding-left:14px; font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:26px; font-weight:800; color:#ffffff; letter-spacing:-0.5px; vertical-align:middle;">
                                         Shaja3
