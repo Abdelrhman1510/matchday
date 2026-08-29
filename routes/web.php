@@ -25,18 +25,12 @@ use App\Livewire\Platform\SettingsPage;
 |
 */
 
-Route::get('/', function () {
-    return response()->json([
-        'success' => true,
-        'message' => 'Matchday API is running',
-        'data' => [
-            'api_version' => config('app.api_version', 'v1'),
-            'api_base_url' => url('/api/v1'),
-            'health_check' => url('/up'),
-        ],
-        'meta' => (object) [],
-    ]);
-});
+Route::get('/', [PublicPageController::class, 'landing'])->name('public.landing');
+
+// Contact Us
+Route::get('/contact', [PublicPageController::class, 'contact'])->name('public.contact');
+Route::post('/contact', [PublicPageController::class, 'submitContact'])
+    ->middleware('throttle:6,1')->name('public.contact.submit');
 
 // WebSocket tester (development only)
 Route::get('/ws-test', function () {
