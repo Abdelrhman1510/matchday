@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $page->title }} - TAB3</title>
-    <meta name="description" content="{{ $page->title }} - TAB3 App">
+    <title>{{ $page->title }} - Shaja3</title>
+    <meta name="description" content="{{ $page->title }} - Shaja3 App">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -102,8 +102,8 @@
             <div class="flex items-center justify-between">
                 <!-- Logo -->
                 <a href="/" class="flex items-center gap-3">
-                    <img src="{{ asset('images/tab3_icon.png') }}" alt="TAB3" class="w-9 h-9 rounded-lg object-cover">
-                    <span class="text-2xl font-bungee text-white tracking-wide">TAB3</span>
+                    <img src="{{ asset('images/tab3_icon.png') }}" alt="Shaja3" class="w-9 h-9 rounded-lg object-cover">
+                    <span class="text-2xl font-bungee text-white tracking-wide">Shaja3</span>
                 </a>
 
                 <!-- Back to app nudge -->
@@ -132,7 +132,7 @@
             <h1 class="text-3xl md:text-4xl font-bold text-white">{{ $page->title }}</h1>
             <div class="mt-2 flex items-center gap-2">
                 <span class="inline-block w-8 h-0.5 bg-brand-accent rounded"></span>
-                <span class="text-sm text-slate-500">TAB3 App</span>
+                <span class="text-sm text-slate-500">Shaja3 App</span>
             </div>
         </div>
     </div>
@@ -193,10 +193,10 @@
         <div class="max-w-4xl mx-auto px-6 py-8">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="flex items-center gap-2">
-                    <img src="{{ asset('images/tab3_icon.png') }}" alt="TAB3" class="w-7 h-7 rounded object-cover">
-                    <span class="font-bungee text-white">TAB3</span>
+                    <img src="{{ asset('images/tab3_icon.png') }}" alt="Shaja3" class="w-7 h-7 rounded object-cover">
+                    <span class="font-bungee text-white">Shaja3</span>
                 </div>
-                <p class="text-sm text-slate-500">&copy; {{ date('Y') }} TAB3. All rights reserved.</p>
+                <p class="text-sm text-slate-500">&copy; {{ date('Y') }} Shaja3. All rights reserved.</p>
                 <div class="flex items-center gap-4 text-sm text-slate-500">
                     <a href="{{ route('public.privacy-policy') }}" class="hover:text-white transition-colors">Privacy</a>
                     <a href="{{ route('public.pages', 'terms-and-conditions') }}" class="hover:text-white transition-colors">Terms</a>

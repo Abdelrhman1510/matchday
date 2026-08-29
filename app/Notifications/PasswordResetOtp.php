@@ -51,7 +51,7 @@ class PasswordResetOtp extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Reset your password — tab3')
+            ->subject('Reset your password — Shaja3')
             ->view('emails.auth.reset-otp', [
                 'userName' => $this->userName,
                 'otp' => $this->otp,

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>How to Delete Your Account - TAB3</title>
-    <meta name="description" content="Step-by-step guide to delete your TAB3 account permanently.">
+    <title>How to Delete Your Account - Shaja3</title>
+    <meta name="description" content="Step-by-step guide to delete your Shaja3 account permanently.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -75,8 +75,8 @@
         <div class="max-w-5xl mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <a href="/" class="flex items-center gap-3">
-                    <img src="{{ asset('images/tab3_icon.png') }}" alt="TAB3" class="w-9 h-9 rounded-lg object-cover">
-                    <span class="text-2xl font-bungee text-white tracking-wide">TAB3</span>
+                    <img src="{{ asset('images/tab3_icon.png') }}" alt="Shaja3" class="w-9 h-9 rounded-lg object-cover">
+                    <span class="text-2xl font-bungee text-white tracking-wide">Shaja3</span>
                 </a>
                 <a href="#" class="hidden sm:inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,10 +106,10 @@
             <h1 class="text-3xl md:text-4xl font-bold text-white">How to Delete Your Account</h1>
             <div class="mt-2 flex items-center gap-2 mb-6">
                 <span class="inline-block w-8 h-0.5 bg-brand-accent rounded"></span>
-                <span class="text-sm text-slate-500">TAB3 App · 3 simple steps</span>
+                <span class="text-sm text-slate-500">Shaja3 App · 3 simple steps</span>
             </div>
             <p class="text-slate-400 max-w-2xl leading-relaxed">
-                You can permanently delete your TAB3 account directly from the app at any time.
+                You can permanently delete your Shaja3 account directly from the app at any time.
                 Follow the steps below to remove your account and all associated data.
             </p>
         </div>
@@ -128,7 +128,7 @@
             <div>
                 <p class="font-semibold text-red-400 mb-1">This action is permanent and cannot be undone</p>
                 <p class="text-sm text-slate-400 leading-relaxed">
-                    Deleting your account will permanently remove your profile, booking history, loyalty points, and all personal data from TAB3.
+                    Deleting your account will permanently remove your profile, booking history, loyalty points, and all personal data from Shaja3.
                     If you are a café owner with active bookings, your account cannot be deleted until all bookings are completed or cancelled.
                 </p>
             </div>
@@ -345,10 +345,10 @@
         <div class="max-w-5xl mx-auto px-6 py-8">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="flex items-center gap-2">
-                    <img src="{{ asset('images/tab3_icon.png') }}" alt="TAB3" class="w-7 h-7 rounded object-cover">
-                    <span class="font-bungee text-white">TAB3</span>
+                    <img src="{{ asset('images/tab3_icon.png') }}" alt="Shaja3" class="w-7 h-7 rounded object-cover">
+                    <span class="font-bungee text-white">Shaja3</span>
                 </div>
-                <p class="text-sm text-slate-500">&copy; {{ date('Y') }} TAB3. All rights reserved.</p>
+                <p class="text-sm text-slate-500">&copy; {{ date('Y') }} Shaja3. All rights reserved.</p>
                 <div class="flex items-center gap-4 text-sm text-slate-500">
                     <a href="{{ route('public.privacy-policy') }}" class="hover:text-white transition-colors">Privacy</a>
                     <a href="{{ route('public.pages', 'terms-and-conditions') }}" class="hover:text-white transition-colors">Terms</a>
