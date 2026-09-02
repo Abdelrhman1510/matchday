@@ -49,7 +49,7 @@ class PublicPageController extends Controller
             'message' => ['required', 'string', 'max:3000'],
         ]);
 
-        $to = config('mail.from.address');
+        $to = 'support@shaj3.sa';
         $body = "Name: {$data['name']}\nEmail: {$data['email']}\nSubject: "
             . ($data['subject'] ?: '(none)') . "\n\n{$data['message']}";
 
