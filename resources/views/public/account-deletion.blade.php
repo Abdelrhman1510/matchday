@@ -329,12 +329,12 @@
         <!-- Need help? -->
         <div class="text-center py-4">
             <p class="text-slate-500 text-sm mb-2">Need help or having trouble deleting your account?</p>
-            <a href="mailto:support@tab3.app" class="inline-flex items-center gap-2 text-brand-accent hover:text-white transition-colors font-medium text-sm">
+            <a href="mailto:support@shaj3.sa" class="inline-flex items-center gap-2 text-brand-accent hover:text-white transition-colors font-medium text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                 </svg>
-                Contact us at support@tab3.app
+                Contact us at support@shaj3.sa
             </a>
         </div>
 
