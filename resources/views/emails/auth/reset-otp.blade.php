@@ -5,8 +5,8 @@
 @endphp
 
 <x-emails.layout
-    title="Reset your password — Shaja3"
-    preheader="Your Shaja3 password reset code is {{ $otp }}. Valid for {{ $expiresInMinutes }} minutes."
+    title="Reset your password — Shaj3"
+    preheader="Your Shaj3 password reset code is {{ $otp }}. Valid for {{ $expiresInMinutes }} minutes."
 >
 
     <h1 class="h1" style="margin:0 0 16px 0; font-size:28px; line-height:34px; font-weight:800; color:#0c0628; letter-spacing:-0.5px;">
@@ -18,7 +18,7 @@
     </p>
 
     <p style="margin:0 0 32px 0; font-size:16px; line-height:24px; color:#4a4663;">
-        We received a request to reset the password for your Shaja3 account. Use the code below in the app to set a new password.
+        We received a request to reset the password for your Shaj3 account. Use the code below in the app to set a new password.
     </p>
 
     {{-- OTP box --}}
@@ -52,7 +52,7 @@
 
     <p style="margin:32px 0 0 0; font-size:15px; line-height:22px; color:#4a4663;">
         Stay safe,<br>
-        <strong style="color:#0c0628;">The Shaja3 Security Team</strong>
+        <strong style="color:#0c0628;">The Shaj3 Security Team</strong>
     </p>
 
 </x-emails.layout>

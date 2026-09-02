@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shaja3 — Book your seat, feel the match</title>
-    <meta name="description" content="Shaja3 lets fans reserve seats at cafés to watch live football matches together — pick your match, choose your seat, and enjoy the game.">
+    <title>Shaj3 — Book your seat, feel the match</title>
+    <meta name="description" content="Shaj3 lets fans reserve seats at cafés to watch live football matches together — pick your match, choose your seat, and enjoy the game.">
     <link rel="icon" href="{{ asset('images/shaja3_icon.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,8 +42,8 @@
     <header class="sticky top-0 z-30 backdrop-blur-md bg-brand-main/70 border-b border-brand-border/60">
         <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
             <a href="{{ url('/') }}" class="flex items-center gap-3">
-                <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaja3" class="w-9 h-9 rounded-lg object-cover">
-                <span class="font-bungee text-white text-lg tracking-wide">Shaja3</span>
+                <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaj3" class="w-9 h-9 rounded-lg object-cover">
+                <span class="font-bungee text-white text-lg tracking-wide">Shaj3</span>
             </a>
             <nav class="flex items-center gap-6 text-sm font-semibold text-slate-300">
                 <a href="#features" class="hidden sm:inline hover:text-white transition-colors">Features</a>
@@ -57,7 +57,7 @@
         <!-- Hero -->
         <section class="glow relative overflow-hidden">
             <div class="relative z-10 max-w-3xl mx-auto px-6 text-center pt-20 pb-16 sm:pt-28 sm:pb-24">
-                <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaja3" class="w-20 h-20 mx-auto rounded-2xl object-cover ring-1 ring-brand-border shadow-2xl">
+                <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaj3" class="w-20 h-20 mx-auto rounded-2xl object-cover ring-1 ring-brand-border shadow-2xl">
                 <span class="inline-block mt-8 px-3 py-1 rounded-full border border-brand-border text-brand-accent text-xs font-bold uppercase tracking-widest">Watch football, together</span>
                 <h1 class="font-bungee text-4xl sm:text-6xl text-white leading-[1.05] mt-6">Book your seat.<br><span class="text-brand-accent">Feel the match.</span></h1>
                 <p class="max-w-xl mx-auto mt-6 text-lg text-slate-400">Reserve a spot at your favourite café to watch live matches on the big screen. Pick the game, choose your seat, and show up ready to cheer.</p>

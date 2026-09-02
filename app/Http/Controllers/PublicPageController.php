@@ -57,7 +57,7 @@ class PublicPageController extends Controller
             Mail::raw($body, function ($m) use ($to, $data) {
                 $m->to($to)
                     ->replyTo($data['email'], $data['name'])
-                    ->subject('Shaja3 contact: ' . ($data['subject'] ?: 'New message'));
+                    ->subject('Shaj3 contact: ' . ($data['subject'] ?: 'New message'));
             });
         } catch (\Throwable $e) {
             \Log::warning('Contact form send failed: ' . $e->getMessage());

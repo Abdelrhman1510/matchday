@@ -1,5 +1,5 @@
 @props([
-    'title' => 'Shaja3',
+    'title' => 'Shaj3',
     'preheader' => '',
 ])
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -58,10 +58,10 @@
                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td style="vertical-align:middle;">
-                                        <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaja3" width="48" height="48" style="display:block; width:48px; height:48px; border-radius:10px; border:0; outline:none; text-decoration:none;">
+                                        <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaj3" width="48" height="48" style="display:block; width:48px; height:48px; border-radius:10px; border:0; outline:none; text-decoration:none;">
                                     </td>
                                     <td style="padding-left:14px; font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:26px; font-weight:800; color:#ffffff; letter-spacing:-0.5px; vertical-align:middle;">
-                                        Shaja3
+                                        Shaj3
                                     </td>
                                 </tr>
                             </table>
@@ -85,13 +85,13 @@
                     <tr>
                         <td align="center" style="padding:32px 24px 0 24px; font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;">
                             <p style="margin:0 0 8px 0; font-size:13px; color:#8b87a3; line-height:20px;">
-                                You are receiving this email because an account was created or a security action was requested on Shaja3.
+                                You are receiving this email because an account was created or a security action was requested on Shaj3.
                             </p>
                             <p style="margin:0 0 16px 0; font-size:13px; color:#8b87a3; line-height:20px;">
                                 If you didn't expect this email, you can safely ignore it.
                             </p>
                             <p style="margin:0; font-size:12px; color:#5a5670;">
-                                © {{ date('Y') }} Shaja3. All rights reserved.
+                                © {{ date('Y') }} Shaj3. All rights reserved.
                             </p>
                         </td>
                     </tr>

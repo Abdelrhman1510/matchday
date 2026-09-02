@@ -26,7 +26,7 @@
                 <!-- Header -->
                 <div class="text-center mb-8">
                     <div class="inline-flex items-center justify-center">
-                        <img src="{{ asset('images/shaja3_logo.png') }}" alt="Shaja3" class="h-56 w-auto max-w-[340px] object-contain">
+                        <img src="{{ asset('images/shaja3_logo.png') }}" alt="Shaj3" class="h-56 w-auto max-w-[340px] object-contain">
                     </div>
                 </div>
 

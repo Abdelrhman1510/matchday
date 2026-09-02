@@ -51,7 +51,7 @@ class EmailVerificationOtp extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Verify your email — Shaja3')
+            ->subject('Verify your email — Shaj3')
             ->view('emails.auth.verify-otp', [
                 'userName' => $this->userName,
                 'otp' => $this->otp,

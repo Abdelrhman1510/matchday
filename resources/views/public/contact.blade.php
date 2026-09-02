@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Us — Shaja3</title>
-    <meta name="description" content="Get in touch with the Shaja3 team.">
+    <title>Contact Us — Shaj3</title>
+    <meta name="description" content="Get in touch with the Shaj3 team.">
     <link rel="icon" href="{{ asset('images/shaja3_icon.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,8 +40,8 @@
     <header class="sticky top-0 z-30 backdrop-blur-md bg-brand-main/70 border-b border-brand-border/60">
         <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
             <a href="{{ url('/') }}" class="flex items-center gap-3">
-                <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaja3" class="w-9 h-9 rounded-lg object-cover">
-                <span class="font-bungee text-white text-lg tracking-wide">Shaja3</span>
+                <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaj3" class="w-9 h-9 rounded-lg object-cover">
+                <span class="font-bungee text-white text-lg tracking-wide">Shaj3</span>
             </a>
             <a href="{{ url('/') }}" class="text-sm font-semibold text-slate-300 hover:text-white transition-colors">← Home</a>
         </div>

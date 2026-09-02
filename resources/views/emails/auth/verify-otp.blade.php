@@ -5,8 +5,8 @@
 @endphp
 
 <x-emails.layout
-    title="Verify your email — Shaja3"
-    preheader="Your Shaja3 verification code is {{ $otp }}. Valid for {{ $expiresInMinutes }} minutes."
+    title="Verify your email — Shaj3"
+    preheader="Your Shaj3 verification code is {{ $otp }}. Valid for {{ $expiresInMinutes }} minutes."
 >
 
     <h1 class="h1" style="margin:0 0 16px 0; font-size:28px; line-height:34px; font-weight:800; color:#0c0628; letter-spacing:-0.5px;">
@@ -14,7 +14,7 @@
     </h1>
 
     <p style="margin:0 0 24px 0; font-size:16px; line-height:24px; color:#4a4663;">
-        Hi {{ $userName }}, welcome to Shaja3! 👋
+        Hi {{ $userName }}, welcome to Shaj3! 👋
     </p>
 
     <p style="margin:0 0 32px 0; font-size:16px; line-height:24px; color:#4a4663;">
@@ -36,18 +36,18 @@
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#f5f3ff; border-left:4px solid #c8ff00; border-radius:8px; margin:0 0 32px 0;">
         <tr>
             <td style="padding:16px 20px; font-size:14px; line-height:20px; color:#4a4663;">
-                ⏱ This code expires in <strong style="color:#0c0628;">{{ $expiresInMinutes }} minutes</strong>. Don't share it with anyone — Shaja3 staff will never ask you for it.
+                ⏱ This code expires in <strong style="color:#0c0628;">{{ $expiresInMinutes }} minutes</strong>. Don't share it with anyone — Shaj3 staff will never ask you for it.
             </td>
         </tr>
     </table>
 
     <p style="margin:0 0 8px 0; font-size:14px; line-height:22px; color:#4a4663;">
-        Didn't sign up for Shaja3? You can safely ignore this email — no account will be created without verification.
+        Didn't sign up for Shaj3? You can safely ignore this email — no account will be created without verification.
     </p>
 
     <p style="margin:32px 0 0 0; font-size:15px; line-height:22px; color:#4a4663;">
         See you on the pitch,<br>
-        <strong style="color:#0c0628;">The Shaja3 Team</strong>
+        <strong style="color:#0c0628;">The Shaj3 Team</strong>
     </p>
 
 </x-emails.layout>
