@@ -46,32 +46,75 @@ class SubscriptionService
     }
 
     /**
-     * Upgrade or change subscription plan
+     * Upgrade or change subscription plan.
+     *
+     * The plan price is recomputed here (never trusted from the client) and the
+     * stored card token is actually charged via the gateway. The subscription is
+     * only changed once the charge succeeds.
      */
     public function upgradePlan(Cafe $cafe, int $planId, int $paymentMethodId): array
     {
-        return DB::transaction(function () use ($cafe, $planId, $paymentMethodId) {
-            $plan = SubscriptionPlan::findOrFail($planId);
-            $paymentMethod = null;
-            
-            if ($paymentMethodId) {
-                $paymentMethod = PaymentMethod::where('id', $paymentMethodId)
-                    ->where('user_id', $cafe->owner_id)
-                    ->first();
+        $plan = SubscriptionPlan::findOrFail($planId);
 
-                if (!$paymentMethod) {
-                    throw new \Exception('Payment method not found or does not belong to this user');
-                }
+        $paymentMethod = null;
+        if ($paymentMethodId) {
+            $paymentMethod = PaymentMethod::where('id', $paymentMethodId)
+                ->where('user_id', $cafe->owner_id)
+                ->first();
+            if (!$paymentMethod) {
+                throw new \Exception('Payment method not found or does not belong to this user');
+            }
+        }
+
+        $amount = (float) $plan->price; // server-side amount
+        $requiresCharge = $amount > 0;
+
+        if ($requiresCharge && !$paymentMethod) {
+            throw new \Exception('A payment method is required for this plan.');
+        }
+
+        // Record the attempt, then charge outside the DB transaction so a failed
+        // attempt leaves an auditable record instead of rolling away.
+        $payment = Payment::create([
+            'user_id' => $cafe->owner_id,
+            'payment_method_id' => $paymentMethodId ?: null,
+            'amount' => $amount,
+            'currency' => $plan->currency,
+            'status' => 'pending',
+            'type' => 'subscription',
+            'description' => "Subscription payment for {$plan->name} plan",
+        ]);
+
+        if ($requiresCharge) {
+            $result = app(\App\Contracts\PaymentGatewayInterface::class)->charge($payment, $paymentMethod);
+
+            if (!($result['success'] ?? false)) {
+                // 3DS on a stored token is rare; the app has no webview here, so we
+                // record it pending and surface a clear message rather than upgrade.
+                $payment->update([
+                    'status' => !empty($result['requires_action']) ? 'pending' : 'failed',
+                    'gateway_ref' => $result['gateway_ref'] ?? null,
+                    'description' => $result['message'] ?? 'Payment failed',
+                ]);
+                throw new \Exception($result['message'] ?? 'Payment failed. Please try another card.');
             }
 
-            // Find existing active subscription
+            $payment->update([
+                'status' => 'paid',
+                'gateway_ref' => $result['gateway_ref'] ?? null,
+                'paid_at' => now(),
+            ]);
+        } else {
+            $payment->update(['status' => 'paid', 'paid_at' => now()]);
+        }
+
+        return DB::transaction(function () use ($cafe, $plan, $paymentMethodId, $payment) {
             $existingSubscription = $cafe->subscriptions()
                 ->where('status', 'active')
                 ->where('expires_at', '>', now())
                 ->first();
 
             if ($existingSubscription) {
-                // Update existing subscription with new plan
                 $existingSubscription->update([
                     'plan_id' => $plan->id,
                     'starts_at' => now(),
@@ -79,10 +122,8 @@ class SubscriptionService
                     'payment_method_id' => $paymentMethodId ?: $existingSubscription->payment_method_id,
                     'auto_renew' => true,
                 ]);
-
                 $subscription = $existingSubscription;
             } else {
-                // Create new subscription
                 $subscription = CafeSubscription::create([
                     'cafe_id' => $cafe->id,
                     'plan_id' => $plan->id,
@@ -94,30 +135,16 @@ class SubscriptionService
                 ]);
             }
 
-            // Create payment record
-            $payment = Payment::create([
-                'user_id' => $cafe->owner_id,
-                'payment_method_id' => $paymentMethodId ?: null,
-                'amount' => $plan->price,
-                'currency' => $plan->currency,
-                'status' => 'paid',
-                'type' => 'subscription',
-                'description' => "Subscription payment for {$plan->name} plan",
-                'gateway_ref' => 'SUB_' . strtoupper(uniqid()),
-                'paid_at' => now(),
-            ]);
+            if (!$payment->subscription_id) {
+                $payment->update(['subscription_id' => $subscription->id]);
+            }
 
-            // Update cafe subscription plan
-            $cafe->update([
-                'subscription_plan' => $plan->slug,
-            ]);
-
-            // Clear cache
+            $cafe->update(['subscription_plan' => $plan->slug]);
             Cache::forget("cafe_subscription_{$cafe->id}");
 
             return [
                 'subscription' => $this->formatSubscriptionData($subscription->load(['plan', 'paymentMethod'])),
-                'payment' => $payment,
+                'payment' => $payment->fresh(),
             ];
         });
     }
@@ -183,47 +210,46 @@ class SubscriptionService
             return false;
         }
 
-        return DB::transaction(function () use ($subscription) {
-            try {
-                $plan = $subscription->plan;
-                $cafe = $subscription->cafe;
+        $plan = $subscription->plan;
+        $cafe = $subscription->cafe;
 
-                // Create payment record
-                $payment = Payment::create([
-                    'user_id' => $cafe->owner_id,
-                    'payment_method_id' => $subscription->payment_method_id,
-                    'amount' => $plan->price,
-                    'currency' => $plan->currency,
-                    'status' => 'paid',
-                    'type' => 'subscription',
-                    'description' => "Automatic renewal for {$plan->name} plan",
-                    'gateway_ref' => 'RENEWAL_' . strtoupper(uniqid()),
-                    'paid_at' => now(),
-                ]);
+        $payment = Payment::create([
+            'user_id' => $cafe->owner_id,
+            'subscription_id' => $subscription->id,
+            'payment_method_id' => $subscription->payment_method_id,
+            'amount' => $plan->price,
+            'currency' => $plan->currency,
+            'status' => 'pending',
+            'type' => 'subscription',
+            'description' => "Automatic renewal for {$plan->name} plan",
+        ]);
 
-                // Extend subscription
-                $subscription->update([
-                    'expires_at' => $subscription->expires_at->addMonth(),
-                ]);
+        $result = app(\App\Contracts\PaymentGatewayInterface::class)->charge($payment, $subscription->paymentMethod);
 
-                Cache::forget("cafe_subscription_{$cafe->id}");
+        if ($result['success'] ?? false) {
+            $payment->update(['status' => 'paid', 'gateway_ref' => $result['gateway_ref'] ?? null, 'paid_at' => now()]);
+            $subscription->update(['expires_at' => $subscription->expires_at->addMonth()]);
+            Cache::forget("cafe_subscription_{$cafe->id}");
+            return true;
+        }
 
-                return true;
-            } catch (\Exception $e) {
-                Log::error('Subscription renewal failed', [
-                    'subscription_id' => $subscription->id,
-                    'error' => $e->getMessage(),
-                ]);
+        // 3DS: no app is in the loop for a server-scheduled renewal, so it can't be
+        // completed here. Flag the subscription past_due (keeps it from silently
+        // lapsing) and prompt the customer to re-confirm in-app — do NOT expire it.
+        if (!empty($result['requires_action'])) {
+            $payment->update(['status' => 'pending', 'gateway_ref' => $result['gateway_ref'] ?? null, 'description' => 'Renewal needs card re-confirmation (3DS)']);
+            $subscription->update(['status' => 'past_due']);
+            Cache::forget("cafe_subscription_{$cafe->id}");
+            Log::warning('Subscription renewal needs 3DS re-confirmation', ['subscription_id' => $subscription->id]);
+            // ponytail: notify the owner to re-confirm in-app once a notification channel exists.
+            return false;
+        }
 
-                // Mark subscription as expired if payment fails
-                $subscription->update([
-                    'status' => 'expired',
-                    'auto_renew' => false,
-                ]);
-
-                return false;
-            }
-        });
+        // Hard decline — record it and stop auto-renew.
+        $payment->update(['status' => 'failed', 'gateway_ref' => $result['gateway_ref'] ?? null, 'description' => $result['message'] ?? 'Renewal declined']);
+        Log::error('Subscription renewal failed', ['subscription_id' => $subscription->id, 'message' => $result['message'] ?? null]);
+        $subscription->update(['status' => 'expired', 'auto_renew' => false]);
+        return false;
     }
 
     /**

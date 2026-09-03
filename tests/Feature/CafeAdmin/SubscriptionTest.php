@@ -91,10 +91,14 @@ class SubscriptionTest extends TestCase
             'status' => 'active',
         ]);
         
+        // A paid upgrade now really charges a stored card (simulated gateway in tests).
+        $card = \App\Models\PaymentMethod::factory()->create(['user_id' => $owner->id]);
+
         Sanctum::actingAs($owner);
 
         $response = $this->postJson("/api/v1/admin/cafes/{$cafe->id}/subscription/upgrade", [
             'plan_id' => $proPlan->id,
+            'payment_method_id' => $card->id,
         ]);
 
         $response->assertStatus(200)

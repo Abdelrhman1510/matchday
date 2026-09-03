@@ -65,10 +65,13 @@ class PaymentService
 
                 return $payment->fresh(['booking', 'paymentMethod']);
             } else {
-                // Payment failed
+                // 3DS: the app has no webview in this path, so record the charge as
+                // pending (the webhook reconciles it if the customer completes 3DS)
+                // and surface a clear message instead of a hard failure.
                 $payment->update([
-                    'status' => 'failed',
-                    'description' => $result['message'],
+                    'status' => !empty($result['requires_action']) ? 'pending' : 'failed',
+                    'gateway_ref' => $result['gateway_ref'] ?? $payment->gateway_ref,
+                    'description' => $result['message'] ?? $payment->description,
                 ]);
 
                 throw new \Exception($result['message'] ?? 'Payment processing failed');

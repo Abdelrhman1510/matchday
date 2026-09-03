@@ -27,6 +27,9 @@ use App\Livewire\Platform\SettingsPage;
 
 Route::get('/', [PublicPageController::class, 'landing'])->name('public.landing');
 
+// Moyasar 3DS return URL — the app watches for this host and closes the webview.
+Route::match(['get', 'post'], '/payments/callback', fn () => response('OK', 200))->name('payments.callback');
+
 // Contact Us
 Route::get('/contact', [PublicPageController::class, 'contact'])->name('public.contact');
 Route::post('/contact', [PublicPageController::class, 'submitContact'])

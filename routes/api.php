@@ -479,6 +479,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 // Subscription webhook (no auth)
 Route::post('/webhooks/subscription/payment-failed', [\App\Http\Controllers\SubscriptionController::class, 'handlePaymentFailed'])->name('webhooks.subscription.payment-failed');
+// Moyasar payment webhook (no auth; verified by shared secret in the body)
+Route::post('/webhooks/moyasar', [\App\Http\Controllers\MoyasarWebhookController::class, 'handle'])->name('webhooks.moyasar');
 
 // ===================================
 // CAFE OWNER MANAGEMENT
