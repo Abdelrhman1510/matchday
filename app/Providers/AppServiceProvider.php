@@ -28,9 +28,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Bind payment gateway interface to simulated implementation
-        // In production, replace SimulatedPaymentGateway with real gateway (e.g., StripeGateway, TapGateway)
-        $this->app->singleton(PaymentGatewayInterface::class, SimulatedPaymentGateway::class);
+        // Use the real Moyasar gateway when a secret key is configured; fall back
+        // to the simulated gateway locally / in tests without keys.
+        $this->app->singleton(PaymentGatewayInterface::class, function ($app) {
+            return config('services.moyasar.secret_key')
+                ? $app->make(\App\Services\Payment\MoyasarGateway::class)
+                : $app->make(SimulatedPaymentGateway::class);
+        });
     }
 
     /**

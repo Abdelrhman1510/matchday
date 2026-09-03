@@ -16,14 +16,17 @@ class PaymentMethod extends Model
         'user_id',
         'type',
         'card_last_four',
+        'card_brand',
         'card_holder',
         'expires_at',
         'is_primary',
         'provider_token',
+        'provider_payment_id',
     ];
 
     protected $hidden = [
         'provider_token',
+        'provider_payment_id',
     ];
 
     protected function casts(): array

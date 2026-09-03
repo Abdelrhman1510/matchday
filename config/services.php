@@ -70,4 +70,12 @@ return [
         'server_key' => env('FCM_SERVER_KEY'),
     ],
 
+    'moyasar' => [
+        // Secret key (sk_test_… / sk_live_…) — server only, never sent to the app.
+        'secret_key' => env('MOYASAR_SECRET_KEY'),
+        // Shared secret sent by Moyasar on webhook calls, for verification.
+        'webhook_secret' => env('MOYASAR_WEBHOOK_SECRET'),
+        'base_url' => env('MOYASAR_BASE_URL', 'https://api.moyasar.com/v1'),
+    ],
+
 ];

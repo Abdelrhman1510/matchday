@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\PaymentMethodException;
+use App\Http\Requests\StoreMoyasarPaymentMethodRequest;
 use App\Http\Requests\StorePaymentMethodRequest;
 use App\Http\Requests\UpdatePaymentMethodRequest;
 use App\Http\Resources\PaymentMethodResource;
@@ -56,6 +58,39 @@ class PaymentMethodController extends Controller
                 'message' => 'Failed to create payment method',
                 'data' => [],
                 'errors' => ['message' => $e->getMessage()],
+            ], 500);
+        }
+    }
+
+    /**
+     * Store a card verified via Moyasar's card-on-file flow.
+     * POST /api/v1/payment-methods/moyasar
+     * Body: { payment_id, token, is_primary }
+     */
+    public function storeMoyasar(StoreMoyasarPaymentMethodRequest $request): JsonResponse
+    {
+        try {
+            $paymentMethod = $this->paymentService->createFromMoyasar(
+                $request->user(),
+                $request->validated()
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card added successfully',
+                'data' => new PaymentMethodResource($paymentMethod),
+            ], 201);
+        } catch (PaymentMethodException $e) {
+            // Message is customer-readable — the app shows it verbatim.
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        } catch (\Throwable $e) {
+            \Log::error('Moyasar card save failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'We could not add your card right now. Please try again.',
             ], 500);
         }
     }

@@ -223,6 +223,98 @@ class PaymentService
     }
 
     /**
+     * Verify a Moyasar card-on-file authorization and store the tokenized card.
+     *
+     * Card data never reaches us: the app authorizes SAR 1 (manual, save_card)
+     * directly with Moyasar and sends only { payment_id, token }. We independently
+     * verify that payment with our secret key, read authoritative card metadata
+     * from the token, store it, then release the SAR 1 hold.
+     *
+     * @throws \App\Exceptions\PaymentMethodException with a customer-readable message
+     */
+    public function createFromMoyasar(User $user, array $data): PaymentMethod
+    {
+        $client = app(\App\Services\Payment\MoyasarClient::class);
+        $paymentId = $data['payment_id'];
+        $token = $data['token'];
+
+        try {
+            $payment = $client->getPayment($paymentId);
+        } catch (\Throwable $e) {
+            throw new \App\Exceptions\PaymentMethodException('We could not verify your card. Please try again.');
+        }
+
+        // Do not trust the client — verify the authorization ourselves.
+        $status = $payment['status'] ?? null;
+        if (!in_array($status, ['authorized', 'paid'], true)) {
+            throw new \App\Exceptions\PaymentMethodException('Card verification was not approved. Please try another card.');
+        }
+        if (($payment['amount'] ?? null) !== 100 || ($payment['currency'] ?? null) !== 'SAR') {
+            throw new \App\Exceptions\PaymentMethodException('This card verification is invalid. Please try again.');
+        }
+        if (($payment['metadata']['purpose'] ?? null) !== 'card_verification') {
+            throw new \App\Exceptions\PaymentMethodException('This card verification is invalid. Please try again.');
+        }
+        // The token must belong to THIS payment — stops attaching someone else's token.
+        if (($payment['source']['token'] ?? null) !== $token) {
+            throw new \App\Exceptions\PaymentMethodException('This card verification is invalid. Please try again.');
+        }
+        // One authorization can attach exactly one card — stops replay.
+        if (PaymentMethod::where('provider_payment_id', $paymentId)->exists()) {
+            throw new \App\Exceptions\PaymentMethodException('This card has already been added.');
+        }
+
+        // Authoritative card metadata (the payment's card source omits the expiry).
+        try {
+            $tokenData = $client->getToken($token);
+        } catch (\Throwable $e) {
+            throw new \App\Exceptions\PaymentMethodException('We could not read your card details. Please try again.');
+        }
+
+        $month = str_pad((string) ($tokenData['month'] ?? ''), 2, '0', STR_PAD_LEFT);
+        $year = (string) ($tokenData['year'] ?? '');
+        $expiresAt = ($year !== '' && trim($month) !== '') ? "{$year}-{$month}" : null;
+        $type = ($tokenData['funding'] ?? 'credit') === 'debit' ? 'debit_card' : 'credit_card';
+
+        $paymentMethod = DB::transaction(function () use ($user, $data, $token, $paymentId, $tokenData, $type, $expiresAt) {
+            $isPrimary = (bool) ($data['is_primary'] ?? false);
+            if (!$isPrimary && !PaymentMethod::where('user_id', $user->id)->exists()) {
+                $isPrimary = true; // first card is primary
+            }
+            if ($isPrimary) {
+                PaymentMethod::where('user_id', $user->id)
+                    ->where('is_primary', true)
+                    ->update(['is_primary' => false]);
+            }
+
+            return PaymentMethod::create([
+                'user_id' => $user->id,
+                'type' => $type,
+                'card_last_four' => $tokenData['last_four'] ?? null,
+                'card_brand' => $tokenData['brand'] ?? null,
+                'card_holder' => $tokenData['name'] ?? null,
+                'expires_at' => $expiresAt,
+                'is_primary' => $isPrimary,
+                'provider_token' => $token,
+                'provider_payment_id' => $paymentId,
+            ]);
+        });
+
+        // Release the hold AFTER the card is stored. Retryable; a dispatch failure
+        // on the sync connection must not undo an already-stored card.
+        try {
+            \App\Jobs\ReleaseMoyasarHold::dispatch($paymentId, $status === 'paid' ? 'refund' : 'void');
+        } catch (\Throwable $e) {
+            \Log::error('Failed to dispatch Moyasar hold release', [
+                'payment_id' => $paymentId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $paymentMethod;
+    }
+
+    /**
      * Update a payment method
      */
     public function updatePaymentMethod(PaymentMethod $paymentMethod, array $data): PaymentMethod

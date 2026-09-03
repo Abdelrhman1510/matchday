@@ -14,6 +14,7 @@ class PaymentMethodResource extends JsonResource
             'type' => $this->type,
             'last4' => $this->card_last_four,
             'card_last_four' => $this->card_last_four,
+            'card_brand' => $this->card_brand,
             'card_holder' => $this->card_holder,
             'expires_at' => $this->expires_at,
             'is_primary' => $this->is_primary,

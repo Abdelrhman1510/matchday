@@ -206,6 +206,8 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('bookings')->name('b
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('payment-methods')->name('payment-methods.')->group(function () {
     Route::get('/', [PaymentMethodController::class, 'index'])->name('index');
     Route::post('/', [PaymentMethodController::class, 'store'])->name('store');
+    // Moyasar card-on-file: app sends only { payment_id, token, is_primary }.
+    Route::post('/moyasar', [PaymentMethodController::class, 'storeMoyasar'])->name('moyasar');
     Route::put('/{id}', [PaymentMethodController::class, 'update'])->name('update');
     Route::delete('/{id}', [PaymentMethodController::class, 'destroy'])->name('destroy');
     Route::put('/{id}/set-primary', [PaymentMethodController::class, 'setPrimary'])->name('set-primary');
