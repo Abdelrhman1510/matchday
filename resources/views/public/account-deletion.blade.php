@@ -348,7 +348,7 @@
                     <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaj3" class="w-7 h-7 rounded object-cover">
                     <span class="font-bungee text-white">Shaj3</span>
                 </div>
-                <p class="text-sm text-slate-500">&copy; {{ date('Y') }} Shaj3. All rights reserved.</p>
+                <p class="text-sm text-slate-500">&copy; {{ date('Y') }} <a href="https://amalakalan.sa/" target="_blank" rel="noopener" class="hover:text-white transition-colors">Amalakalan</a>. All rights reserved.</p>
                 <div class="flex items-center gap-4 text-sm text-slate-500">
                     <a href="{{ route('public.privacy-policy') }}" class="hover:text-white transition-colors">Privacy</a>
                     <a href="{{ route('public.pages', 'terms-and-conditions') }}" class="hover:text-white transition-colors">Terms</a>

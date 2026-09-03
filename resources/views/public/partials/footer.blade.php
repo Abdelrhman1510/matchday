@@ -13,6 +13,6 @@
                 <a href="{{ route('public.pages', 'faq') }}" class="hover:text-brand-accent transition-colors">FAQ</a>
             </nav>
         </div>
-        <p class="text-center md:text-left text-sm text-slate-600 mt-6">&copy; {{ date('Y') }} Shaj3. All rights reserved.</p>
+        <p class="text-center md:text-left text-sm text-slate-600 mt-6">&copy; {{ date('Y') }} <a href="https://amalakalan.sa/" target="_blank" rel="noopener" class="hover:text-white transition-colors">Amalakalan</a>. All rights reserved.</p>
     </div>
 </footer>

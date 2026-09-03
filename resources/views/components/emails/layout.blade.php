@@ -91,7 +91,7 @@
                                 If you didn't expect this email, you can safely ignore it.
                             </p>
                             <p style="margin:0; font-size:12px; color:#5a5670;">
-                                © {{ date('Y') }} Shaj3. All rights reserved.
+                                © {{ date('Y') }} <a href="https://amalakalan.sa/" style="color:#c8ff00;text-decoration:none;">Amalakalan</a>. All rights reserved.
                             </p>
                         </td>
                     </tr>

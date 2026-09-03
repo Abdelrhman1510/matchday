@@ -233,7 +233,7 @@
                 </div>
             </div>
             <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-                <p>&copy; {{ date('Y') }} Matchday. All rights reserved.</p>
+                <p>&copy; {{ date('Y') }} <a href="https://amalakalan.sa/" target="_blank" rel="noopener" class="hover:text-white transition-colors">Amalakalan</a>. All rights reserved.</p>
             </div>
         </div>
     </footer>
