@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+@php $isAr = app()->getLocale() === 'ar'; @endphp
+<html lang="{{ app()->getLocale() }}" dir="{{ $isAr ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Bungee&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Bungee&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -23,6 +24,7 @@
                     fontFamily: {
                         sans:   ['Instrument Sans', 'sans-serif'],
                         bungee: ['Bungee', 'cursive'],
+                        cairo:  ['Cairo', 'sans-serif'],
                     },
                 }
             }
@@ -30,6 +32,7 @@
     </script>
     <style>
         body { background-color: #0c0628; font-family: 'Instrument Sans', sans-serif; }
+        html[dir="rtl"] body { font-family: 'Cairo', 'Instrument Sans', sans-serif; }
 
         /* Phone frame wrapper */
         .phone-frame {
@@ -78,13 +81,7 @@
                     <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaj3" class="w-9 h-9 rounded-lg object-cover">
                     <span class="text-2xl font-bungee text-white tracking-wide">Shaj3</span>
                 </a>
-                <a href="#" class="hidden sm:inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                    </svg>
-                    Download the App
-                </a>
+                @include('public.partials.lang-switch')
             </div>
         </div>
     </header>
@@ -98,19 +95,18 @@
                         d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
-                <span>Account</span>
+                <span>{{ $isAr ? 'الحساب' : 'Account' }}</span>
                 <span>&rsaquo;</span>
-                <span class="text-slate-400">Delete Account</span>
+                <span class="text-slate-400">{{ $isAr ? 'حذف الحساب' : 'Delete Account' }}</span>
             </div>
 
-            <h1 class="text-3xl md:text-4xl font-bold text-white">How to Delete Your Account</h1>
+            <h1 class="text-3xl md:text-4xl font-bold text-white">{{ $isAr ? 'كيفية حذف حسابك' : 'How to Delete Your Account' }}</h1>
             <div class="mt-2 flex items-center gap-2 mb-6">
                 <span class="inline-block w-8 h-0.5 bg-brand-accent rounded"></span>
-                <span class="text-sm text-slate-500">Shaj3 App · 3 simple steps</span>
+                <span class="text-sm text-slate-500">{{ $isAr ? 'تطبيق شجع · ٣ خطوات بسيطة' : 'Shaj3 App · 3 simple steps' }}</span>
             </div>
             <p class="text-slate-400 max-w-2xl leading-relaxed">
-                You can permanently delete your Shaj3 account directly from the app at any time.
-                Follow the steps below to remove your account and all associated data.
+                {{ $isAr ? 'يمكنك حذف حساب شجع نهائياً من داخل التطبيق في أي وقت. اتبع الخطوات التالية لإزالة حسابك وجميع البيانات المرتبطة به.' : 'You can permanently delete your Shaj3 account directly from the app at any time. Follow the steps below to remove your account and all associated data.' }}
             </p>
         </div>
     </div>
@@ -126,10 +122,9 @@
                 </svg>
             </div>
             <div>
-                <p class="font-semibold text-red-400 mb-1">This action is permanent and cannot be undone</p>
+                <p class="font-semibold text-red-400 mb-1">{{ $isAr ? 'هذا الإجراء نهائي ولا يمكن التراجع عنه' : 'This action is permanent and cannot be undone' }}</p>
                 <p class="text-sm text-slate-400 leading-relaxed">
-                    Deleting your account will permanently remove your profile, booking history, loyalty points, and all personal data from Shaj3.
-                    If you are a café owner with active bookings, your account cannot be deleted until all bookings are completed or cancelled.
+                    {{ $isAr ? 'سيؤدي حذف حسابك إلى إزالة ملفك الشخصي وسجل الحجوزات ونقاط الولاء وجميع بياناتك الشخصية من شجع نهائياً. إذا كنت مالك مقهى ولديك حجوزات نشطة، فلا يمكن حذف حسابك حتى تكتمل جميع الحجوزات أو تُلغى.' : 'Deleting your account will permanently remove your profile, booking history, loyalty points, and all personal data from Shaj3. If you are a café owner with active bookings, your account cannot be deleted until all bookings are completed or cancelled.' }}
                 </p>
             </div>
         </div>
@@ -145,24 +140,23 @@
                         <div class="flex items-center justify-center w-9 h-9 rounded-full bg-brand-accent text-black font-bold text-base shrink-0">
                             1
                         </div>
-                        <h2 class="text-xl font-bold text-white">Open your Profile</h2>
+                        <h2 class="text-xl font-bold text-white">{{ $isAr ? 'افتح ملفك الشخصي' : 'Open your Profile' }}</h2>
                     </div>
                     <p class="text-slate-400 leading-relaxed mb-4">
-                        Tap the <span class="text-white font-medium">Profile</span> icon at the bottom of the navigation bar to open your profile page.
-                        Then scroll down and tap <span class="text-white font-medium">"Privacy &amp; Terms"</span>.
+                        {{ $isAr ? 'اضغط على أيقونة الملف الشخصي في أسفل شريط التنقل لفتح صفحة ملفك الشخصي، ثم مرّر للأسفل واضغط على «الخصوصية والشروط».' : 'Tap the Profile icon at the bottom of the navigation bar to open your profile page. Then scroll down and tap Privacy & Terms.' }}
                     </p>
                     <div class="flex flex-col gap-2">
                         <div class="flex items-center gap-2 text-sm text-slate-400">
                             <span class="w-1.5 h-1.5 rounded-full bg-brand-accent shrink-0"></span>
-                            Tap the <strong class="text-slate-300 mx-1">Profile</strong> tab (bottom right)
+                            {{ $isAr ? 'اضغط على تبويب «الملف الشخصي»' : 'Tap the Profile tab (bottom right)' }}
                         </div>
                         <div class="flex items-center gap-2 text-sm text-slate-400">
                             <span class="w-1.5 h-1.5 rounded-full bg-brand-accent shrink-0"></span>
-                            Scroll down to find <strong class="text-slate-300 mx-1">Privacy &amp; Terms</strong>
+                            {{ $isAr ? 'مرّر للأسفل للعثور على «الخصوصية والشروط»' : 'Scroll down to find Privacy & Terms' }}
                         </div>
                         <div class="flex items-center gap-2 text-sm text-slate-400">
                             <span class="w-1.5 h-1.5 rounded-full bg-brand-accent shrink-0"></span>
-                            Tap it to open the legal information page
+                            {{ $isAr ? 'اضغط عليها لفتح صفحة المعلومات القانونية' : 'Tap it to open the legal information page' }}
                         </div>
                     </div>
                 </div>
@@ -181,7 +175,7 @@
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
-                    next step
+                    {{ $isAr ? 'الخطوة التالية' : 'next step' }}
                 </div>
                 <div class="flex-1 h-px bg-brand-border"></div>
             </div>
@@ -200,24 +194,23 @@
                         <div class="flex items-center justify-center w-9 h-9 rounded-full bg-brand-accent text-black font-bold text-base shrink-0">
                             2
                         </div>
-                        <h2 class="text-xl font-bold text-white">Tap "Delete Account"</h2>
+                        <h2 class="text-xl font-bold text-white">{{ $isAr ? 'اضغط على «حذف الحساب»' : 'Tap Delete Account' }}</h2>
                     </div>
                     <p class="text-slate-400 leading-relaxed mb-4">
-                        On the <span class="text-white font-medium">Privacy &amp; Terms</span> screen, scroll to the bottom and tap the
-                        <span class="text-red-400 font-medium">"Delete Account"</span> option highlighted in red.
+                        {{ $isAr ? 'في شاشة «الخصوصية والشروط»، مرّر إلى الأسفل واضغط على خيار «حذف الحساب» المميّز باللون الأحمر.' : 'On the Privacy & Terms screen, scroll to the bottom and tap the Delete Account option highlighted in red.' }}
                     </p>
                     <div class="flex flex-col gap-2">
                         <div class="flex items-center gap-2 text-sm text-slate-400">
                             <span class="w-1.5 h-1.5 rounded-full bg-brand-accent shrink-0"></span>
-                            You'll see links to Privacy Policy, Terms &amp; Conditions, Data Usage, and Cookie Policy
+                            {{ $isAr ? 'سترى روابط لسياسة الخصوصية والشروط والأحكام واستخدام البيانات وسياسة ملفات تعريف الارتباط' : 'You will see links to Privacy Policy, Terms & Conditions, Data Usage, and Cookie Policy' }}
                         </div>
                         <div class="flex items-center gap-2 text-sm text-slate-400">
                             <span class="w-1.5 h-1.5 rounded-full bg-brand-accent shrink-0"></span>
-                            At the bottom, tap the red <strong class="text-red-400 mx-1">Delete Account</strong> button
+                            {{ $isAr ? 'في الأسفل، اضغط على زر «حذف الحساب» الأحمر' : 'At the bottom, tap the red Delete Account button' }}
                         </div>
                         <div class="flex items-center gap-2 text-sm text-slate-400">
                             <span class="w-1.5 h-1.5 rounded-full bg-brand-accent shrink-0"></span>
-                            A confirmation dialog will appear
+                            {{ $isAr ? 'ستظهر نافذة تأكيد' : 'A confirmation dialog will appear' }}
                         </div>
                     </div>
                 </div>
@@ -230,7 +223,7 @@
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
-                    next step
+                    {{ $isAr ? 'الخطوة التالية' : 'next step' }}
                 </div>
                 <div class="flex-1 h-px bg-brand-border"></div>
             </div>
@@ -243,54 +236,53 @@
                         <div class="flex items-center justify-center w-9 h-9 rounded-full bg-red-500 text-white font-bold text-base shrink-0">
                             3
                         </div>
-                        <h2 class="text-xl font-bold text-white">Confirm Deletion</h2>
+                        <h2 class="text-xl font-bold text-white">{{ $isAr ? 'أكّد الحذف' : 'Confirm Deletion' }}</h2>
                     </div>
                     <p class="text-slate-400 leading-relaxed mb-4">
-                        A confirmation dialog will appear warning you that <span class="text-white font-medium">this action is permanent and cannot be undone</span>.
-                        Tap <span class="text-red-400 font-medium">"Yes, Delete"</span> to permanently delete your account.
+                        {{ $isAr ? 'ستظهر نافذة تأكيد تحذّرك بأن هذا الإجراء نهائي ولا يمكن التراجع عنه. اضغط على «نعم، احذف» لحذف حسابك نهائياً.' : 'A confirmation dialog will appear warning you that this action is permanent and cannot be undone. Tap Yes, Delete to permanently delete your account.' }}
                     </p>
                     <div class="flex flex-col gap-2 mb-5">
                         <div class="flex items-center gap-2 text-sm text-slate-400">
                             <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
-                            Read the warning carefully — all your data will be lost
+                            {{ $isAr ? 'اقرأ التحذير بعناية — ستفقد جميع بياناتك' : 'Read the warning carefully — all your data will be lost' }}
                         </div>
                         <div class="flex items-center gap-2 text-sm text-slate-400">
                             <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
-                            Tap <strong class="text-slate-300 mx-1">Cancel</strong> to go back safely
+                            {{ $isAr ? 'اضغط على «إلغاء» للعودة بأمان' : 'Tap Cancel to go back safely' }}
                         </div>
                         <div class="flex items-center gap-2 text-sm text-slate-400">
                             <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
-                            Tap <strong class="text-red-400 mx-1">Yes, Delete</strong> to confirm permanently
+                            {{ $isAr ? 'اضغط على «نعم، احذف» للتأكيد النهائي' : 'Tap Yes, Delete to confirm permanently' }}
                         </div>
                     </div>
 
                     <!-- What gets deleted -->
                     <div class="bg-brand-card border border-brand-border rounded-xl p-4">
-                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">What gets deleted</p>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">{{ $isAr ? 'ما الذي سيُحذف' : 'What gets deleted' }}</p>
                         <div class="space-y-2">
                             <div class="flex items-center gap-2 text-sm text-slate-400">
                                 <svg class="w-4 h-4 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
-                                Your profile and personal information
+                                {{ $isAr ? 'ملفك الشخصي ومعلوماتك الشخصية' : 'Your profile and personal information' }}
                             </div>
                             <div class="flex items-center gap-2 text-sm text-slate-400">
                                 <svg class="w-4 h-4 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
-                                Booking history
+                                {{ $isAr ? 'سجل الحجوزات' : 'Booking history' }}
                             </div>
                             <div class="flex items-center gap-2 text-sm text-slate-400">
                                 <svg class="w-4 h-4 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
-                                Loyalty points &amp; tier status
+                                {{ $isAr ? 'نقاط الولاء وحالة المستوى' : 'Loyalty points & tier status' }}
                             </div>
                             <div class="flex items-center gap-2 text-sm text-slate-400">
                                 <svg class="w-4 h-4 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
-                                Achievements &amp; preferences
+                                {{ $isAr ? 'الإنجازات والتفضيلات' : 'Achievements & preferences' }}
                             </div>
                         </div>
                     </div>
@@ -317,10 +309,9 @@
                     </div>
                 </div>
                 <div>
-                    <h3 class="font-semibold text-white mb-2">Note for Café Owners</h3>
+                    <h3 class="font-semibold text-white mb-2">{{ $isAr ? 'ملاحظة لأصحاب المقاهي' : 'Note for Café Owners' }}</h3>
                     <p class="text-slate-400 text-sm leading-relaxed">
-                        If you are registered as a café owner, your account <strong class="text-white">cannot be deleted while you have active bookings</strong>
-                        (pending, confirmed, or checked-in). You must wait for all bookings to complete or cancel them first before deleting your account.
+                        {{ $isAr ? 'إذا كنت مسجّلاً كمالك مقهى، فلا يمكن حذف حسابك أثناء وجود حجوزات نشطة (معلّقة أو مؤكّدة أو تم تسجيل الدخول لها). يجب أن تنتظر اكتمال جميع الحجوزات أو تلغيها أولاً قبل حذف حسابك.' : 'If you are registered as a café owner, your account cannot be deleted while you have active bookings (pending, confirmed, or checked-in). You must wait for all bookings to complete or cancel them first before deleting your account.' }}
                     </p>
                 </div>
             </div>
@@ -328,13 +319,13 @@
 
         <!-- Need help? -->
         <div class="text-center py-4">
-            <p class="text-slate-500 text-sm mb-2">Need help or having trouble deleting your account?</p>
+            <p class="text-slate-500 text-sm mb-2">{{ $isAr ? 'تحتاج مساعدة أو تواجه صعوبة في حذف حسابك؟' : 'Need help or having trouble deleting your account?' }}</p>
             <a href="mailto:support@shaj3.sa" class="inline-flex items-center gap-2 text-brand-accent hover:text-white transition-colors font-medium text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                 </svg>
-                Contact us at support@shaj3.sa
+                {{ $isAr ? 'تواصل معنا على support@shaj3.sa' : 'Contact us at support@shaj3.sa' }}
             </a>
         </div>
 
@@ -348,11 +339,11 @@
                     <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaj3" class="w-7 h-7 rounded object-cover">
                     <span class="font-bungee text-white">Shaj3</span>
                 </div>
-                <p class="text-sm text-slate-500">&copy; {{ date('Y') }} <a href="https://amalakalan.sa/" target="_blank" rel="noopener" class="hover:text-white transition-colors">Amalakalan</a>. All rights reserved.</p>
+                <p class="text-sm text-slate-500">&copy; {{ date('Y') }} <a href="https://amalakalan.sa/" target="_blank" rel="noopener" class="hover:text-white transition-colors">Amalakalan</a>. {{ __('site.footer.rights') }}</p>
                 <div class="flex items-center gap-4 text-sm text-slate-500">
-                    <a href="{{ route('public.privacy-policy') }}" class="hover:text-white transition-colors">Privacy</a>
-                    <a href="{{ route('public.pages', 'terms-and-conditions') }}" class="hover:text-white transition-colors">Terms</a>
-                    <a href="{{ route('public.pages', 'faq') }}" class="hover:text-white transition-colors">FAQ</a>
+                    <a href="{{ route('public.privacy-policy') }}" class="hover:text-white transition-colors">{{ __('site.footer.privacy') }}</a>
+                    <a href="{{ route('public.pages', 'terms-and-conditions') }}" class="hover:text-white transition-colors">{{ __('site.footer.terms') }}</a>
+                    <a href="{{ route('public.pages', 'faq') }}" class="hover:text-white transition-colors">{{ __('site.footer.faq') }}</a>
                 </div>
             </div>
         </div>

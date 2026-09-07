@@ -25,13 +25,13 @@ use App\Livewire\Platform\SettingsPage;
 |
 */
 
-Route::get('/', [PublicPageController::class, 'landing'])->name('public.landing');
+Route::get('/', [PublicPageController::class, 'landing'])->middleware('site.locale')->name('public.landing');
 
 // Moyasar 3DS return URL — the app watches for this host and closes the webview.
 Route::match(['get', 'post'], '/payments/callback', fn () => response('OK', 200))->name('payments.callback');
 
 // Contact Us
-Route::get('/contact', [PublicPageController::class, 'contact'])->name('public.contact');
+Route::get('/contact', [PublicPageController::class, 'contact'])->middleware('site.locale')->name('public.contact');
 Route::post('/contact', [PublicPageController::class, 'submitContact'])
     ->middleware('throttle:6,1')->name('public.contact.submit');
 
@@ -50,9 +50,9 @@ Route::get('/ws-debug', function () {
 Route::get('/cafes/{id}', [PublicCafeController::class, 'show'])->name('public.cafes.show');
 
 // Public Legal Pages (no auth required)
-Route::get('/privacy-policy', [PublicPageController::class, 'privacyPolicy'])->name('public.privacy-policy');
-Route::get('/account-deletion', [PublicPageController::class, 'accountDeletion'])->name('public.account-deletion');
-Route::get('/pages/{slug}', [PublicPageController::class, 'show'])->name('public.pages');
+Route::get('/privacy-policy', [PublicPageController::class, 'privacyPolicy'])->middleware('site.locale')->name('public.privacy-policy');
+Route::get('/account-deletion', [PublicPageController::class, 'accountDeletion'])->middleware('site.locale')->name('public.account-deletion');
+Route::get('/pages/{slug}', [PublicPageController::class, 'show'])->middleware('site.locale')->name('public.pages');
 
 /*
 |--------------------------------------------------------------------------

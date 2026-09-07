@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+@php $isAr = app()->getLocale() === 'ar'; @endphp
+<html lang="{{ app()->getLocale() }}" dir="{{ $isAr ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Us — Shaj3</title>
-    <meta name="description" content="Get in touch with the Shaj3 team.">
+    <title>{{ __('site.contact.title') }} — Shaj3</title>
+    <meta name="description" content="{{ __('site.contact.sub') }}">
     <link rel="icon" href="{{ asset('images/shaja3_icon.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&family=Bungee&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&family=Bungee&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: { extend: {
@@ -18,12 +19,13 @@
                     'brand-card':  '#110830', 'brand-border': '#1e164e',
                     'brand-accent':'#c8ff00',
                 },
-                fontFamily: { sans: ['Instrument Sans','sans-serif'], bungee: ['Bungee','cursive'] },
+                fontFamily: { sans: ['Instrument Sans','sans-serif'], bungee: ['Bungee','cursive'], cairo: ['Cairo','sans-serif'] },
             }}
         }
     </script>
     <style>
         body { background-color:#0c0628; font-family:'Instrument Sans',sans-serif; -webkit-font-smoothing:antialiased; }
+        html[dir="rtl"] body { font-family:'Cairo','Instrument Sans',sans-serif; }
         .glow::before {
             content:""; position:absolute; inset:-20% 0 auto 0; height:420px; z-index:0;
             background: radial-gradient(500px 260px at 50% 0%, rgba(200,255,0,.12), transparent 70%);
@@ -41,18 +43,21 @@
         <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
             <a href="{{ url('/') }}" class="flex items-center gap-3">
                 <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaj3" class="w-9 h-9 rounded-lg object-cover">
-                <span class="font-bungee text-white text-lg tracking-wide">Shaj3</span>
+                <span class="font-bungee text-white text-lg tracking-wide">SHAJ3</span>
             </a>
-            <a href="{{ url('/') }}" class="text-sm font-semibold text-slate-300 hover:text-white transition-colors">← Home</a>
+            <div class="flex items-center gap-4">
+                @include('public.partials.lang-switch')
+                <a href="{{ url('/') }}" class="text-sm font-semibold text-slate-300 hover:text-white transition-colors">{{ __('site.nav.home') }}</a>
+            </div>
         </div>
     </header>
 
     <main class="glow relative">
         <div class="relative z-10 max-w-xl mx-auto px-6 pt-16 pb-12">
             <div class="text-center">
-                <span class="inline-block px-3 py-1 rounded-full border border-brand-border text-brand-accent text-xs font-bold uppercase tracking-widest">We're listening</span>
-                <h1 class="font-bungee text-3xl sm:text-5xl text-white mt-5">Contact Us</h1>
-                <p class="text-slate-400 mt-3">Questions, feedback, or partnership? Send us a message and we'll get back to you.</p>
+                <span class="inline-block px-3 py-1 rounded-full border border-brand-border text-brand-accent text-xs font-bold uppercase tracking-widest">{{ __('site.contact.badge') }}</span>
+                <h1 class="font-bungee text-3xl sm:text-5xl text-white mt-5 {{ $isAr ? 'font-cairo font-extrabold' : '' }}">{{ __('site.contact.title') }}</h1>
+                <p class="text-slate-400 mt-3">{{ __('site.contact.sub') }}</p>
             </div>
 
             @if (session('success'))
@@ -69,30 +74,30 @@
 
                 <div class="grid sm:grid-cols-2 gap-5">
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1.5">Name</label>
+                        <label class="block text-sm font-medium text-slate-300 mb-1.5">{{ __('site.contact.name') }}</label>
                         <input name="name" value="{{ old('name') }}" required maxlength="120"
-                            class="field w-full rounded-xl bg-brand-dark/60 border border-brand-border px-4 py-3 text-white placeholder-slate-600" placeholder="Your name">
+                            class="field w-full rounded-xl bg-brand-dark/60 border border-brand-border px-4 py-3 text-white placeholder-slate-600" placeholder="{{ __('site.contact.name_ph') }}">
                         @error('name') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1.5">Email</label>
-                        <input type="email" name="email" value="{{ old('email') }}" required maxlength="180"
-                            class="field w-full rounded-xl bg-brand-dark/60 border border-brand-border px-4 py-3 text-white placeholder-slate-600" placeholder="you@example.com">
+                        <label class="block text-sm font-medium text-slate-300 mb-1.5">{{ __('site.contact.email') }}</label>
+                        <input type="email" name="email" value="{{ old('email') }}" required maxlength="180" dir="ltr"
+                            class="field w-full rounded-xl bg-brand-dark/60 border border-brand-border px-4 py-3 text-white placeholder-slate-600" placeholder="{{ __('site.contact.email_ph') }}">
                         @error('email') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1.5">Subject <span class="text-slate-600 font-normal">(optional)</span></label>
+                    <label class="block text-sm font-medium text-slate-300 mb-1.5">{{ __('site.contact.subject') }} <span class="text-slate-600 font-normal">{{ __('site.contact.optional') }}</span></label>
                     <input name="subject" value="{{ old('subject') }}" maxlength="150"
-                        class="field w-full rounded-xl bg-brand-dark/60 border border-brand-border px-4 py-3 text-white placeholder-slate-600" placeholder="What's this about?">
+                        class="field w-full rounded-xl bg-brand-dark/60 border border-brand-border px-4 py-3 text-white placeholder-slate-600" placeholder="{{ __('site.contact.subject_ph') }}">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1.5">Message</label>
+                    <label class="block text-sm font-medium text-slate-300 mb-1.5">{{ __('site.contact.message') }}</label>
                     <textarea name="message" required rows="5" maxlength="3000"
-                        class="field w-full rounded-xl bg-brand-dark/60 border border-brand-border px-4 py-3 text-white placeholder-slate-600" placeholder="Tell us more…">{{ old('message') }}</textarea>
+                        class="field w-full rounded-xl bg-brand-dark/60 border border-brand-border px-4 py-3 text-white placeholder-slate-600" placeholder="{{ __('site.contact.message_ph') }}">{{ old('message') }}</textarea>
                     @error('message') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
-                <button type="submit" class="cta w-full py-3.5 rounded-xl bg-brand-accent text-brand-dark font-bold transition">Send message</button>
+                <button type="submit" class="cta w-full py-3.5 rounded-xl bg-brand-accent text-brand-dark font-bold transition">{{ __('site.contact.send') }}</button>
             </form>
         </div>
     </main>

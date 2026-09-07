@@ -3,16 +3,16 @@
         <div class="flex flex-col md:flex-row items-center justify-between gap-6">
             <a href="{{ url('/') }}" class="flex items-center gap-2">
                 <img src="{{ asset('images/shaja3_icon.png') }}" alt="Shaj3" class="w-8 h-8 rounded-lg object-cover">
-                <span class="font-bungee text-white text-lg">Shaj3</span>
+                <span class="font-bungee text-white text-lg">SHAJ3</span>
             </a>
             <nav class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-slate-400">
-                <a href="{{ route('public.contact') }}" class="hover:text-brand-accent transition-colors">Contact Us</a>
-                <a href="{{ route('public.privacy-policy') }}" class="hover:text-brand-accent transition-colors">Privacy Policy</a>
-                <a href="{{ route('public.pages', 'terms-and-conditions') }}" class="hover:text-brand-accent transition-colors">Terms &amp; Conditions</a>
-                <a href="{{ route('public.account-deletion') }}" class="hover:text-brand-accent transition-colors">Delete Account</a>
-                <a href="{{ route('public.pages', 'faq') }}" class="hover:text-brand-accent transition-colors">FAQ</a>
+                <a href="{{ route('public.contact') }}" class="hover:text-brand-accent transition-colors">{{ __('site.footer.contact') }}</a>
+                <a href="{{ route('public.privacy-policy') }}" class="hover:text-brand-accent transition-colors">{{ __('site.footer.privacy') }}</a>
+                <a href="{{ route('public.pages', 'terms-and-conditions') }}" class="hover:text-brand-accent transition-colors">{{ __('site.footer.terms') }}</a>
+                <a href="{{ route('public.account-deletion') }}" class="hover:text-brand-accent transition-colors">{{ __('site.footer.delete') }}</a>
+                <a href="{{ route('public.pages', 'faq') }}" class="hover:text-brand-accent transition-colors">{{ __('site.footer.faq') }}</a>
             </nav>
         </div>
-        <p class="text-center md:text-left text-sm text-slate-600 mt-6">&copy; {{ date('Y') }} <a href="https://amalakalan.sa/" target="_blank" rel="noopener" class="hover:text-white transition-colors">Amalakalan</a>. All rights reserved.</p>
+        <p class="text-center md:text-left text-sm text-slate-600 mt-6">&copy; {{ date('Y') }} <a href="https://amalakalan.sa/" target="_blank" rel="noopener" class="hover:text-white transition-colors">Amalakalan</a>. {{ __('site.footer.rights') }}</p>
     </div>
 </footer>
