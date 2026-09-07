@@ -12,6 +12,7 @@
                 <a href="{{ route('public.account-deletion') }}" class="hover:text-brand-accent transition-colors">{{ __('site.footer.delete') }}</a>
                 <a href="{{ route('public.pages', 'faq') }}" class="hover:text-brand-accent transition-colors">{{ __('site.footer.faq') }}</a>
             </nav>
+            @include('public.partials.social')
         </div>
         <p class="text-center md:text-left text-sm text-slate-600 mt-6">&copy; {{ date('Y') }} <a href="https://amalakalan.sa/" target="_blank" rel="noopener" class="hover:text-white transition-colors">Amalakalan</a>. {{ __('site.footer.rights') }}</p>
     </div>

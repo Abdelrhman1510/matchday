@@ -340,6 +340,7 @@
                     <span class="font-bungee text-white">Shaj3</span>
                 </div>
                 <p class="text-sm text-slate-500">&copy; {{ date('Y') }} <a href="https://amalakalan.sa/" target="_blank" rel="noopener" class="hover:text-white transition-colors">Amalakalan</a>. {{ __('site.footer.rights') }}</p>
+                @include('public.partials.social')
                 <div class="flex items-center gap-4 text-sm text-slate-500">
                     <a href="{{ route('public.privacy-policy') }}" class="hover:text-white transition-colors">{{ __('site.footer.privacy') }}</a>
                     <a href="{{ route('public.pages', 'terms-and-conditions') }}" class="hover:text-white transition-colors">{{ __('site.footer.terms') }}</a>
