@@ -63,11 +63,10 @@
                 <span class="inline-block mt-8 px-3 py-1 rounded-full border border-brand-border text-brand-accent text-xs font-bold uppercase tracking-widest">{{ __('site.hero.badge') }}</span>
                 <h1 class="font-bungee text-4xl sm:text-6xl text-white leading-[1.05] mt-6 {{ $isAr ? 'font-cairo font-extrabold' : '' }}">{{ __('site.hero.title1') }}<br><span class="text-brand-accent">{{ __('site.hero.title2') }}</span></h1>
                 <p class="max-w-xl mx-auto mt-6 text-lg text-slate-400">{{ __('site.hero.sub') }}</p>
-                <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
-                    <a href="{{ route('public.contact') }}" class="cta w-full sm:w-auto px-7 py-3.5 rounded-xl bg-brand-accent text-brand-dark font-bold transition">{{ __('site.hero.cta1') }}</a>
-                    <a href="#how" class="w-full sm:w-auto px-7 py-3.5 rounded-xl border border-brand-border text-white font-semibold hover:border-slate-500 transition">{{ __('site.hero.cta2') }}</a>
+                <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="{{ route('public.contact') }}" class="cta w-full sm:w-auto px-10 py-5 rounded-2xl bg-brand-accent text-brand-dark font-bold text-lg transition">{{ __('site.hero.cta1') }}</a>
+                    <a href="#how" class="w-full sm:w-auto px-10 py-5 rounded-2xl border border-brand-border text-white font-semibold text-lg hover:border-slate-500 hover:bg-brand-card transition">{{ __('site.hero.cta2') }}</a>
                 </div>
-                @include('public.partials.app-stores')
             </div>
         </section>
 
