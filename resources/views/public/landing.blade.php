@@ -67,6 +67,7 @@
                     <a href="{{ route('public.contact') }}" class="cta w-full sm:w-auto px-7 py-3.5 rounded-xl bg-brand-accent text-brand-dark font-bold transition">{{ __('site.hero.cta1') }}</a>
                     <a href="#how" class="w-full sm:w-auto px-7 py-3.5 rounded-xl border border-brand-border text-white font-semibold hover:border-slate-500 transition">{{ __('site.hero.cta2') }}</a>
                 </div>
+                @include('public.partials.app-stores')
             </div>
         </section>
 
