@@ -53,6 +53,14 @@ class AppServiceProvider extends ServiceProvider
             config(['session.secure' => true]);
         }
 
+        // Re-enforce platform-admin authorization on every Livewire update.
+        // Route middleware (platform.admin) only guards the initial GET; without
+        // this, Livewire /livewire/update calls skip it. All Livewire components
+        // here are platform-admin pages, so this is safe app-wide.
+        \Livewire\Livewire::addPersistentMiddleware([
+            \App\Http\Middleware\EnsurePlatformAdmin::class,
+        ]);
+
         $this->configureRateLimiting();
         $this->registerEventListeners();
         $this->registerSqliteFunctions();
