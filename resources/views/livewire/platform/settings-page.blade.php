@@ -113,6 +113,26 @@
         </div>
     </div>
 
+    {{-- UNLIMITED MODE --}}
+    <div class="bg-[#0e0735] border rounded-xl p-6 {{ $unlimited_mode ? 'border-[#c8ff00]' : 'border-[#1e164e]' }}">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <div class="text-base font-bold text-white flex items-center gap-2">
+                    {{ __('platform.settings.unlimited_mode') }}
+                    @if($unlimited_mode)<span class="px-2 py-0.5 rounded-full bg-[#c8ff00] text-black text-[10px] font-bold uppercase">{{ __('platform.settings.on') }}</span>@endif
+                </div>
+                <div class="text-xs text-slate-400 mt-1 max-w-xl leading-relaxed">{{ __('platform.settings.unlimited_mode_desc') }}</div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                <input type="checkbox" wire:model.live="unlimited_mode" class="sr-only peer">
+                <div class="w-14 h-7 bg-[#1a0e40] border border-[#1e164e] rounded-full peer peer-checked:after:translate-x-7 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#c8ff00]"></div>
+            </label>
+        </div>
+        @if($unlimited_mode)
+            <div class="mt-4 text-xs text-[#c8ff00] bg-[#c8ff00]/10 border border-[#c8ff00]/30 rounded-lg px-3 py-2 leading-relaxed">{{ __('platform.settings.unlimited_mode_active_note') }}</div>
+        @endif
+    </div>
+
     {{-- SUBSCRIPTION PLANS --}}
     <div class="bg-[#0e0735] border border-[#1e164e] rounded-xl p-6">
         <div class="flex items-center justify-between mb-6">

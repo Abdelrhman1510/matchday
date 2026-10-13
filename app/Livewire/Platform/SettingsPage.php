@@ -37,8 +37,14 @@ class SettingsPage extends Component
     public $multi_language = false;
 
     // Subscription Plans
-    public $plans = [];
+    // plans are loaded fresh in render() (not a persisted property): a public
+    // Eloquent collection rehydrates to a plain array on Livewire updates and
+    // then $plans->isEmpty() in the view would fatal.
     public $mostPopularPlanId = null;
+
+    // Global unlimited mode: disables all plan limits and unlocks every feature
+    // for all users. Toggling off restores plans and limits.
+    public $unlimited_mode = false;
 
 
 
@@ -63,12 +69,11 @@ class SettingsPage extends Component
         $this->platform_language = $service->get('platform_language', 'en');
         $this->timezone = $service->get('timezone', 'Asia/Riyadh');
         $this->multi_language = $service->get('multi_language', false);
+        $this->unlimited_mode = (bool) $service->get('unlimited_mode', false);
     }
 
     private function loadPlans(): void
     {
-        $this->plans = SubscriptionPlan::orderBy('price', 'asc')->get();
-
         // Find the plan with the most active cafe subscriptions
         $popular = CafeSubscription::where('status', 'active')
             ->where('expires_at', '>', now())
@@ -81,6 +86,12 @@ class SettingsPage extends Component
     }
 
     // ─── Auto-save hooks (wire:model.live) ────────────────────────────────────
+
+    public function updatedUnlimitedMode($value): void
+    {
+        app(PlatformSettingsService::class)->set('unlimited_mode', $value ? true : false, 'bool', 'plans');
+        session()->flash('message', __('platform.flash.unlimited_mode_updated'));
+    }
 
     public function updatedCommissionRate($value): void
     {
@@ -190,6 +201,7 @@ class SettingsPage extends Component
     {
         return view('livewire.platform.settings-page', [
             'stats' => $this->getCommissionStats(),
+            'plans' => SubscriptionPlan::orderBy('price', 'asc')->get(),
         ]);
     }
 }

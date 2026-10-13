@@ -314,6 +314,10 @@ return [
         'commission_rate_label' => 'Platform Commission Rate',
         'dynamic_pricing' => 'Dynamic Pricing',
         'dynamic_pricing_desc' => 'Adjust commission based on peak hours',
+        'unlimited_mode' => 'Unlimited Mode',
+        'on' => 'On',
+        'unlimited_mode_desc' => 'Disable all plan limits and unlock every feature for every user. Turn it off to bring the plans and limits back.',
+        'unlimited_mode_active_note' => 'Unlimited mode is ON — all plans are disabled and every user has unlimited access.',
         // Subscription Plans
         'subscription_plans' => 'SUBSCRIPTION PLANS',
         'subs_plans_subtitle' => 'Manage cafe owner subscription tiers',
@@ -508,6 +512,7 @@ return [
         'multi_currency_updated' => 'Multi-currency updated.',
         'auto_conversion_updated' => 'Auto conversion updated.',
         'language_updated' => 'Platform language updated.',
+        'unlimited_mode_updated' => 'Unlimited mode updated.',
         'timezone_updated' => 'Timezone updated.',
         'multi_language_updated' => 'Multi-language updated.',
         'all_saved' => 'All settings saved successfully.',

@@ -12,6 +12,14 @@ use Carbon\Carbon;
 class SubscriptionEnforcementService
 {
     /**
+     * Global "unlimited mode" switch (platform Settings toggle). When on, every
+     * plan limit is lifted and every feature is unlocked for all cafes/users.
+     */
+    public function unlimitedMode(): bool
+    {
+        return (bool) app(\App\Services\PlatformSettingsService::class)->get('unlimited_mode', false);
+    }
+    /**
      * Returns the active subscription plan for a cafe, including grace period plans.
      */
     private function getActivePlan(Cafe $cafe): ?SubscriptionPlan
@@ -61,6 +69,10 @@ class SubscriptionEnforcementService
      */
     public function canCreateBranch(Cafe $cafe): array
     {
+        if ($this->unlimitedMode()) {
+            return $this->allowed();
+        }
+
         $plan = $this->getActivePlan($cafe);
 
         if (!$plan) {
@@ -89,6 +101,10 @@ class SubscriptionEnforcementService
      */
     public function canCreateMatch(Cafe $cafe): array
     {
+        if ($this->unlimitedMode()) {
+            return $this->allowed();
+        }
+
         $plan = $this->getActivePlan($cafe);
 
         if (!$plan) {
@@ -122,6 +138,10 @@ class SubscriptionEnforcementService
      */
     public function canReceiveBooking(Cafe $cafe): array
     {
+        if ($this->unlimitedMode()) {
+            return $this->allowed();
+        }
+
         $plan = $this->getActivePlan($cafe);
 
         if (!$plan) {
@@ -155,6 +175,10 @@ class SubscriptionEnforcementService
      */
     public function canAddStaff(Cafe $cafe): array
     {
+        if ($this->unlimitedMode()) {
+            return $this->allowed();
+        }
+
         $plan = $this->getActivePlan($cafe);
 
         if (!$plan) {
@@ -183,6 +207,10 @@ class SubscriptionEnforcementService
      */
     public function canCreateOffer(Cafe $cafe): array
     {
+        if ($this->unlimitedMode()) {
+            return $this->allowed();
+        }
+
         $plan = $this->getActivePlan($cafe);
 
         if (!$plan) {
@@ -211,6 +239,10 @@ class SubscriptionEnforcementService
      */
     public function hasFeature(Cafe $cafe, string $feature): bool
     {
+        if ($this->unlimitedMode()) {
+            return true;
+        }
+
         $plan = $this->getActivePlan($cafe);
 
         if (!$plan) {
@@ -226,6 +258,7 @@ class SubscriptionEnforcementService
     public function getUsageSummary(Cafe $cafe): array
     {
         $plan = $this->getActivePlan($cafe);
+        $unlimited = $this->unlimitedMode();
 
         $branchIds = $cafe->branches()->pluck('id');
 
@@ -249,42 +282,43 @@ class SubscriptionEnforcementService
                 'name' => $plan->name,
                 'slug' => $plan->slug,
             ] : null,
+            'unlimited_mode' => $unlimited,
             'grace_period' => $this->isInGracePeriod($cafe),
             'grace_period_days_left' => $this->getGracePeriodDaysLeft($cafe),
             'usage' => [
                 'branches' => [
                     'current' => $branchCount,
-                    'limit' => $plan?->max_branches,
-                    'unlimited' => $plan?->max_branches === null,
+                    'limit' => $unlimited ? null : $plan?->max_branches,
+                    'unlimited' => $unlimited || $plan?->max_branches === null,
                 ],
                 'matches_this_month' => [
                     'current' => $matchesThisMonth,
-                    'limit' => $plan?->max_matches_per_month,
-                    'unlimited' => $plan?->max_matches_per_month === null,
+                    'limit' => $unlimited ? null : $plan?->max_matches_per_month,
+                    'unlimited' => $unlimited || $plan?->max_matches_per_month === null,
                 ],
                 'bookings_this_month' => [
                     'current' => $bookingsThisMonth,
-                    'limit' => $plan?->max_bookings_per_month,
-                    'unlimited' => $plan?->max_bookings_per_month === null,
+                    'limit' => $unlimited ? null : $plan?->max_bookings_per_month,
+                    'unlimited' => $unlimited || $plan?->max_bookings_per_month === null,
                 ],
                 'staff_members' => [
                     'current' => $staffCount,
-                    'limit' => $plan?->max_staff_members,
-                    'unlimited' => $plan?->max_staff_members === null,
+                    'limit' => $unlimited ? null : $plan?->max_staff_members,
+                    'unlimited' => $unlimited || $plan?->max_staff_members === null,
                 ],
                 'offers' => [
                     'current' => $offerCount,
-                    'limit' => $plan?->max_offers,
-                    'unlimited' => $plan?->max_offers === null,
+                    'limit' => $unlimited ? null : $plan?->max_offers,
+                    'unlimited' => $unlimited || $plan?->max_offers === null,
                 ],
             ],
             'features' => [
-                'has_analytics' => $plan?->has_analytics ?? false,
-                'has_branding' => $plan?->has_branding ?? false,
-                'has_priority_support' => $plan?->has_priority_support ?? false,
-                'has_chat' => $plan?->has_chat ?? false,
-                'has_qr_scanner' => $plan?->has_qr_scanner ?? false,
-                'has_occupancy_tracking' => $plan?->has_occupancy_tracking ?? false,
+                'has_analytics' => $unlimited || ($plan?->has_analytics ?? false),
+                'has_branding' => $unlimited || ($plan?->has_branding ?? false),
+                'has_priority_support' => $unlimited || ($plan?->has_priority_support ?? false),
+                'has_chat' => $unlimited || ($plan?->has_chat ?? false),
+                'has_qr_scanner' => $unlimited || ($plan?->has_qr_scanner ?? false),
+                'has_occupancy_tracking' => $unlimited || ($plan?->has_occupancy_tracking ?? false),
             ],
         ];
     }
@@ -329,6 +363,10 @@ class SubscriptionEnforcementService
      */
     public function hasActiveSubscription(Cafe $cafe): bool
     {
+        if ($this->unlimitedMode()) {
+            return true;
+        }
+
         return $this->getActivePlan($cafe) !== null;
     }
 

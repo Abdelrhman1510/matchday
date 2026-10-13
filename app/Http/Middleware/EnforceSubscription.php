@@ -23,6 +23,11 @@ class EnforceSubscription
      */
     public function handle(Request $request, Closure $next, ?string $feature = null): Response
     {
+        // Global unlimited mode: skip all subscription/feature checks for everyone.
+        if ($this->enforcement->unlimitedMode()) {
+            return $next($request);
+        }
+
         // Resolve the acting cafe for owner OR assigned staff (not just owners).
         $cafe = $request->user()
             ? $this->contextResolver->resolve($request->user())?->cafe
