@@ -59,7 +59,9 @@ class BookingService
                 'match_id' => $match->id,
                 'branch_id' => $match->branch_id,
                 'guests_count' => $data['guests_count'] ?? count($data['seat_ids']),
-                'status' => 'pending',
+                // Confirmed immediately while there is no live payment gateway;
+                // the Payment row below stays 'pending' until one is wired in.
+                'status' => 'confirmed',
                 'special_requests' => $data['special_requests'] ?? null,
                 'subtotal' => $costs['subtotal'],
                 'service_fee' => $costs['service_fee'],

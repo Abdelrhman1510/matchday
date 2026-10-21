@@ -143,7 +143,7 @@
                         <h2 class="text-xl font-bold text-white">{{ $isAr ? 'افتح ملفك الشخصي' : 'Open your Profile' }}</h2>
                     </div>
                     <p class="text-slate-400 leading-relaxed mb-4">
-                        {{ $isAr ? 'اضغط على أيقونة الملف الشخصي في أسفل شريط التنقل لفتح صفحة ملفك الشخصي، ثم مرّر للأسفل واضغط على «الخصوصية والشروط».' : 'Tap the Profile icon at the bottom of the navigation bar to open your profile page. Then scroll down and tap Privacy & Terms.' }}
+                        {{ $isAr ? 'اضغط على أيقونة الملف الشخصي في أسفل شريط التنقل لفتح صفحة ملفك الشخصي، ثم افتح «تعديل الملف الشخصي».' : 'Tap the Profile icon at the bottom of the navigation bar to open your profile page, then open Edit Profile.' }}
                     </p>
                     <div class="flex flex-col gap-2">
                         <div class="flex items-center gap-2 text-sm text-slate-400">
@@ -152,18 +152,14 @@
                         </div>
                         <div class="flex items-center gap-2 text-sm text-slate-400">
                             <span class="w-1.5 h-1.5 rounded-full bg-brand-accent shrink-0"></span>
-                            {{ $isAr ? 'مرّر للأسفل للعثور على «الخصوصية والشروط»' : 'Scroll down to find Privacy & Terms' }}
-                        </div>
-                        <div class="flex items-center gap-2 text-sm text-slate-400">
-                            <span class="w-1.5 h-1.5 rounded-full bg-brand-accent shrink-0"></span>
-                            {{ $isAr ? 'اضغط عليها لفتح صفحة المعلومات القانونية' : 'Tap it to open the legal information page' }}
+                            {{ $isAr ? 'افتح شاشة «تعديل الملف الشخصي»' : 'Open the Edit Profile screen' }}
                         </div>
                     </div>
                 </div>
                 <!-- Screenshot -->
                 <div class="order-1 md:order-2">
                     <div class="phone-frame">
-                        <img src="{{ asset('images/account-deletion/step-1.png') }}" alt="Step 1: Profile screen - tap Privacy &amp; Terms">
+                        <img src="{{ asset('images/account-deletion/step-1.png') }}" alt="Step 1: Profile screen">
                     </div>
                 </div>
             </div>
@@ -185,7 +181,7 @@
                 <!-- Screenshot -->
                 <div>
                     <div class="phone-frame">
-                        <img src="{{ asset('images/account-deletion/step-2.png') }}" alt="Step 2: Privacy &amp; Terms - tap Delete Account">
+                        <img src="{{ asset('images/account-deletion/step-2.png') }}" alt="Step 2: Edit Profile - tap Delete Account">
                     </div>
                 </div>
                 <!-- Text -->
@@ -197,13 +193,9 @@
                         <h2 class="text-xl font-bold text-white">{{ $isAr ? 'اضغط على «حذف الحساب»' : 'Tap Delete Account' }}</h2>
                     </div>
                     <p class="text-slate-400 leading-relaxed mb-4">
-                        {{ $isAr ? 'في شاشة «الخصوصية والشروط»، مرّر إلى الأسفل واضغط على خيار «حذف الحساب» المميّز باللون الأحمر.' : 'On the Privacy & Terms screen, scroll to the bottom and tap the Delete Account option highlighted in red.' }}
+                        {{ $isAr ? 'في شاشة «تعديل الملف الشخصي»، مرّر إلى الأسفل واضغط على خيار «حذف الحساب» المميّز باللون الأحمر.' : 'On the Edit Profile screen, scroll to the bottom and tap the Delete Account option highlighted in red.' }}
                     </p>
                     <div class="flex flex-col gap-2">
-                        <div class="flex items-center gap-2 text-sm text-slate-400">
-                            <span class="w-1.5 h-1.5 rounded-full bg-brand-accent shrink-0"></span>
-                            {{ $isAr ? 'سترى روابط لسياسة الخصوصية والشروط والأحكام واستخدام البيانات وسياسة ملفات تعريف الارتباط' : 'You will see links to Privacy Policy, Terms & Conditions, Data Usage, and Cookie Policy' }}
-                        </div>
                         <div class="flex items-center gap-2 text-sm text-slate-400">
                             <span class="w-1.5 h-1.5 rounded-full bg-brand-accent shrink-0"></span>
                             {{ $isAr ? 'في الأسفل، اضغط على زر «حذف الحساب» الأحمر' : 'At the bottom, tap the red Delete Account button' }}
@@ -239,12 +231,16 @@
                         <h2 class="text-xl font-bold text-white">{{ $isAr ? 'أكّد الحذف' : 'Confirm Deletion' }}</h2>
                     </div>
                     <p class="text-slate-400 leading-relaxed mb-4">
-                        {{ $isAr ? 'ستظهر نافذة تأكيد تحذّرك بأن هذا الإجراء نهائي ولا يمكن التراجع عنه. اضغط على «نعم، احذف» لحذف حسابك نهائياً.' : 'A confirmation dialog will appear warning you that this action is permanent and cannot be undone. Tap Yes, Delete to permanently delete your account.' }}
+                        {{ $isAr ? 'ستظهر نافذة تأكيد تحذّرك بأن هذا الإجراء نهائي ولا يمكن التراجع عنه. اكتب «delete» في الحقل، ثم اضغط على «نعم، احذف» لحذف حسابك نهائياً.' : 'A confirmation dialog will appear warning you that this action is permanent and cannot be undone. Type "delete" in the box, then tap Yes, Delete to permanently delete your account.' }}
                     </p>
                     <div class="flex flex-col gap-2 mb-5">
                         <div class="flex items-center gap-2 text-sm text-slate-400">
                             <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
                             {{ $isAr ? 'اقرأ التحذير بعناية — ستفقد جميع بياناتك' : 'Read the warning carefully — all your data will be lost' }}
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-slate-400">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
+                            {{ $isAr ? 'اكتب «delete» للتأكيد' : 'Type "delete" to confirm' }}
                         </div>
                         <div class="flex items-center gap-2 text-sm text-slate-400">
                             <span class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
@@ -313,6 +309,14 @@
                     <p class="text-slate-400 text-sm leading-relaxed">
                         {{ $isAr ? 'إذا كنت مسجّلاً كمالك مقهى، فلا يمكن حذف حسابك أثناء وجود حجوزات نشطة (معلّقة أو مؤكّدة أو تم تسجيل الدخول لها). يجب أن تنتظر اكتمال جميع الحجوزات أو تلغيها أولاً قبل حذف حسابك.' : 'If you are registered as a café owner, your account cannot be deleted while you have active bookings (pending, confirmed, or checked-in). You must wait for all bookings to complete or cancel them first before deleting your account.' }}
                     </p>
+                    <p class="text-slate-400 text-sm leading-relaxed mt-3">
+                        {{ $isAr ? 'الخطوات نفسها في تطبيق صاحب المقهى:' : 'The steps are the same in the café owner app:' }}
+                    </p>
+                    <div class="grid grid-cols-3 gap-3 mt-4">
+                        @foreach ([1, 2, 3] as $n)
+                            <img src="{{ asset("images/account-deletion/owner-step-{$n}.png") }}" alt="Café owner step {{ $n }}" class="w-full rounded-xl border border-brand-border">
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </div>
