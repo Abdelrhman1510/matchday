@@ -35,6 +35,7 @@ class HomeController extends Controller
 
         $upcomingMatches = GameMatch::with(['homeTeam', 'awayTeam'])
             ->where('is_published', true)
+            ->where('status', '!=', 'cancelled')
             ->where('match_date', '>=', now()->toDateString())
             ->orderBy('match_date')
             ->limit(10)
@@ -86,6 +87,7 @@ class HomeController extends Controller
 
         $recommendedMatches = GameMatch::with(['homeTeam', 'awayTeam'])
             ->where('is_published', true)
+            ->where('status', '!=', 'cancelled')
             ->where('match_date', '>=', now()->toDateString())
             ->orderBy('match_date')
             ->limit(10)

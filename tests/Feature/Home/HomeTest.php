@@ -48,6 +48,19 @@ class HomeTest extends TestCase
     }
 
     /** @test */
+    public function it_excludes_cancelled_matches_from_upcoming()
+    {
+        Sanctum::actingAs(User::factory()->create());
+        $kept = GameMatch::factory()->create(['is_published' => true, 'status' => 'upcoming', 'match_date' => now()->addDay()]);
+        $cancelled = GameMatch::factory()->create(['is_published' => true, 'status' => 'cancelled', 'match_date' => now()->addDay()]);
+
+        $ids = collect($this->getJson('/api/v1/home')->assertOk()->json('data.upcoming_matches'))->pluck('id');
+
+        $this->assertTrue($ids->contains($kept->id));
+        $this->assertFalse($ids->contains($cancelled->id));
+    }
+
+    /** @test */
     public function it_returns_explore_aggregated_data()
     {
         GameMatch::factory()->count(5)->create(['status' => 'published']);
