@@ -39,6 +39,25 @@ class CreateCafeTest extends TestCase
     }
 
     /** @test */
+    public function a_new_cafe_starts_on_the_starter_plan_without_payment()
+    {
+        $this->seed([RolesAndPermissionsSeeder::class, \Database\Seeders\SubscriptionPlanSeeder::class]);
+        Sanctum::actingAs(User::factory()->cafeOwner()->create());
+
+        $cafeId = $this->postJson('/api/v1/cafe-admin/cafe', [
+            'name' => 'Starter Cafe',
+            'phone' => '+966512345678',
+            'city' => 'Riyadh',
+        ])->assertStatus(201)->json('data.id');
+
+        $cafe = Cafe::findOrFail($cafeId);
+        $this->assertSame('starter', $cafe->subscription_plan);
+        $this->assertTrue(app(\App\Services\SubscriptionEnforcementService::class)->hasActiveSubscription($cafe));
+        $this->assertDatabaseHas('cafe_subscriptions', ['cafe_id' => $cafeId, 'status' => 'active', 'auto_renew' => false]);
+        $this->assertDatabaseCount('payments', 0);
+    }
+
+    /** @test */
     public function creating_a_second_cafe_is_rejected()
     {
         $this->seed(RolesAndPermissionsSeeder::class);

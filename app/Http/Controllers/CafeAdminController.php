@@ -77,6 +77,21 @@ class CafeAdminController extends Controller
             'total_reviews' => 0,
         ]);
 
+        // New cafes start on the Starter plan automatically — no payment needed.
+        // auto_renew is off so the renewal job never tries to charge a card.
+        $starter = \App\Models\SubscriptionPlan::where('slug', 'starter')->first();
+        if ($starter) {
+            \App\Models\CafeSubscription::create([
+                'cafe_id' => $cafe->id,
+                'plan_id' => $starter->id,
+                'status' => 'active',
+                'starts_at' => now(),
+                'expires_at' => now()->addMonth(),
+                'auto_renew' => false,
+            ]);
+            $cafe->update(['subscription_plan' => $starter->slug]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => __('Cafe created successfully'),
