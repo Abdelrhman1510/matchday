@@ -13,34 +13,21 @@ class PaymentMethodTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function it_creates_payment_method_successfully()
+    public function the_raw_card_endpoint_is_gone_and_stores_nothing()
     {
         $user = User::factory()->create();
         Sanctum::actingAs($user);
 
-        $response = $this->postJson('/api/v1/payment-methods', [
+        $this->postJson('/api/v1/payment-methods', [
             'type' => 'credit_card',
             'card_number' => '4111111111111111',
             'card_holder' => 'John Doe',
             'expiry_month' => '12',
             'expiry_year' => '2030',
             'cvv' => '123',
-        ]);
+        ])->assertStatus(405);
 
-        $response->assertStatus(201)
-            ->assertJsonStructure([
-                'success',
-                'message',
-                'data' => ['id', 'type', 'last4', 'card_holder'],
-            ])
-            ->assertJson([
-                'success' => true,
-            ]);
-
-        $this->assertDatabaseHas('payment_methods', [
-            'user_id' => $user->id,
-            'type' => 'credit_card',
-        ]);
+        $this->assertDatabaseCount('payment_methods', 0);
     }
 
     /** @test */
@@ -146,29 +133,6 @@ class PaymentMethodTest extends TestCase
         $response->assertStatus(403)
             ->assertJson([
                 'success' => false,
-            ]);
-    }
-
-    /** @test */
-    public function it_returns_422_for_invalid_card_number()
-    {
-        $user = User::factory()->create();
-        Sanctum::actingAs($user);
-
-        $response = $this->postJson('/api/v1/payment-methods', [
-            'type' => 'credit_card',
-            'card_number' => '1234',
-            'card_holder' => 'John Doe',
-            'expiry_month' => '12',
-            'expiry_year' => '2025',
-            'cvv' => '123',
-        ]);
-
-        $response->assertStatus(422)
-            ->assertJsonStructure([
-                'success',
-                'message',
-                'errors' => ['card_number'],
             ]);
     }
 

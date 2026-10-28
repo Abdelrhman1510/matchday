@@ -89,30 +89,4 @@ class SimulatedPaymentGateway implements PaymentGatewayInterface
             'message' => 'Gateway reference not found',
         ];
     }
-
-    /**
-     * Simulate creating a payment method token
-     * In production, this would tokenize card details via payment gateway
-     */
-    public function createPaymentMethodToken(array $cardData): array
-    {
-        // Simulate API call delay
-        usleep(400000); // 0.4 seconds
-
-        // Validate card number (basic simulation)
-        if (empty($cardData['card_number']) || strlen($cardData['card_number']) < 13) {
-            return [
-                'success' => false,
-                'token' => null,
-                'message' => 'Invalid card number',
-            ];
-        }
-
-        // Simulate successful tokenization
-        return [
-            'success' => true,
-            'token' => 'tok_' . Str::random(32), // Simulated token
-            'message' => 'Card tokenized successfully',
-        ];
-    }
 }

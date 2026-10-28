@@ -100,13 +100,4 @@ class MoyasarGateway implements PaymentGatewayInterface
 
         return ['status' => $payment['status'] ?? 'unknown', 'message' => null];
     }
-
-    /**
-     * Moyasar cards are tokenized client-side by the SDK, never server-side, so
-     * this path is intentionally unsupported.
-     */
-    public function createPaymentMethodToken(array $cardData): array
-    {
-        return ['success' => false, 'token' => null, 'message' => 'Card tokenization happens in the app, not on the server.'];
-    }
 }

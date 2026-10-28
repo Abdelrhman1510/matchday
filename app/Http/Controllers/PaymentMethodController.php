@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\PaymentMethodException;
 use App\Http\Requests\StoreMoyasarPaymentMethodRequest;
-use App\Http\Requests\StorePaymentMethodRequest;
 use App\Http\Requests\UpdatePaymentMethodRequest;
 use App\Http\Resources\PaymentMethodResource;
 use App\Services\PaymentService;
@@ -33,33 +32,6 @@ class PaymentMethodController extends Controller
             'message' => 'Payment methods retrieved successfully',
             'data' => PaymentMethodResource::collection($paymentMethods),
         ]);
-    }
-
-    /**
-     * Create a new payment method
-     * POST /api/v1/payment-methods
-     */
-    public function store(StorePaymentMethodRequest $request): JsonResponse
-    {
-        try {
-            $paymentMethod = $this->paymentService->createPaymentMethod(
-                $request->user(),
-                $request->validated()
-            );
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Payment method created successfully',
-                'data' => new PaymentMethodResource($paymentMethod),
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create payment method',
-                'data' => [],
-                'errors' => ['message' => $e->getMessage()],
-            ], 500);
-        }
     }
 
     /**

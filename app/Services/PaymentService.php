@@ -179,53 +179,6 @@ class PaymentService
     }
 
     /**
-     * Create a payment method
-     */
-    public function createPaymentMethod(User $user, array $data): PaymentMethod
-    {
-        return DB::transaction(function () use ($user, $data) {
-            // If this is marked as primary or user has no payment methods, set as primary
-            $isPrimary = $data['is_primary'] ?? false;
-            
-            if (!$isPrimary) {
-                $existingMethod = PaymentMethod::where('user_id', $user->id)->first();
-                if (!$existingMethod) {
-                    $isPrimary = true; // First payment method is always primary
-                }
-            }
-
-            // If setting as primary, unset other primary methods
-            if ($isPrimary) {
-                PaymentMethod::where('user_id', $user->id)
-                    ->where('is_primary', true)
-                    ->update(['is_primary' => false]);
-            }
-
-            // Create payment method
-            $cardLastFour = $data['card_last_four'] ?? null;
-            if (!$cardLastFour && !empty($data['card_number'])) {
-                $cardLastFour = substr($data['card_number'], -4);
-            }
-
-            // Build expires_at from expiry_month/expiry_year if not set
-            $expiresAt = $data['expires_at'] ?? null;
-            if (!$expiresAt && !empty($data['expiry_month']) && !empty($data['expiry_year'])) {
-                $expiresAt = $data['expiry_year'] . '-' . $data['expiry_month'];
-            }
-
-            return PaymentMethod::create([
-                'user_id' => $user->id,
-                'type' => $data['type'],
-                'card_last_four' => $cardLastFour,
-                'card_holder' => $data['card_holder'] ?? null,
-                'expires_at' => $expiresAt,
-                'is_primary' => $isPrimary,
-                'provider_token' => $data['provider_token'] ?? null,
-            ]);
-        });
-    }
-
-    /**
      * Verify a Moyasar card-on-file authorization and store the tokenized card.
      *
      * Card data never reaches us: the app authorizes SAR 1 (manual, save_card)

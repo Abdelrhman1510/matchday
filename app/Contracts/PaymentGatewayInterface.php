@@ -31,12 +31,4 @@ interface PaymentGatewayInterface
      * @return array ['status' => string, 'message' => string|null]
      */
     public function verify(string $gatewayRef): array;
-
-    /**
-     * Create a payment method token (for card tokenization)
-     *
-     * @param array $cardData
-     * @return array ['success' => bool, 'token' => string|null, 'message' => string|null]
-     */
-    public function createPaymentMethodToken(array $cardData): array;
 }
