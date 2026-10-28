@@ -40,6 +40,32 @@ class PaymentProcessTest extends TestCase
     }
 
     /** @test */
+    public function the_charge_path_rechecks_paid_status_under_lock_so_a_racing_request_cannot_charge_twice()
+    {
+        $user = User::factory()->create();
+        $booking = Booking::factory()->create(['user_id' => $user->id, 'status' => 'confirmed']);
+        Payment::create([
+            'booking_id' => $booking->id, 'user_id' => $user->id, 'amount' => $booking->total_amount,
+            'currency' => 'SAR', 'status' => 'pending', 'type' => 'booking',
+        ]);
+        $card = PaymentMethod::factory()->create(['user_id' => $user->id]);
+        $service = app(\App\Services\PaymentService::class);
+
+        // Both "requests" passed validation before either charged; the second reaches the service late.
+        $stale = Booking::find($booking->id);
+        $service->processPayment(Booking::find($booking->id), $card);
+
+        try {
+            $service->processPayment($stale, $card);
+            $this->fail('Second charge should have been refused');
+        } catch (\Exception $e) {
+            $this->assertSame('This booking has already been paid.', $e->getMessage());
+        }
+        $this->assertSame(1, Payment::where('booking_id', $booking->id)->count());
+        $this->assertSame('completed', Payment::where('booking_id', $booking->id)->value('status'));
+    }
+
+    /** @test */
     public function it_processes_payment_successfully()
     {
         $user = User::factory()->create();

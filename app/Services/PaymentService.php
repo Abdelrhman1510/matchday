@@ -26,7 +26,13 @@ class PaymentService
     public function processPayment(Booking $booking, PaymentMethod $paymentMethod): Payment
     {
         return DB::transaction(function () use ($booking, $paymentMethod) {
-            $payment = $booking->payment;
+            // Serialize concurrent pay requests for the same booking: the second waits
+            // here until the first commits, then sees it paid instead of charging again.
+            $booking = Booking::whereKey($booking->id)->lockForUpdate()->firstOrFail();
+            $payment = $booking->payment()->first();
+            if ($payment && in_array($payment->status, ['paid', 'completed', 'refunded'], true)) {
+                throw new \Exception('This booking has already been paid.');
+            }
 
             // Create payment record if it doesn't exist
             if (!$payment) {
