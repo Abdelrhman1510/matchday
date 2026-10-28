@@ -78,7 +78,7 @@ class SubscriptionService
 
         // An earlier attempt for this plan still waiting on 3DS: resume it instead of
         // charging the card a second time.
-        $open = Payment::where('user_id', $cafe->owner_id)->where('type', 'subscription')
+        $open = Payment::where('cafe_id', $cafe->id)->where('user_id', $cafe->owner_id)->where('type', 'subscription')
             ->where('plan_id', $plan->id)->where('status', 'pending')->whereNull('subscription_id')
             ->whereNotNull('gateway_ref')->where('created_at', '>', now()->subDay())
             ->latest('id')->first();
@@ -99,6 +99,7 @@ class SubscriptionService
         $payment = Payment::create([
             'user_id' => $cafe->owner_id,
             'plan_id' => $plan->id,
+            'cafe_id' => $cafe->id,
             'payment_method_id' => $paymentMethodId ?: null,
             'amount' => $amount,
             'currency' => $plan->currency,
@@ -159,10 +160,10 @@ class SubscriptionService
             return;
         }
 
-        // Upgrade that needed 3DS: apply the plan it was for.
+        // Upgrade that needed 3DS: apply the plan it was for, to the cafe it was for.
         $plan = $payment->plan_id ? SubscriptionPlan::find($payment->plan_id) : null;
-        $cafe = Cafe::where('owner_id', $payment->user_id)->first();
-        if ($plan && $cafe) {
+        $cafe = $payment->cafe_id ? Cafe::find($payment->cafe_id) : null;
+        if ($plan && $cafe && (int) $cafe->owner_id === (int) $payment->user_id) {
             $this->applyPlan($cafe, $plan, (int) $payment->payment_method_id, $payment);
         }
     }

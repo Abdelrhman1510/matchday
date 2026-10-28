@@ -14,6 +14,7 @@ class Payment extends Model
         'booking_id',
         'subscription_id',
         'plan_id',
+        'cafe_id',
         'user_id',
         'payment_method_id',
         'amount',

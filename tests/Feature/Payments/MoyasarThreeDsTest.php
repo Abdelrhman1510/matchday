@@ -185,6 +185,38 @@ class MoyasarThreeDsTest extends TestCase
     }
 
     /** @test */
+    public function async_completion_applies_the_plan_to_the_cafe_the_charge_was_for()
+    {
+        $owner = User::factory()->cafeOwner()->create();
+        $first = Cafe::factory()->create(['owner_id' => $owner->id]);
+        $second = Cafe::factory()->create(['owner_id' => $owner->id]);
+        $plan = SubscriptionPlan::factory()->create(['price' => 70, 'slug' => 'pro-second']);
+        $payment = Payment::create(['user_id' => $owner->id, 'cafe_id' => $second->id, 'plan_id' => $plan->id,
+            'amount' => 70, 'currency' => 'SAR', 'status' => 'paid', 'type' => 'subscription']);
+
+        app(SubscriptionService::class)->completeSubscriptionPayment($payment);
+
+        $this->assertSame('pro-second', $second->fresh()->subscription_plan);
+        $this->assertSame(0, $first->subscriptions()->count());
+        $this->assertNotSame('pro-second', $first->fresh()->subscription_plan);
+    }
+
+    /** @test */
+    public function async_completion_refuses_a_cafe_not_owned_by_the_payer()
+    {
+        $payer = User::factory()->cafeOwner()->create();
+        $someoneElses = Cafe::factory()->create();
+        $plan = SubscriptionPlan::factory()->create(['price' => 70]);
+        $payment = Payment::create(['user_id' => $payer->id, 'cafe_id' => $someoneElses->id, 'plan_id' => $plan->id,
+            'amount' => 70, 'currency' => 'SAR', 'status' => 'paid', 'type' => 'subscription']);
+
+        app(SubscriptionService::class)->completeSubscriptionPayment($payment);
+
+        $this->assertSame(0, $someoneElses->subscriptions()->count());
+        $this->assertNull($payment->fresh()->subscription_id);
+    }
+
+    /** @test */
     public function a_3ds_renewal_is_flagged_past_due_and_the_owner_is_notified_then_reactivated_by_webhook()
     {
         Notification::fake();
