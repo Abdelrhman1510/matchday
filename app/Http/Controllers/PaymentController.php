@@ -40,6 +40,9 @@ class PaymentController extends Controller
                 'message' => 'Payment processed successfully',
                 'data' => new PaymentResource($payment),
             ]);
+        } catch (\App\Exceptions\PaymentActionRequiredException $e) {
+            // 3DS needed: the app opens data.transaction_url; the webhook records the result.
+            return response()->json($e->toResponseArray(), 400);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -184,6 +187,9 @@ class PaymentController extends Controller
                     'transaction_id' => $payment->gateway_ref ?? $payment->id,
                 ],
             ]);
+        } catch (\App\Exceptions\PaymentActionRequiredException $e) {
+            // 3DS needed: the app opens data.transaction_url; the webhook records the result.
+            return response()->json($e->toResponseArray(), 400);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

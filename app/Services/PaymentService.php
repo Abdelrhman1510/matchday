@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Contracts\PaymentGatewayInterface;
+use App\Exceptions\PaymentActionRequiredException;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
@@ -25,13 +26,29 @@ class PaymentService
      */
     public function processPayment(Booking $booking, PaymentMethod $paymentMethod): Payment
     {
-        return DB::transaction(function () use ($booking, $paymentMethod) {
+        // The outcome is committed first and only then reported, so a declined or
+        // 3DS-pending charge stays on record instead of rolling back with the error.
+        $outcome = DB::transaction(function () use ($booking, $paymentMethod) {
             // Serialize concurrent pay requests for the same booking: the second waits
             // here until the first commits, then sees it paid instead of charging again.
             $booking = Booking::whereKey($booking->id)->lockForUpdate()->firstOrFail();
             $payment = $booking->payment()->first();
             if ($payment && in_array($payment->status, ['paid', 'completed', 'refunded'], true)) {
                 throw new \Exception('This booking has already been paid.');
+            }
+
+            // A charge already waiting on 3DS: resume it rather than charging again.
+            if ($payment && $payment->status === 'pending' && $payment->gateway_ref) {
+                $remote = $this->gateway->verify($payment->gateway_ref);
+                if (in_array($remote['status'], ['paid', 'captured'], true)) {
+                    $payment->update(['status' => 'completed', 'paid_at' => $payment->paid_at ?? now()]);
+                    $booking->update(['status' => 'confirmed']);
+                    return ['payment' => $payment];
+                }
+                if ($remote['status'] === 'initiated' && !empty($remote['transaction_url'])) {
+                    return ['payment' => $payment, 'action_url' => $remote['transaction_url']];
+                }
+                // failed/expired/unknown: fall through to a fresh charge
             }
 
             // Create payment record if it doesn't exist
@@ -69,20 +86,31 @@ class PaymentService
                     'status' => 'confirmed',
                 ]);
 
-                return $payment->fresh(['booking', 'paymentMethod']);
-            } else {
-                // 3DS: the app has no webview in this path, so record the charge as
-                // pending (the webhook reconciles it if the customer completes 3DS)
-                // and surface a clear message instead of a hard failure.
-                $payment->update([
-                    'status' => !empty($result['requires_action']) ? 'pending' : 'failed',
-                    'gateway_ref' => $result['gateway_ref'] ?? $payment->gateway_ref,
-                    'description' => $result['message'] ?? $payment->description,
-                ]);
-
-                throw new \Exception($result['message'] ?? 'Payment processing failed');
+                return ['payment' => $payment];
             }
+
+            // 3DS: keep the charge pending with its Moyasar id; the customer completes
+            // it at transaction_url and the webhook records the result.
+            if (!empty($result['requires_action'])) {
+                $payment->update(['status' => 'pending', 'gateway_ref' => $result['gateway_ref'] ?? $payment->gateway_ref]);
+                return ['payment' => $payment, 'action_url' => $result['transaction_url']];
+            }
+
+            $payment->update([
+                'status' => 'failed',
+                'gateway_ref' => $result['gateway_ref'] ?? $payment->gateway_ref,
+            ]);
+            return ['payment' => $payment, 'error' => $result['message'] ?? 'Payment processing failed'];
         });
+
+        if (isset($outcome['action_url'])) {
+            throw new PaymentActionRequiredException($outcome['action_url'], $outcome['payment']->id);
+        }
+        if (isset($outcome['error'])) {
+            throw new \Exception($outcome['error']);
+        }
+
+        return $outcome['payment']->fresh(['booking', 'paymentMethod']);
     }
 
     /**

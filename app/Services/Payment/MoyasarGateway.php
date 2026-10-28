@@ -98,6 +98,11 @@ class MoyasarGateway implements PaymentGatewayInterface
             return ['status' => 'unknown', 'message' => $e->getMessage()];
         }
 
-        return ['status' => $payment['status'] ?? 'unknown', 'message' => null];
+        return [
+            'status' => $payment['status'] ?? 'unknown',
+            'message' => null,
+            // Present while a 3DS challenge is still open, so it can be resumed.
+            'transaction_url' => $payment['source']['transaction_url'] ?? null,
+        ];
     }
 }

@@ -187,6 +187,9 @@ class SubscriptionController extends Controller
                     ],
                 ],
             ], 200);
+        } catch (\App\Exceptions\PaymentActionRequiredException $e) {
+            // 3DS needed: the app opens data.transaction_url; the webhook applies the plan.
+            return response()->json($e->toResponseArray(), 400);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

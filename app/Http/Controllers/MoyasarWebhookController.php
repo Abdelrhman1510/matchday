@@ -120,6 +120,11 @@ class MoyasarWebhookController extends Controller
             if ($target === $paidStatus && $payment->booking && $payment->booking->status === 'pending') {
                 $payment->booking->update(['status' => 'confirmed']);
             }
+
+            // A subscription upgrade/renewal that needed 3DS takes effect now.
+            if ($target === $paidStatus && $payment->type === 'subscription') {
+                app(\App\Services\SubscriptionService::class)->completeSubscriptionPayment($payment);
+            }
         });
     }
 }

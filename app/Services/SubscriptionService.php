@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\PaymentActionRequiredException;
 use App\Models\Cafe;
 use App\Models\CafeSubscription;
 use App\Models\Payment;
@@ -73,10 +74,31 @@ class SubscriptionService
             throw new \Exception('A payment method is required for this plan.');
         }
 
+        $gateway = app(\App\Contracts\PaymentGatewayInterface::class);
+
+        // An earlier attempt for this plan still waiting on 3DS: resume it instead of
+        // charging the card a second time.
+        $open = Payment::where('user_id', $cafe->owner_id)->where('type', 'subscription')
+            ->where('plan_id', $plan->id)->where('status', 'pending')->whereNull('subscription_id')
+            ->whereNotNull('gateway_ref')->where('created_at', '>', now()->subDay())
+            ->latest('id')->first();
+        if ($open) {
+            $remote = $gateway->verify($open->gateway_ref);
+            if (in_array($remote['status'], ['paid', 'captured'], true)) {
+                $open->update(['status' => 'paid', 'paid_at' => $open->paid_at ?? now()]);
+                return $this->applyPlan($cafe, $plan, (int) $open->payment_method_id, $open);
+            }
+            if ($remote['status'] === 'initiated' && !empty($remote['transaction_url'])) {
+                throw new PaymentActionRequiredException($remote['transaction_url'], $open->id);
+            }
+            // failed/expired: leave it and charge afresh
+        }
+
         // Record the attempt, then charge outside the DB transaction so a failed
         // attempt leaves an auditable record instead of rolling away.
         $payment = Payment::create([
             'user_id' => $cafe->owner_id,
+            'plan_id' => $plan->id,
             'payment_method_id' => $paymentMethodId ?: null,
             'amount' => $amount,
             'currency' => $plan->currency,
@@ -86,13 +108,18 @@ class SubscriptionService
         ]);
 
         if ($requiresCharge) {
-            $result = app(\App\Contracts\PaymentGatewayInterface::class)->charge($payment, $paymentMethod);
+            $result = $gateway->charge($payment, $paymentMethod);
+
+            if (!empty($result['requires_action'])) {
+                // The customer completes 3DS at transaction_url; the webhook then
+                // applies the plan (see completeSubscriptionPayment).
+                $payment->update(['status' => 'pending', 'gateway_ref' => $result['gateway_ref'] ?? null]);
+                throw new PaymentActionRequiredException($result['transaction_url'], $payment->id);
+            }
 
             if (!($result['success'] ?? false)) {
-                // 3DS on a stored token is rare; the app has no webview here, so we
-                // record it pending and surface a clear message rather than upgrade.
                 $payment->update([
-                    'status' => !empty($result['requires_action']) ? 'pending' : 'failed',
+                    'status' => 'failed',
                     'gateway_ref' => $result['gateway_ref'] ?? null,
                     'description' => $result['message'] ?? 'Payment failed',
                 ]);
@@ -108,6 +135,41 @@ class SubscriptionService
             $payment->update(['status' => 'paid', 'paid_at' => now()]);
         }
 
+        return $this->applyPlan($cafe, $plan, $paymentMethodId, $payment);
+    }
+
+    /**
+     * Finish a subscription charge that completed asynchronously (3DS, via the
+     * Moyasar webhook). Idempotent: does nothing once the payment is linked to a
+     * subscription, unless it reactivates a past_due renewal.
+     */
+    public function completeSubscriptionPayment(Payment $payment): void
+    {
+        if ($payment->type !== 'subscription' || !in_array($payment->status, ['paid', 'completed'], true)) {
+            return;
+        }
+
+        // Renewal that needed 3DS: the subscription was flagged past_due.
+        $subscription = $payment->subscription_id ? CafeSubscription::find($payment->subscription_id) : null;
+        if ($subscription) {
+            if ($subscription->status === 'past_due') {
+                $subscription->update(['status' => 'active', 'expires_at' => $subscription->expires_at->addMonth()]);
+                Cache::forget("cafe_subscription_{$subscription->cafe_id}");
+            }
+            return;
+        }
+
+        // Upgrade that needed 3DS: apply the plan it was for.
+        $plan = $payment->plan_id ? SubscriptionPlan::find($payment->plan_id) : null;
+        $cafe = Cafe::where('owner_id', $payment->user_id)->first();
+        if ($plan && $cafe) {
+            $this->applyPlan($cafe, $plan, (int) $payment->payment_method_id, $payment);
+        }
+    }
+
+    /** Put the cafe on $plan for a month, paid by $payment. */
+    private function applyPlan(Cafe $cafe, SubscriptionPlan $plan, int $paymentMethodId, Payment $payment): array
+    {
         return DB::transaction(function () use ($cafe, $plan, $paymentMethodId, $payment) {
             $existingSubscription = $cafe->subscriptions()
                 ->where('status', 'active')
@@ -241,7 +303,11 @@ class SubscriptionService
             $subscription->update(['status' => 'past_due']);
             Cache::forget("cafe_subscription_{$cafe->id}");
             Log::warning('Subscription renewal needs 3DS re-confirmation', ['subscription_id' => $subscription->id]);
-            // ponytail: notify the owner to re-confirm in-app once a notification channel exists.
+            try {
+                $cafe->owner?->notify(new \App\Notifications\SubscriptionRenewalNeedsConfirmationNotification($subscription));
+            } catch (\Throwable $e) {
+                Log::error('Could not notify owner about renewal 3DS', ['subscription_id' => $subscription->id]);
+            }
             return false;
         }
 
