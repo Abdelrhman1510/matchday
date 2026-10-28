@@ -18,6 +18,28 @@ class PaymentProcessTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
+    public function a_confirmed_booking_with_a_pending_payment_can_be_paid_once_via_payments_process()
+    {
+        $user = User::factory()->create();
+        $booking = Booking::factory()->create(['user_id' => $user->id, 'status' => 'confirmed']);
+        Payment::create([
+            'booking_id' => $booking->id, 'user_id' => $user->id, 'amount' => $booking->total_amount,
+            'currency' => 'SAR', 'status' => 'pending', 'type' => 'booking',
+        ]);
+        $paymentMethod = PaymentMethod::factory()->create(['user_id' => $user->id]);
+        Sanctum::actingAs($user);
+
+        $body = ['booking_id' => $booking->id, 'payment_method_id' => $paymentMethod->id, 'amount' => 1, 'currency' => 'SAR'];
+        $this->postJson('/api/v1/payments/process', $body)->assertSuccessful();
+        $this->assertDatabaseHas('payments', ['booking_id' => $booking->id, 'status' => 'completed']);
+
+        // Second attempt on the same booking must not charge again.
+        $this->postJson('/api/v1/payments/process', $body)
+            ->assertStatus(422)
+            ->assertJsonPath('errors.booking_id.0', 'This booking has already been paid.');
+    }
+
+    /** @test */
     public function it_processes_payment_successfully()
     {
         $user = User::factory()->create();

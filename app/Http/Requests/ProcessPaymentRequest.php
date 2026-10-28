@@ -36,8 +36,9 @@ class ProcessPaymentRequest extends FormRequest
                 return;
             }
 
-            // Validate booking status is pending
-            if ($booking && $booking->status !== 'pending') {
+            // Bookings are created as 'confirmed' (BookingService) while their payment is
+            // still pending, so both statuses are payable; the paid check below blocks repeats.
+            if ($booking && !in_array($booking->status, ['pending', 'confirmed'], true)) {
                 $validator->errors()->add('booking_id', 'Only pending bookings can be paid.');
                 return;
             }
@@ -50,7 +51,8 @@ class ProcessPaymentRequest extends FormRequest
             }
 
             // Check if payment already paid
-            if ($booking && $booking->payment && $booking->payment->status === 'paid') {
+            // PaymentService records a successful booking charge as 'completed'.
+            if ($booking && $booking->payment && in_array($booking->payment->status, ['paid', 'completed'], true)) {
                 $validator->errors()->add('booking_id', 'This booking has already been paid.');
             }
         });
