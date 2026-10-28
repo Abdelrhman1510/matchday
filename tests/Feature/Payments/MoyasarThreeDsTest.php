@@ -130,6 +130,37 @@ class MoyasarThreeDsTest extends TestCase
     }
 
     /** @test */
+    public function the_3ds_return_page_settles_the_charge_without_the_webhook()
+    {
+        $this->fakeMoyasar('initiated');
+        [$booking, $card] = $this->unpaidBooking();
+        $this->postJson('/api/v1/payments/process', ['booking_id' => $booking->id, 'payment_method_id' => $card->id])->assertStatus(400);
+
+        $this->fakeMoyasar('paid'); // customer finished 3DS; the webview lands on the callback
+        $this->get('/payments/callback?id=pay_3ds&status=paid')->assertOk();
+
+        $this->assertSame('completed', Payment::where('booking_id', $booking->id)->value('status'));
+        $this->get('/payments/callback?id=unknown')->assertOk(); // unknown ids are harmless
+    }
+
+    /** @test */
+    public function reconcile_settles_pending_charges_from_moyasar_and_leaves_open_3ds_alone()
+    {
+        $this->fakeMoyasar('initiated');
+        [$booking, $card] = $this->unpaidBooking();
+        $this->postJson('/api/v1/payments/process', ['booking_id' => $booking->id, 'payment_method_id' => $card->id])->assertStatus(400);
+        Payment::where('booking_id', $booking->id)->update(['created_at' => now()->subMinutes(10)]);
+
+        $this->artisan('payments:reconcile')->assertSuccessful();
+        $this->assertSame('pending', Payment::where('booking_id', $booking->id)->value('status')); // still in 3DS
+
+        $this->fakeMoyasar('paid');
+        $this->artisan('payments:reconcile')->assertSuccessful();
+        $this->assertSame('completed', Payment::where('booking_id', $booking->id)->value('status'));
+        $this->assertSame(1, $this->chargesSent()); // reconcile only reads, never charges
+    }
+
+    /** @test */
     public function a_declined_booking_charge_is_recorded_as_failed()
     {
         Http::fake(['api.moyasar.com/v1/payments' => Http::response(

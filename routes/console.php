@@ -56,3 +56,9 @@ Schedule::command('matchday:update-occupancy-cache')
     ->everyTwoMinutes()
     ->withoutOverlapping()
     ->runInBackground();
+
+// 8. Settle pending Moyasar charges the webhook missed - Every 10 minutes
+Schedule::command('payments:reconcile')
+    ->everyTenMinutes()
+    ->withoutOverlapping()
+    ->runInBackground();

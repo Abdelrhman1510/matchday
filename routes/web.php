@@ -28,7 +28,20 @@ use App\Livewire\Platform\SettingsPage;
 Route::get('/', [PublicPageController::class, 'landing'])->middleware('site.locale')->name('public.landing');
 
 // Moyasar 3DS return URL — the app watches for this host and closes the webview.
-Route::match(['get', 'post'], '/payments/callback', fn () => response('OK', 200))->name('payments.callback');
+// Moyasar appends ?id=…; if that is one of our pending charges, settle it now from
+// Moyasar's own record instead of waiting for the webhook.
+Route::match(['get', 'post'], '/payments/callback', function (\Illuminate\Http\Request $request) {
+    $id = $request->query('id');
+    $payment = is_string($id) && $id !== '' ? \App\Models\Payment::where('gateway_ref', $id)->where('status', 'pending')->first() : null;
+    if ($payment) {
+        try {
+            app(\App\Services\Payment\MoyasarPaymentSync::class)->sync($payment, $id);
+        } catch (\Throwable $e) {
+            // Moyasar unreachable: the webhook or payments:reconcile settles it later.
+        }
+    }
+    return response('OK', 200);
+})->middleware('throttle:30,1')->name('payments.callback');
 
 // Contact Us
 Route::get('/contact', [PublicPageController::class, 'contact'])->middleware('site.locale')->name('public.contact');

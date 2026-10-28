@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Payment;
-use App\Services\Payment\MoyasarClient;
+use App\Services\Payment\MoyasarPaymentSync;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -21,7 +19,7 @@ use Illuminate\Support\Facades\Log;
  */
 class MoyasarWebhookController extends Controller
 {
-    public function handle(Request $request, MoyasarClient $moyasar): JsonResponse
+    public function handle(Request $request, MoyasarPaymentSync $sync): JsonResponse
     {
         $secret = (string) config('services.moyasar.webhook_secret');
         $provided = (string) $request->input('secret_token', '');
@@ -36,7 +34,7 @@ class MoyasarWebhookController extends Controller
             return response()->json(['success' => true, 'message' => 'ignored'], 200);
         }
 
-        $payment = $this->findPayment($moyasarId, $request->input('data.metadata.payment_id'));
+        $payment = $sync->findPayment($moyasarId, $request->input('data.metadata.payment_id'));
         if (!$payment) {
             // Unknown payment (e.g. a card-verification hold) — acknowledge so
             // Moyasar stops retrying.
@@ -44,87 +42,15 @@ class MoyasarWebhookController extends Controller
         }
 
         try {
-            $remote = $moyasar->getPayment($moyasarId);
+            $result = $sync->sync($payment, $moyasarId);
         } catch (\Throwable $e) {
             // Non-2xx makes Moyasar retry later.
             Log::warning("Moyasar webhook: could not verify payment for our payment {$payment->id}");
             return response()->json(['success' => false], 503);
         }
 
-        // The remote payment must be the one we charged, for the amount we charged.
-        $amountMatches = (int) ($remote['amount'] ?? -1) === (int) round($payment->amount * 100)
-            && strtoupper((string) ($remote['currency'] ?? '')) === strtoupper((string) $payment->currency);
-        // A row matched only via the event body's metadata must be the one Moyasar's
-        // own record names — otherwise any paid payment could settle another row.
-        $boundToUs = $payment->gateway_ref === $moyasarId
-            || (string) ($remote['metadata']['payment_id'] ?? '') === (string) $payment->id;
-        if (($remote['id'] ?? null) !== $moyasarId || !$amountMatches || !$boundToUs) {
-            Log::warning("Moyasar webhook: payment {$payment->id} does not match the Moyasar record; ignored");
-            return response()->json(['success' => true, 'message' => 'ignored'], 200);
-        }
-
-        $this->applyStatus($payment, $remote['status'] ?? null, $moyasarId);
-
-        return response()->json(['success' => true], 200);
-    }
-
-    private function findPayment(string $moyasarId, $ourPaymentId): ?Payment
-    {
-        $byRef = Payment::where('gateway_ref', $moyasarId)->first();
-        if ($byRef) {
-            return $byRef;
-        }
-
-        // Fall back to the id we put in metadata, but only for a row not yet tied
-        // to a different Moyasar payment.
-        $byMeta = is_numeric($ourPaymentId) ? Payment::find((int) $ourPaymentId) : null;
-
-        return $byMeta && ($byMeta->gateway_ref === null || $byMeta->gateway_ref === $moyasarId) ? $byMeta : null;
-    }
-
-    private function applyStatus(Payment $payment, ?string $remoteStatus, string $moyasarId): void
-    {
-        // Booking charges are stored as 'completed', subscription charges as 'paid'.
-        $paidStatus = $payment->type === 'booking' ? 'completed' : 'paid';
-
-        $target = match ($remoteStatus) {
-            'paid', 'captured' => $paidStatus,
-            'failed' => 'failed',
-            'refunded' => 'refunded',
-            default => null, // initiated/authorized/voided: nothing to record here
-        };
-        if ($target === null) {
-            return;
-        }
-
-        DB::transaction(function () use ($payment, $target, $moyasarId, $paidStatus) {
-            $payment = Payment::whereKey($payment->id)->lockForUpdate()->first();
-            $current = $payment->status;
-
-            $alreadyApplied = $current === $target
-                || ($target === $paidStatus && in_array($current, ['paid', 'completed'], true));
-            // Refunded is final; a paid payment never goes back to failed.
-            $wouldRegress = $current === 'refunded'
-                || ($target === 'failed' && in_array($current, ['paid', 'completed'], true));
-            if ($alreadyApplied || $wouldRegress) {
-                return; // duplicate or out-of-order delivery
-            }
-
-            $payment->update([
-                'status' => $target,
-                'gateway_ref' => $moyasarId,
-                'paid_at' => $target === $paidStatus ? ($payment->paid_at ?? now()) : $payment->paid_at,
-            ]);
-
-            // A booking whose payment just completed asynchronously should confirm.
-            if ($target === $paidStatus && $payment->booking && $payment->booking->status === 'pending') {
-                $payment->booking->update(['status' => 'confirmed']);
-            }
-
-            // A subscription upgrade/renewal that needed 3DS takes effect now.
-            if ($target === $paidStatus && $payment->type === 'subscription') {
-                app(\App\Services\SubscriptionService::class)->completeSubscriptionPayment($payment);
-            }
-        });
+        return $result === 'mismatch'
+            ? response()->json(['success' => true, 'message' => 'ignored'], 200)
+            : response()->json(['success' => true], 200);
     }
 }
