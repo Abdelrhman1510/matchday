@@ -91,12 +91,27 @@ class MoyasarChargeTest extends TestCase
     }
 
     /** Moyasar's real record for pay_hook_1, as returned by GET /payments/{id}. */
-    private function fakeRemote(string $status, int $amount = 10000): void
+    private function fakeRemote(string $status, int $amount = 10000, ?string $metaPaymentId = null): void
     {
+        $metaPaymentId ??= (string) Payment::max('id');
         Http::fake([
             'api.moyasar.com/v1/payments/pay_hook_1' => Http::response(
-                ['id' => 'pay_hook_1', 'status' => $status, 'amount' => $amount, 'currency' => 'SAR'], 200),
+                ['id' => 'pay_hook_1', 'status' => $status, 'amount' => $amount, 'currency' => 'SAR',
+                 'metadata' => ['payment_id' => $metaPaymentId]], 200),
         ]);
+    }
+
+    /** @test */
+    public function webhook_cannot_settle_a_different_payment_by_claiming_its_id_in_the_body()
+    {
+        $victim = $this->pendingBookingPayment();
+        // A genuinely paid Moyasar payment, same amount, but created for some other row.
+        $this->fakeRemote('paid', 10000, '999999');
+
+        $this->hook($victim, 'paid')->assertOk();
+
+        $this->assertSame('pending', $victim->fresh()->status);
+        $this->assertNull($victim->fresh()->gateway_ref);
     }
 
     private function hook(Payment $payment, string $claimedStatus)

@@ -54,7 +54,11 @@ class MoyasarWebhookController extends Controller
         // The remote payment must be the one we charged, for the amount we charged.
         $amountMatches = (int) ($remote['amount'] ?? -1) === (int) round($payment->amount * 100)
             && strtoupper((string) ($remote['currency'] ?? '')) === strtoupper((string) $payment->currency);
-        if (($remote['id'] ?? null) !== $moyasarId || !$amountMatches) {
+        // A row matched only via the event body's metadata must be the one Moyasar's
+        // own record names — otherwise any paid payment could settle another row.
+        $boundToUs = $payment->gateway_ref === $moyasarId
+            || (string) ($remote['metadata']['payment_id'] ?? '') === (string) $payment->id;
+        if (($remote['id'] ?? null) !== $moyasarId || !$amountMatches || !$boundToUs) {
             Log::warning("Moyasar webhook: payment {$payment->id} does not match the Moyasar record; ignored");
             return response()->json(['success' => true, 'message' => 'ignored'], 200);
         }
