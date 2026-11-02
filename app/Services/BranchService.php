@@ -21,14 +21,20 @@ class BranchService
                 'amenities',
                 'seatingSections',
                 'matches' => function ($query) {
-                    $query->where('status', 'live')
-                        ->orWhere(function ($q) {
-                            $q->where('status', 'upcoming')
-                              ->where('kick_off', '>', now());
+                    $query->where('is_published', true)
+                        ->where(function ($q) {
+                            $q->where('status', 'live')
+                                ->orWhere(function ($q) {
+                                    // kick_off is a time of day, so the day comes from match_date.
+                                    $q->where('status', 'upcoming')
+                                        ->where('match_date', '>=', now()->toDateString());
+                                });
                         })
                         ->with(['homeTeam', 'awayTeam'])
+                        ->orderByRaw("CASE WHEN status = 'live' THEN 0 ELSE 1 END")
+                        ->orderBy('match_date')
                         ->orderBy('kick_off')
-                        ->limit(5);
+                        ->orderBy('id');
                 }
             ])
             ->find($id);

@@ -144,6 +144,37 @@ class BranchTest extends TestCase
     }
 
     /** @test */
+    public function branch_detail_current_matches_lists_every_live_and_upcoming_match()
+    {
+        $branch = Branch::factory()->create(['cafe_id' => Cafe::factory()->create()->id]);
+        $make = fn (array $attrs) => GameMatch::factory()->create($attrs + [
+            'branch_id' => $branch->id, 'is_published' => true, 'status' => 'upcoming',
+            'match_date' => now()->addDays(3)->toDateString(), 'kick_off' => '17:00',
+        ]);
+
+        $later = $make(['match_date' => now()->addDays(10)->toDateString()]);
+        $soon = $make(['match_date' => now()->addDays(2)->toDateString()]);
+        $live = $make(['status' => 'live', 'match_date' => now()->toDateString()]);
+        $moreUpcoming = GameMatch::factory()->count(5)->create([
+            'branch_id' => $branch->id, 'is_published' => true, 'status' => 'upcoming',
+            'match_date' => now()->addDays(5)->toDateString(), 'kick_off' => '17:00',
+        ]);
+
+        // None of these belong in the list.
+        $make(['status' => 'cancelled']);
+        $make(['status' => 'finished']);
+        $make(['is_published' => false]);
+        $make(['match_date' => now()->subDay()->toDateString()]); // past, status never updated
+
+        $ids = collect($this->getJson("/api/v1/branches/{$branch->id}")->assertOk()->json('data.current_matches'))->pluck('id');
+
+        $this->assertSame(
+            [$live->id, $soon->id, ...$moreUpcoming->pluck('id')->all(), $later->id],
+            $ids->all()
+        );
+    }
+
+    /** @test */
     public function it_returns_branch_with_full_details()
     {
         $cafe = Cafe::factory()->create();
