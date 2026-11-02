@@ -7,6 +7,7 @@ use App\Models\Branch;
 use App\Models\BranchHour;
 use App\Models\Amenity;
 use App\Models\GameMatch;
+use App\Models\Team;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -172,6 +173,24 @@ class BranchTest extends TestCase
             [$live->id, $soon->id, ...$moreUpcoming->pluck('id')->all(), $later->id],
             $ids->all()
         );
+    }
+
+    /** @test */
+    public function current_matches_team_logos_are_never_null_or_empty()
+    {
+        $branch = Branch::factory()->create(['cafe_id' => Cafe::factory()->create()->id]);
+        $noLogo = Team::factory()->create(['logo' => null, 'short_name' => 'FCB']);
+        $blankLogo = Team::factory()->create(['logo' => '']);
+        GameMatch::factory()->create([
+            'branch_id' => $branch->id, 'is_published' => true, 'status' => 'upcoming',
+            'match_date' => now()->addDay()->toDateString(),
+            'home_team_id' => $noLogo->id, 'away_team_id' => $blankLogo->id,
+        ]);
+
+        $match = $this->getJson("/api/v1/branches/{$branch->id}")->assertOk()->json('data.current_matches.0');
+
+        $this->assertStringStartsWith('https://ui-avatars.com/api/?name=FCB', $match['home_team']['logo']);
+        $this->assertStringStartsWith('https://ui-avatars.com/api/?name=', $match['away_team']['logo']);
     }
 
     /** @test */

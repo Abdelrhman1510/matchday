@@ -62,7 +62,7 @@ class MatchResource extends JsonResource
                     'name' => $this->homeTeam->name,
                     'name_ar' => $this->homeTeam->name_ar,
                     'short_name' => $this->homeTeam->short_name,
-                    'logo' => $this->homeTeam->logo ? (str_starts_with($this->homeTeam->logo, 'http') ? $this->homeTeam->logo : url('storage/' . $this->homeTeam->logo)) : null,
+                    'logo' => $this->teamLogo($this->homeTeam),
                 ];
             }),
             'away_team' => $this->when($this->relationLoaded('awayTeam'), function () {
@@ -71,7 +71,7 @@ class MatchResource extends JsonResource
                     'name' => $this->awayTeam->name,
                     'name_ar' => $this->awayTeam->name_ar,
                     'short_name' => $this->awayTeam->short_name,
-                    'logo' => $this->awayTeam->logo ? (str_starts_with($this->awayTeam->logo, 'http') ? $this->awayTeam->logo : url('storage/' . $this->awayTeam->logo)) : null,
+                    'logo' => $this->teamLogo($this->awayTeam),
                 ];
             }),
             'home_score' => $this->home_score,
@@ -91,5 +91,22 @@ class MatchResource extends JsonResource
                 ];
             }),
         ];
+    }
+
+    /** Always a loadable URL: a team with no logo gets the same placeholder other teams already use. */
+    private function teamLogo($team): string
+    {
+        if (!$team->logo) {
+            return 'https://ui-avatars.com/api/?' . http_build_query([
+                'name' => $team->short_name ?: $team->name,
+                'background' => '1a1a2e',
+                'color' => 'fff',
+                'size' => 200,
+                'bold' => 'true',
+                'format' => 'png',
+            ]);
+        }
+
+        return str_starts_with($team->logo, 'http') ? $team->logo : url('storage/' . $team->logo);
     }
 }
