@@ -176,7 +176,7 @@ class BranchTest extends TestCase
     }
 
     /** @test */
-    public function current_matches_team_logos_are_never_null_or_empty()
+    public function match_team_logos_fall_back_to_a_placeholder_and_current_matches_are_static()
     {
         $branch = Branch::factory()->create(['cafe_id' => Cafe::factory()->create()->id]);
         $noLogo = Team::factory()->create(['logo' => null, 'short_name' => 'FCB']);
@@ -187,10 +187,15 @@ class BranchTest extends TestCase
             'home_team_id' => $noLogo->id, 'away_team_id' => $blankLogo->id,
         ]);
 
-        $match = $this->getJson("/api/v1/branches/{$branch->id}")->assertOk()->json('data.current_matches.0');
+        $match = $this->getJson("/api/v1/branches/{$branch->id}/matches")->assertOk()->json('data.0');
 
         $this->assertStringStartsWith('https://ui-avatars.com/api/?name=FCB', $match['home_team']['logo']);
         $this->assertStringStartsWith('https://ui-avatars.com/api/?name=', $match['away_team']['logo']);
+
+        // current_matches on the branch detail returns a static logo for now.
+        $current = $this->getJson("/api/v1/branches/{$branch->id}")->assertOk()->json('data.current_matches.0');
+        $this->assertSame('fares/logo', $current['home_team']['logo']);
+        $this->assertSame('fares/logo', $current['away_team']['logo']);
     }
 
     /** @test */
