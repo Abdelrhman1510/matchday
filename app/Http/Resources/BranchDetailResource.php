@@ -75,11 +75,11 @@ class BranchDetailResource extends JsonResource
             'amenities' => BranchAmenityResource::collection($this->whenLoaded('amenities')),
             'seating_sections' => SeatingSectionResource::collection($this->whenLoaded('seatingSections')),
             'current_matches' => $this->whenLoaded('matches', function () use ($request) {
-                // Temporary: static team logos for this list only, until real ones are wanted back.
+                // Temporary: empty team logos for this list only, until real ones are wanted back.
                 return collect(MatchResource::collection($this->matches)->resolve($request))
                     ->map(function (array $match) {
-                        $match['home_team']['logo'] = 'fares/logo';
-                        $match['away_team']['logo'] = 'fares/logo';
+                        $match['home_team']['logo'] = '';
+                        $match['away_team']['logo'] = '';
 
                         return $match;
                     })

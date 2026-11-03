@@ -192,10 +192,10 @@ class BranchTest extends TestCase
         $this->assertStringStartsWith('https://ui-avatars.com/api/?name=FCB', $match['home_team']['logo']);
         $this->assertStringStartsWith('https://ui-avatars.com/api/?name=', $match['away_team']['logo']);
 
-        // current_matches on the branch detail returns a static logo for now.
+        // current_matches on the branch detail returns an empty logo for now.
         $current = $this->getJson("/api/v1/branches/{$branch->id}")->assertOk()->json('data.current_matches.0');
-        $this->assertSame('fares/logo', $current['home_team']['logo']);
-        $this->assertSame('fares/logo', $current['away_team']['logo']);
+        $this->assertSame('', $current['home_team']['logo']);
+        $this->assertSame('', $current['away_team']['logo']);
     }
 
     /** @test */
