@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -30,6 +31,24 @@ class Team extends Model
             'is_popular' => 'boolean',
             'sort_order' => 'integer',
         ];
+    }
+
+    /**
+     * Never shorter than 2 letters: imported teams can hold a single letter
+     * ("A" for Arsenal), so fall back to the start of the name's longest word.
+     */
+    protected function shortName(): Attribute
+    {
+        return Attribute::get(function ($value, array $attributes) {
+            if (mb_strlen((string) $value) >= 2) {
+                return $value;
+            }
+
+            $words = array_map(fn ($word) => preg_replace('/[^\p{L}\p{N}]/u', '', $word), explode(' ', $attributes['name'] ?? ''));
+            usort($words, fn ($a, $b) => mb_strlen($b) <=> mb_strlen($a));
+
+            return mb_strtoupper(mb_substr($words[0], 0, 2)) ?: $value;
+        });
     }
 
     // Relationships

@@ -199,6 +199,26 @@ class BranchTest extends TestCase
     }
 
     /** @test */
+    public function team_short_names_in_current_matches_have_at_least_two_letters()
+    {
+        $branch = Branch::factory()->create(['cafe_id' => Cafe::factory()->create()->id]);
+        GameMatch::factory()->create([
+            'branch_id' => $branch->id, 'is_published' => true, 'status' => 'upcoming',
+            'match_date' => now()->addDay()->toDateString(),
+            'home_team_id' => Team::factory()->create(['name' => 'Arsenal F.C.', 'short_name' => 'A'])->id,
+            'away_team_id' => Team::factory()->create(['name' => 'Hull City A.F.C.', 'short_name' => 'HC'])->id,
+        ]);
+
+        $match = $this->getJson("/api/v1/branches/{$branch->id}")->assertOk()->json('data.current_matches.0');
+
+        $this->assertSame('AR', $match['home_team']['short_name']);
+        $this->assertSame('HC', $match['away_team']['short_name']); // already fine, untouched
+
+        $this->assertSame('CO', (new Team(['name' => 'F.C. Copenhagen', 'short_name' => 'C']))->short_name);
+        $this->assertSame('DR', (new Team(['name' => 'Drumcondra F.C.', 'short_name' => null]))->short_name);
+    }
+
+    /** @test */
     public function it_returns_branch_with_full_details()
     {
         $cafe = Cafe::factory()->create();
