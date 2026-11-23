@@ -36,7 +36,7 @@ class OccupancyService
 
             // Reserved: confirmed (not yet checked in) bookings for today
             $reservedBookings = Booking::whereIn('match_id', $todayMatches)
-                ->where('status', 'confirmed')
+                ->where(\App\Models\Booking::activeConstraint(false))
                 ->get();
 
             $reserved = $reservedBookings->sum('guests_count');

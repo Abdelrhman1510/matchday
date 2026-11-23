@@ -70,14 +70,18 @@ class QrScanService
             ];
         }
 
+        $payments = app(\App\Services\Wallet\BookingPaymentService::class);
+        $notPaid = $payments->checkInBlockedReason($booking);
+        if ($notPaid !== null) {
+            $this->logScan($cafe->id, $scannedBy, $booking->id, $qrCode, 'invalid_status', 'Booking not paid', $startTime);
+            return ['success' => false, 'status' => 422, 'message' => $notPaid];
+        }
+
         // Log success
         $this->logScan($cafe->id, $scannedBy, $booking->id, $qrCode, 'success', null, $startTime);
 
-        // Perform check-in
-        $booking->update([
-            'status' => 'checked_in',
-            'checked_in_at' => now(),
-        ]);
+        // Perform check-in (also releases the cafe's earning)
+        $booking = $payments->checkIn($booking);
 
         // Load full data for response
         $booking->load([

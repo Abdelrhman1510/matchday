@@ -76,6 +76,11 @@ return [
         // Shared secret sent by Moyasar on webhook calls, for verification.
         'webhook_secret' => env('MOYASAR_WEBHOOK_SECRET'),
         'base_url' => env('MOYASAR_BASE_URL', 'https://api.moyasar.com/v1'),
+        // Payout source account id, issued by Moyasar after the bank enables B2B.
+        'payout_source_id' => env('MOYASAR_PAYOUT_SOURCE_ID'),
+        // Stays false until the bank and Moyasar have finished the live payout setup.
+        'payouts_enabled' => (bool) env('MOYASAR_PAYOUTS_ENABLED', false),
+        'payout_purpose' => env('MOYASAR_PAYOUT_PURPOSE', 'payment_to_merchant'),
     ],
 
 ];

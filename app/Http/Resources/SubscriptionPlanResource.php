@@ -32,7 +32,7 @@ class SubscriptionPlanResource extends JsonResource
             'billing_period' => 'monthly',
             
             // UI Helper Flags
-            'is_most_popular' => $this->slug === 'pro',
+            'is_most_popular' => $this->is_most_popular ?? $this->slug === 'pro',
             'display_price' => $this->price . ' ' . $this->currency . '/month',
             'bookings_label' => $this->max_bookings 
                 ? 'Up to ' . $this->max_bookings . ' bookings/month' 

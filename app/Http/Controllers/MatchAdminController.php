@@ -779,17 +779,16 @@ class MatchAdminController extends Controller
 
         // Process refunds for all confirmed bookings
         $bookings = \App\Models\Booking::where('match_id', $match->id)
-            ->where('status', 'confirmed')
+            ->where(\App\Models\Booking::activeConstraint(false))
             ->get();
 
         foreach ($bookings as $booking) {
-            $booking->update(['status' => 'cancelled']);
-            // Refund payments
+            // Reverses the cafe's earning and refunds a real charge through Moyasar.
+            app(\App\Services\Wallet\BookingPaymentService::class)->handleCancellation($booking);
+            $booking->update(['status' => 'cancelled', 'cancelled_at' => now(), 'cancel_reason' => 'match_cancelled']);
             \App\Models\Payment::where('booking_id', $booking->id)
-                ->where(function ($query) {
-                    $query->where('status', 'paid')
-                        ->orWhere('status', 'completed');
-                })
+                ->whereNull('gateway_ref')
+                ->whereIn('status', ['paid', 'completed'])
                 ->update(['status' => 'refunded']);
         }
 

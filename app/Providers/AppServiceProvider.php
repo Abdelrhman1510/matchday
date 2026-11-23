@@ -124,6 +124,13 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function registerEventListeners(): void
     {
+        // A postponed match moves the release of the cafe's held earnings.
+        \App\Models\GameMatch::updated(function (\App\Models\GameMatch $match) {
+            if ($match->wasChanged(['match_date', 'kick_off']) && $match->match_date && $match->kick_off) {
+                app(\App\Services\Wallet\WalletService::class)->rescheduleForMatch($match);
+            }
+        });
+
         Event::listen(BookingCreated::class, SendBookingConfirmedNotification::class);
         Event::listen(BookingCancelled::class, SendBookingCancelledNotification::class);
         Event::listen(AchievementUnlocked::class, SendAchievementUnlockedNotification::class);

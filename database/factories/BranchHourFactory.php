@@ -14,7 +14,7 @@ class BranchHourFactory extends Factory
     {
         return [
             'branch_id' => Branch::factory(),
-            'day_of_week' => fake()->randomElement(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']),
+            'day_of_week' => fake()->numberBetween(0, 6),
             'is_open' => true,
             'open_time' => '09:00',
             'close_time' => '22:00',

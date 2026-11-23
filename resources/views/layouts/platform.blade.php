@@ -155,6 +155,27 @@
                     {{ __('platform.nav.plans') }}
                 </x-platform.nav-link>
 
+                <x-platform.nav-link href="{{ route('platform.fees') }}" :active="request()->routeIs('platform.fees')"
+                    icon="document">
+                    {{ __('finance.nav_fees') }}
+                </x-platform.nav-link>
+
+                @can('withdrawals.view')
+                    <x-platform.nav-link href="{{ route('platform.withdrawals') }}"
+                        :active="request()->routeIs('platform.withdrawals')" icon="document">
+                        {{ __('finance.nav_withdrawals') }}
+                        @php $pendingWithdrawals = \App\Models\WithdrawalRequest::where('status', 'pending')->count(); @endphp
+                        @if ($pendingWithdrawals > 0)
+                            <span class="ms-auto px-2 py-0.5 rounded-full bg-[#c8ff00] text-black text-xs font-bold">{{ $pendingWithdrawals }}</span>
+                        @endif
+                    </x-platform.nav-link>
+
+                    <x-platform.nav-link href="{{ route('platform.bank-accounts') }}"
+                        :active="request()->routeIs('platform.bank-accounts')" icon="document">
+                        {{ __('finance.nav_banks') }}
+                    </x-platform.nav-link>
+                @endcan
+
                 <x-platform.nav-link href="{{ route('platform.reports') }}"
                     :active="request()->routeIs('platform.reports')" icon="document">
                     {{ __('platform.nav.reports') }}

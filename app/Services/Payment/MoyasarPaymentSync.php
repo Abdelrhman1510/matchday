@@ -4,6 +4,7 @@ namespace App\Services\Payment;
 
 use App\Models\Payment;
 use App\Services\SubscriptionService;
+use App\Services\Wallet\BookingPaymentService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -64,14 +65,14 @@ class MoyasarPaymentSync
         $target = match ($remoteStatus) {
             'paid', 'captured' => $paidStatus,
             'failed' => 'failed',
-            'refunded' => 'refunded',
-            default => null, // initiated/authorized/voided: nothing to record here
+            'refunded', 'voided' => 'refunded',
+            default => null, // initiated/authorized: nothing to record here
         };
         if ($target === null) {
             return false;
         }
 
-        return DB::transaction(function () use ($payment, $target, $moyasarId, $paidStatus) {
+        return DB::transaction(function () use ($payment, $target, $moyasarId, $paidStatus, $remoteStatus) {
             $payment = Payment::whereKey($payment->id)->lockForUpdate()->first();
             $current = $payment->status;
 
@@ -80,7 +81,9 @@ class MoyasarPaymentSync
             // Refunded is final; a paid payment never goes back to failed.
             $wouldRegress = $current === 'refunded'
                 || ($target === 'failed' && in_array($current, ['paid', 'completed'], true));
-            if ($alreadyApplied || $wouldRegress) {
+            // A void only matters for money we recorded as received.
+            $voidOfUnpaid = $remoteStatus === 'voided' && !in_array($current, ['paid', 'completed'], true);
+            if ($alreadyApplied || $wouldRegress || $voidOfUnpaid) {
                 return false; // duplicate or out-of-order delivery
             }
 
@@ -91,8 +94,11 @@ class MoyasarPaymentSync
             ]);
 
             // A booking whose payment just completed asynchronously should confirm.
-            if ($target === $paidStatus && $payment->booking && $payment->booking->status === 'pending') {
-                $payment->booking->update(['status' => 'confirmed']);
+            if ($target === $paidStatus && $payment->booking) {
+                app(BookingPaymentService::class)->confirmPaid($payment->booking, $payment);
+            }
+            if ($target === 'refunded' && $payment->booking) {
+                app(BookingPaymentService::class)->handleRemoteRefund($payment);
             }
 
             // A subscription upgrade/renewal that needed 3DS takes effect now.

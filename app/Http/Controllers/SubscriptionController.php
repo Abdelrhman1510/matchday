@@ -81,7 +81,14 @@ class SubscriptionController extends Controller
      */
     public function plans()
     {
-        $plans = $this->subscriptionService->getAllPlans();
+        // Subscriptions switched off: every cafe is on one free plan with no limits.
+        $plans = app(\App\Services\Wallet\FeeSettingsService::class)->subscriptionsEnabled()
+            ? $this->subscriptionService->getAllPlans()
+            : collect([(new \App\Models\SubscriptionPlan)->forceFill([
+                'id' => 0, 'name' => 'Free', 'name_ar' => 'مجاني', 'slug' => 'free', 'price' => 0,
+                'currency' => 'SAR', 'features' => [], 'features_ar' => [], 'max_bookings' => null,
+                'has_analytics' => true, 'has_branding' => true, 'has_priority_support' => false,
+            ])]);
 
         return response()->json([
             'success' => true,

@@ -88,7 +88,7 @@ class MatchService
             ->where('match_date', '>=', now()->toDateString())
             ->withCount(['bookings' => function ($query) use ($oneWeekAgo) {
                 $query->where('created_at', '>=', $oneWeekAgo)
-                      ->whereIn('status', ['confirmed', 'checked_in']);
+                      ->where(\App\Models\Booking::activeConstraint());
             }])
             ->with(['homeTeam', 'awayTeam', 'branch.cafe'])
             ->orderByDesc('bookings_count')
@@ -119,17 +119,17 @@ class MatchService
 
         // Add booking statistics
         $match->total_bookings = $match->bookings()
-            ->whereIn('status', ['confirmed', 'checked_in'])
+            ->where(\App\Models\Booking::activeConstraint())
             ->count();
 
         $match->total_seats_booked = DB::table('booking_seats')
             ->join('bookings', 'booking_seats.booking_id', '=', 'bookings.id')
             ->where('bookings.match_id', $match->id)
-            ->whereIn('bookings.status', ['confirmed', 'checked_in'])
+            ->where(\App\Models\Booking::activeConstraint())
             ->count();
 
         $match->revenue = $match->bookings()
-            ->whereIn('status', ['confirmed', 'checked_in'])
+            ->where(\App\Models\Booking::activeConstraint())
             ->sum('total_amount');
 
         return $match;

@@ -123,7 +123,7 @@ class DashboardController extends Controller
                 ->whereIn('status', ['upcoming', 'live'])
                 ->with(['homeTeam:id,name,logo', 'awayTeam:id,name,logo', 'branch:id,name,total_seats'])
                 ->withCount(['bookings as confirmed_bookings' => function ($q) {
-                    $q->whereIn('status', ['confirmed', 'checked_in']);
+                    $q->where(\App\Models\Booking::activeConstraint());
                 }])
                 ->orderBy('match_date')
                 ->orderBy('kick_off')

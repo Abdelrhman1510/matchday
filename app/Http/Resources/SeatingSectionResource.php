@@ -16,7 +16,7 @@ class SeatingSectionResource extends JsonResource
     {
         $occupiedSeats = $this->seats()
             ->whereHas('bookings', function ($query) {
-                $query->where('status', 'confirmed');
+                $query->where(\App\Models\Booking::activeConstraint(false));
             })
             ->count();
 

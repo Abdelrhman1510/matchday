@@ -312,7 +312,7 @@ class CafeAdminController extends Controller
             ->whereIn('id', $accessibleBranchIds)
             ->withCount([
                 'bookings as active_bookings_count' => function ($query) {
-                    $query->where('status', 'confirmed');
+                    $query->where(\App\Models\Booking::activeConstraint(false));
                     // Note: Bookings are linked to matches, not direct dates
                 },
                 'seatingSections as pitches_count'
@@ -451,7 +451,11 @@ class CafeAdminController extends Controller
 
         $validator = Validator::make($request->all(), [
             'hours' => 'required|array|min:1',
-            'hours.*.day_of_week' => 'required|string',
+            'hours.*.day_of_week' => ['required', function ($attribute, $value, $fail) {
+                if (BranchHour::normalizeDay($value) === null) {
+                    $fail(__('Invalid day of week.'));
+                }
+            }],
             'hours.*.opens_at' => 'sometimes|date_format:H:i',
             'hours.*.closes_at' => 'sometimes|date_format:H:i',
             'hours.*.open_time' => 'sometimes|date_format:H:i',
@@ -464,6 +468,16 @@ class CafeAdminController extends Controller
                 'success' => false,
                 'message' => 'Validation failed',
                 'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Each day can appear once (the table has a unique branch + day index).
+        $days = array_map(fn ($hour) => BranchHour::normalizeDay($hour['day_of_week']), $request->hours);
+        if (count($days) !== count(array_unique($days))) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => ['hours' => [__('Each day can only be set once.')]],
             ], 422);
         }
 
@@ -501,7 +515,7 @@ class CafeAdminController extends Controller
 
                 BranchHour::create([
                     'branch_id' => $branch->id,
-                    'day_of_week' => $hourData['day_of_week'],
+                    'day_of_week' => BranchHour::normalizeDay($hourData['day_of_week']),
                     'is_open' => $isOpen,
                     'open_time' => $isOpen ? $openTime : null,
                     'close_time' => $isOpen ? $closeTime : null,
@@ -709,8 +723,12 @@ class CafeAdminController extends Controller
 
         // Check for active bookings
         $activeBookingsCount = $branch->bookings()
-            ->where('status', 'confirmed')
-            ->whereDate('booking_date', '>=', now())
+            ->whereIn('status', ['pending', 'confirmed', 'checked_in'])
+            ->where(function ($q) {
+                // An unpaid online booking past its deadline no longer holds anything.
+                $q->whereNull('payment_expires_at')->orWhere('payment_expires_at', '>', now());
+            })
+            ->forOpenMatch()
             ->count();
 
         if ($activeBookingsCount > 0) {
@@ -844,7 +862,7 @@ class CafeAdminController extends Controller
             // Calculate stats - bookings are linked to matches, not direct dates
             // Simplified for now - count total confirmed bookings
             $todayBookings = $branch->bookings()
-                ->where('status', 'confirmed')
+                ->where(\App\Models\Booking::activeConstraint(false))
                 ->count();
 
             $todayMatches = GameMatch::where('branch_id', $branch->id)
@@ -899,7 +917,7 @@ class CafeAdminController extends Controller
                     'today_matches' => $todayMatches,
                     'total_matches' => GameMatch::where('branch_id', $branch->id)->count(),
                     'total_bookings' => $branch->bookings()->count(),
-                    'total_revenue' => (float) ($branch->bookings()->whereIn('status', ['confirmed', 'checked_in'])->sum('total_amount') ?? 0),
+                    'total_revenue' => (float) ($branch->bookings()->where(\App\Models\Booking::activeConstraint())->sum('total_amount') ?? 0),
                     'occupancy_pct' => $occupancyPct,
                     'rating' => round($rating, 1),
                     'total_reviews' => $totalReviews,

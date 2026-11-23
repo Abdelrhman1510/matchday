@@ -23,6 +23,8 @@ class SubscriptionPlan extends Model
         'has_branding',
         'has_priority_support',
         'is_active',
+        'sort_order',
+        'is_most_popular',
         // New limit columns
         'max_branches',
         'max_matches_per_month',

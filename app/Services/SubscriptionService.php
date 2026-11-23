@@ -41,6 +41,7 @@ class SubscriptionService
     {
         return Cache::remember('subscription_plans_active', 3600, function () {
             return SubscriptionPlan::active()
+                ->orderBy('sort_order')
                 ->orderBy('price', 'asc')
                 ->get();
         });

@@ -62,7 +62,7 @@ class UpdateOccupancyCacheCommand extends Command
                     ->join('matches', 'bookings.match_id', '=', 'matches.id')
                     ->where('matches.branch_id', $branch->id)
                     ->where('matches.status', 'live')
-                    ->where('bookings.status', 'confirmed')
+                    ->where(\App\Models\Booking::activeConstraint(false))
                     ->distinct('booking_seats.seat_id')
                     ->count('booking_seats.seat_id');
 

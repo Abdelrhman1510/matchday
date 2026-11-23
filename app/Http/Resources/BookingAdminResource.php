@@ -97,7 +97,7 @@ class BookingAdminResource extends JsonResource
             // UI helper flags
             'is_vip' => $isVip,
             'is_returning' => $isReturning,
-            'can_check_in' => $this->status === 'confirmed',
+            'can_check_in' => $this->status === 'confirmed' || $this->resource->isPayAtCafePending(),
             'can_cancel' => in_array($this->status, ['confirmed', 'pending']),
             'is_checked_in' => $this->status === 'checked_in',
             'checked_in_at' => $this->checked_in_at?->toIso8601String(),

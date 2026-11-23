@@ -35,7 +35,7 @@ class MatchAdminService
             ])
             ->withSum([
                 'bookings as revenue' => function ($q) {
-                    $q->whereIn('status', ['confirmed', 'checked_in']);
+                    $q->where(\App\Models\Booking::activeConstraint());
                 },
             ], 'total_amount');
 
@@ -156,10 +156,10 @@ class MatchAdminService
             $capacity = $match->seats_available;
             $checkedIn = $bookings->where('status', 'checked_in')->sum('guests_count');
             $pending = $bookings->where('status', 'pending')->sum('guests_count');
-            $confirmed = $bookings->whereIn('status', ['confirmed', 'checked_in'])->sum('guests_count');
+            $confirmed = $bookings->filter(fn ($b) => $b->isActive())->sum('guests_count');
 
-            $totalRevenue = $bookings->whereIn('status', ['confirmed', 'checked_in'])->sum('total_amount');
-            $bookingsCount = $bookings->whereIn('status', ['confirmed', 'checked_in'])->count();
+            $totalRevenue = $bookings->filter(fn ($b) => $b->isActive())->sum('total_amount');
+            $bookingsCount = $bookings->filter(fn ($b) => $b->isActive())->count();
 
             return [
                 'booking_stats' => [
@@ -270,10 +270,14 @@ class MatchAdminService
                     $refundedCount++;
                 }
 
+                // Reverse the cafe's earning and refund a real charge
+                app(\App\Services\Wallet\BookingPaymentService::class)->handleCancellation($booking);
+
                 // Cancel the booking
                 $booking->update([
                     'status' => 'cancelled',
                     'cancelled_at' => now(),
+                    'cancel_reason' => 'match_cancelled',
                 ]);
 
                 // Notify the user

@@ -37,8 +37,8 @@ class BranchListResource extends JsonResource
                 return [
                     'pitches_count' => $this->seatingSections()->count(),
                     'active_bookings_count' => $this->bookings()
-                        ->where('status', 'confirmed')
-                        ->whereDate('booking_date', '>=', now())
+                        ->where(\App\Models\Booking::activeConstraint(false))
+                        ->forOpenMatch()
                         ->count(),
                     'rating' => (float) ($this->reviews()->avg('rating') ?? 0),
                 ];

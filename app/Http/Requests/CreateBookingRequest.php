@@ -74,6 +74,12 @@ class CreateBookingRequest extends FormRequest
                 return;
             }
 
+            // Already waiting on payment for this match: the service returns that
+            // booking, so its own held seats must not read as "taken".
+            if (Booking::openPendingFor($this->user()->id, $match->id)) {
+                return;
+            }
+
             if (!$match->is_published) {
                 $validator->errors()->add('match_id', __('This match is not available for booking.'));
                 return;

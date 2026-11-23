@@ -17,7 +17,8 @@ class SubscriptionEnforcementService
      */
     public function unlimitedMode(): bool
     {
-        return (bool) app(\App\Services\PlatformSettingsService::class)->get('unlimited_mode', false);
+        return (bool) app(\App\Services\PlatformSettingsService::class)->get('unlimited_mode', false)
+            || !app(\App\Services\Wallet\FeeSettingsService::class)->subscriptionsEnabled();
     }
     /**
      * Returns the active subscription plan for a cafe, including grace period plans.

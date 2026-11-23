@@ -30,6 +30,13 @@ class ReconcileMoyasarPayments extends Command
             }
         }
 
+        // Webhook events whose follow-up failed (Moyasar unreachable at the time).
+        \App\Models\MoyasarWebhookEvent::whereNull('processed_at')
+            ->where('created_at', '>', now()->subDays(3))
+            ->where('created_at', '<', now()->subMinutes(5))
+            ->pluck('id')
+            ->each(fn ($id) => \App\Jobs\ProcessMoyasarWebhookEvent::dispatchSync($id));
+
         $this->info("Checked {$pending->count()} pending payment(s), settled {$applied}.");
 
         return Command::SUCCESS;

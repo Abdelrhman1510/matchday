@@ -56,7 +56,7 @@ class ChatService
         $hasBooking = Booking::where('user_id', $user->id)
             ->where('match_id', $matchId)
             ->where('branch_id', $branchId)
-            ->whereIn('status', ['confirmed', 'checked_in'])
+            ->where(\App\Models\Booking::activeConstraint())
             ->exists();
             
         if (!$hasBooking) {

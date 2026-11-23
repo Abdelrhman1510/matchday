@@ -98,5 +98,8 @@ Route::prefix('platform')->name('platform.')->group(function () {
         Route::get('/reports', ReportsPage::class)->name('reports');
         Route::get('/settings', SettingsPage::class)->name('settings');
         Route::get('/plans', \App\Livewire\Platform\PlanManagementPage::class)->name('plans');
+        Route::get('/fees', \App\Livewire\Platform\FeesPage::class)->name('fees');
+        Route::get('/withdrawals', \App\Livewire\Platform\WithdrawalsPage::class)->name('withdrawals');
+        Route::get('/bank-accounts', \App\Livewire\Platform\BankAccountsPage::class)->name('bank-accounts');
     });
 });

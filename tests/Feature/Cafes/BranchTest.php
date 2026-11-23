@@ -23,7 +23,7 @@ class BranchTest extends TestCase
         
         BranchHour::factory()->create([
             'branch_id' => $branch->id,
-            'day_of_week' => 'Monday',
+            'day_of_week' => 1,
             'open_time' => '09:00',
             'close_time' => '23:00',
         ]);

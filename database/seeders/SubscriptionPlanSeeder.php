@@ -9,10 +9,22 @@ use Illuminate\Database\Seeder;
 
 class SubscriptionPlanSeeder extends Seeder
 {
+    /** Runs on every container start, so it must not undo dashboard edits. */
+    private function upsertPlan(array $key, array $values): SubscriptionPlan
+    {
+        $plan = SubscriptionPlan::firstOrNew($key);
+        if ($plan->exists) {
+            unset($values['price'], $values['is_active']);
+        }
+        $plan->fill($values)->save();
+
+        return $plan;
+    }
+
     public function run(): void
     {
         // Starter Plan
-        $starter = SubscriptionPlan::updateOrCreate(
+        $starter = $this->upsertPlan(
             ['slug' => 'starter'],
             [
                 'name' => 'Starter',
@@ -52,7 +64,7 @@ class SubscriptionPlanSeeder extends Seeder
         );
 
         // Pro Plan
-        $pro = SubscriptionPlan::updateOrCreate(
+        $pro = $this->upsertPlan(
             ['slug' => 'pro'],
             [
                 'name' => 'Pro',
@@ -96,7 +108,7 @@ class SubscriptionPlanSeeder extends Seeder
         );
 
         // Elite Plan
-        $elite = SubscriptionPlan::updateOrCreate(
+        $elite = $this->upsertPlan(
             ['slug' => 'elite'],
             [
                 'name' => 'Elite',

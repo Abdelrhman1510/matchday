@@ -480,6 +480,42 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::post('/webhooks/subscription/payment-failed', [\App\Http\Controllers\SubscriptionController::class, 'handlePaymentFailed'])->name('webhooks.subscription.payment-failed');
 // Moyasar payment webhook (no auth; verified by shared secret in the body)
 Route::post('/webhooks/moyasar', [\App\Http\Controllers\MoyasarWebhookController::class, 'handle'])->name('webhooks.moyasar');
+Route::post('/webhooks/payment/moyasar', [\App\Http\Controllers\MoyasarBookingWebhookController::class, 'handle'])
+    ->middleware('throttle:120,1')
+    ->name('webhooks.payment.moyasar');
+
+// ===================================
+// FEES, WALLET & PAYOUTS
+// ===================================
+Route::middleware(['auth:sanctum', 'throttle:api'])
+    ->get('/config/fees', [\App\Http\Controllers\PlatformFeesController::class, 'publicConfig'])
+    ->name('config.fees');
+
+Route::middleware(['auth:sanctum', 'wallet.owner'])->prefix('cafe-admin')->name('cafe-admin.wallet.')->group(function () {
+    Route::get('/wallet', [\App\Http\Controllers\CafeWalletController::class, 'overview'])->name('overview');
+    Route::get('/wallet/transactions', [\App\Http\Controllers\CafeWalletController::class, 'transactions'])->name('transactions');
+    Route::get('/wallet/withdrawals', [\App\Http\Controllers\CafeWalletController::class, 'withdrawalsIndex'])->name('withdrawals');
+    Route::post('/wallet/withdrawals/preview', [\App\Http\Controllers\CafeWalletController::class, 'preview'])->name('withdrawals.preview');
+    Route::post('/wallet/withdrawals', [\App\Http\Controllers\CafeWalletController::class, 'store'])->middleware('throttle:5,1')->name('withdrawals.store');
+    Route::post('/wallet/withdrawals/{id}/cancel', [\App\Http\Controllers\CafeWalletController::class, 'cancel'])->whereNumber('id')->name('withdrawals.cancel');
+    Route::get('/bank-account', [\App\Http\Controllers\CafeWalletController::class, 'bankShow'])->name('bank.show');
+    Route::put('/bank-account', [\App\Http\Controllers\CafeWalletController::class, 'bankUpdate'])->middleware('throttle:5,1')->name('bank.update');
+    Route::delete('/bank-account', [\App\Http\Controllers\CafeWalletController::class, 'bankDestroy'])->name('bank.destroy');
+});
+
+Route::middleware(['auth:sanctum', 'platform.admin.api'])->prefix('admin')->name('platform-admin.')->group(function () {
+    Route::get('/settings/fees', [\App\Http\Controllers\PlatformFeesController::class, 'show'])->name('fees.show');
+    Route::put('/settings/fees', [\App\Http\Controllers\PlatformFeesController::class, 'update'])->name('fees.update');
+    Route::get('/settings/fees/history', [\App\Http\Controllers\PlatformFeesController::class, 'history'])->name('fees.history');
+    Route::get('/commission-overrides', [\App\Http\Controllers\PlatformFeesController::class, 'overridesIndex'])->name('overrides.index');
+    Route::post('/commission-overrides', [\App\Http\Controllers\PlatformFeesController::class, 'overridesStore'])->name('overrides.store');
+    Route::put('/commission-overrides/{id}', [\App\Http\Controllers\PlatformFeesController::class, 'overridesUpdate'])->whereNumber('id')->name('overrides.update');
+    Route::delete('/commission-overrides/{id}', [\App\Http\Controllers\PlatformFeesController::class, 'overridesDestroy'])->whereNumber('id')->name('overrides.destroy');
+    Route::get('/subscription-plans', [\App\Http\Controllers\PlatformFeesController::class, 'plansIndex'])->name('plans.index');
+    Route::post('/subscription-plans', [\App\Http\Controllers\PlatformFeesController::class, 'plansStore'])->name('plans.store');
+    Route::put('/subscription-plans/{id}', [\App\Http\Controllers\PlatformFeesController::class, 'plansUpdate'])->whereNumber('id')->name('plans.update');
+    Route::delete('/subscription-plans/{id}', [\App\Http\Controllers\PlatformFeesController::class, 'plansDestroy'])->whereNumber('id')->name('plans.destroy');
+});
 
 // ===================================
 // CAFE OWNER MANAGEMENT

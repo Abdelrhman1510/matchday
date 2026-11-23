@@ -232,6 +232,13 @@ class User extends Authenticatable
             }
         }
 
+        // Finance permissions are granted to Spatie roles (platform_admin).
+        if (is_string($abilities) && in_array($abilities, ['withdrawals.view', 'withdrawals.approve', 'finance.reveal_iban'], true)) {
+            if ($this->roles()->whereHas('permissions', fn ($q) => $q->where('name', $abilities))->exists()) {
+                return true;
+            }
+        }
+
         // Check directly-granted Spatie permissions (used by the staff-management flow).
         if (is_string($abilities)) {
             try {

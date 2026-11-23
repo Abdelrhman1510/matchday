@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Services\Wallet\BookingPaymentService;
 use App\Models\Booking;
 use App\Models\Cafe;
 use App\Notifications\BookingCancelledNotification;
@@ -90,7 +91,7 @@ class BookingAdminService
         $branchIds = $cafe->branches()->pluck('id');
         $bookingCountAtCafe = Booking::where('user_id', $booking->user_id)
             ->whereIn('branch_id', $branchIds)
-            ->whereIn('status', ['confirmed', 'checked_in'])
+            ->where(Booking::activeConstraint())
             ->count();
 
         return [
@@ -104,8 +105,15 @@ class BookingAdminService
      */
     public function checkIn(Booking $booking): array
     {
-        // Must be confirmed
-        if ($booking->status !== 'confirmed') {
+        $payments = app(BookingPaymentService::class);
+
+        $blocked = $payments->checkInBlockedReason($booking);
+        if ($blocked !== null && $booking->status !== 'cancelled') {
+            return ['success' => false, 'status' => 422, 'message' => $blocked];
+        }
+
+        // Confirmed, or pay-at-cafe where this check-in is the moment of payment
+        if ($booking->status !== 'confirmed' && !$booking->isPayAtCafePending()) {
             return [
                 'success' => false,
                 'status' => 422,
@@ -113,10 +121,8 @@ class BookingAdminService
             ];
         }
 
-        $booking->update([
-            'status' => 'checked_in',
-            'checked_in_at' => now(),
-        ]);
+        $payments->checkIn($booking);
+        $booking->refresh();
 
         $booking->load([
             'user:id,name,phone',
@@ -152,12 +158,12 @@ class BookingAdminService
             $booking->seats()->detach();
 
             // Refund payment
-            $refunded = false;
-            if ($booking->payment && $booking->payment->status === 'paid') {
-                $booking->payment->update([
-                    'status' => 'refunded',
-                ]);
-                $refunded = true;
+            $payment = $booking->payment;
+            $refunded = $payment && in_array($payment->status, ['paid', 'completed'], true);
+            // Reverses the ledger and refunds a real charge through Moyasar.
+            app(BookingPaymentService::class)->handleCancellation($booking);
+            if ($refunded && !$payment->gateway_ref) {
+                $payment->update(['status' => 'refunded']);
             }
 
             // Cancel booking
@@ -204,7 +210,7 @@ class BookingAdminService
             })
             ->selectRaw("
                 COUNT(*) as total,
-                SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status = 'confirmed' OR (status = 'pending' AND payment_method = 'pay_at_cafe') THEN 1 ELSE 0 END) as pending,
                 SUM(CASE WHEN status = 'checked_in' THEN 1 ELSE 0 END) as checked_in,
                 COALESCE(SUM(total_amount), 0) as revenue
             ")
@@ -229,7 +235,7 @@ class BookingAdminService
 
         return Booking::whereIn('branch_id', $branchIds)
             ->whereIn('user_id', $userIds)
-            ->whereIn('status', ['confirmed', 'checked_in'])
+            ->where(Booking::activeConstraint())
             ->groupBy('user_id')
             ->havingRaw('COUNT(*) >= 2')
             ->pluck('user_id')

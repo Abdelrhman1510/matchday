@@ -87,7 +87,8 @@ class BookingRobustnessTest extends TestCase
         $this->assertDatabaseHas('bookings', [
             'user_id' => $user->id,
             'match_id' => $match->id,
-            'status' => 'confirmed',
+            'status' => 'pending',
+            'payment_method' => 'pay_at_cafe',
         ]);
     }
 }

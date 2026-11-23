@@ -62,3 +62,6 @@ Schedule::command('payments:reconcile')
     ->everyTenMinutes()
     ->withoutOverlapping()
     ->runInBackground();
+
+// Wallet jobs are not scheduled here: docker-entrypoint.sh runs `wallet:run tick` every
+// minute, so they work without enabling the rest of this schedule (card renewals).

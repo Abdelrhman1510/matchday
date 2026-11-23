@@ -76,7 +76,7 @@ class ChatController extends Controller
         // Check if user has a booking at this cafe (via branch directly or via match's branch)
         $user = $request->user();
         $hasBooking = Booking::where('user_id', $user->id)
-            ->where('status', 'confirmed')
+            ->where(\App\Models\Booking::activeConstraint(false))
             ->where(function ($q) use ($cafeId) {
                 $q->whereHas('branch', function ($b) use ($cafeId) {
                     $b->where('cafe_id', $cafeId);

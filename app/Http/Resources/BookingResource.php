@@ -59,7 +59,9 @@ class BookingResource extends JsonResource
                 ],
             ],
             'seats_count' => $this->seats->count(),
-            'payment_status' => $this->payment?->status ?? 'pending',
+            'payment_status' => $this->payment_status ?? $this->payment?->status ?? 'pending',
+            'payment_method' => $this->payment_method,
+            'payment_expires_at' => $this->payment_expires_at?->toIso8601String(),
             'created_at' => $this->created_at->toIso8601String(),
             'cancelled_at' => $this->cancelled_at?->toIso8601String(),
             
@@ -68,7 +70,7 @@ class BookingResource extends JsonResource
                 && in_array($bookingStatus, ['confirmed', 'pending']),
             'can_rebook' => $matchStatus === 'finished',
             'can_enter_fan_room' => $matchStatus === 'live' 
-                && in_array($bookingStatus, ['confirmed', 'checked_in']),
+                && $this->resource->isActive(),
             'is_today' => $matchDate->isToday(),
         ];
     }

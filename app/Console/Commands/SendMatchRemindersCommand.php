@@ -64,7 +64,7 @@ class SendMatchRemindersCommand extends Command
             // Get all confirmed bookings for this match
             $bookings = Booking::with('user')
                 ->where('match_id', $match->id)
-                ->where('status', 'confirmed')
+                ->where(\App\Models\Booking::activeConstraint(false))
                 ->get();
 
             if ($bookings->isEmpty()) {

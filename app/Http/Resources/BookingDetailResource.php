@@ -18,6 +18,10 @@ class BookingDetailResource extends JsonResource
             'id' => $this->id,
             'booking_code' => $this->booking_code,
             'status' => $this->status,
+            'payment_status' => $this->payment_status ?? $this->payment?->status ?? 'pending',
+            'payment_method' => $this->payment_method,
+            'payment_expires_at' => $this->payment_expires_at?->utc()->format('Y-m-d\TH:i:s\Z'),
+            'cancel_reason' => $this->cancel_reason,
             'guests_count' => $this->guests_count,
             'special_requests' => $this->special_requests,
             'subtotal' => (float) $this->subtotal,
@@ -76,15 +80,20 @@ class BookingDetailResource extends JsonResource
                 ];
             }),
             'players' => BookingPlayerResource::collection($this->whenLoaded('players')),
-            'payment' => $this->when($this->payment, function () {
-                return [
+            // Null until a charge has actually been attempted.
+            'payment' => $this->payment && ($this->payment->gateway_ref || $this->payment->status !== 'pending')
+                ? [
                     'id' => $this->payment->id,
                     'amount' => (float) $this->payment->amount,
                     'status' => $this->payment->status,
                     'method' => $this->payment->paymentMethod?->name ?? null,
                     'paid_at' => $this->payment->paid_at?->toIso8601String(),
-                ];
-            }),
+                ]
+                : null,
+            'can_cancel' => in_array($this->match->status, ['upcoming', 'scheduled'], true)
+                && in_array($this->status, ['confirmed', 'pending'], true),
+            'can_rebook' => $this->match->status === 'finished',
+            'can_enter_fan_room' => $this->match->status === 'live' && $this->resource->isActive(),
             'checked_in_at' => $this->checked_in_at?->toIso8601String(),
             'cancelled_at' => $this->cancelled_at?->toIso8601String(),
             'created_at' => $this->created_at->toIso8601String(),

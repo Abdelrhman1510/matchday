@@ -135,7 +135,7 @@ class BranchAdminTest extends TestCase
 
         $this->assertDatabaseHas('branch_hours', [
             'branch_id' => $branch->id,
-            'day_of_week' => 'Monday',
+            'day_of_week' => 1,
         ]);
     }
 

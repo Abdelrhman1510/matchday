@@ -8,6 +8,7 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\User;
+use App\Services\Wallet\BookingPaymentService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -36,13 +37,18 @@ class PaymentService
             if ($payment && in_array($payment->status, ['paid', 'completed', 'refunded'], true)) {
                 throw new \Exception('This booking has already been paid.');
             }
+            if ($booking->status === 'cancelled') {
+                throw new \Exception($booking->cancel_reason === 'payment_timeout'
+                    ? __('wallet.errors.booking_expired')
+                    : 'This booking has been cancelled.');
+            }
 
             // A charge already waiting on 3DS: resume it rather than charging again.
             if ($payment && $payment->status === 'pending' && $payment->gateway_ref) {
                 $remote = $this->gateway->verify($payment->gateway_ref);
                 if (in_array($remote['status'], ['paid', 'captured'], true)) {
                     $payment->update(['status' => 'completed', 'paid_at' => $payment->paid_at ?? now()]);
-                    $booking->update(['status' => 'confirmed']);
+                    app(BookingPaymentService::class)->confirmPaid($booking, $payment);
                     return ['payment' => $payment];
                 }
                 if ($remote['status'] === 'initiated' && !empty($remote['transaction_url'])) {
@@ -57,7 +63,9 @@ class PaymentService
                     'booking_id' => $booking->id,
                     'user_id' => $booking->user_id,
                     'payment_method_id' => $paymentMethod->id,
-                    'amount' => $booking->total_price ?? $booking->total_amount ?? 0,
+                    'amount' => $booking->fees_snapshot
+                        ? $booking->total_amount
+                        : ($booking->total_price ?? $booking->total_amount ?? 0),
                     'currency' => $booking->currency ?? 'SAR',
                     'status' => 'pending',
                     'type' => 'booking',
@@ -65,8 +73,10 @@ class PaymentService
                 ]);
             } else {
                 // Update payment with payment method
+                // Always charge the server's total, whatever the client sent.
                 $payment->update([
                     'payment_method_id' => $paymentMethod->id,
+                    'amount' => $booking->fees_snapshot ? $booking->total_amount : $payment->amount,
                 ]);
             }
 
@@ -81,10 +91,7 @@ class PaymentService
                     'paid_at' => now(),
                 ]);
 
-                // Update booking status to confirmed
-                $booking->update([
-                    'status' => 'confirmed',
-                ]);
+                app(BookingPaymentService::class)->confirmPaid($booking, $payment);
 
                 return ['payment' => $payment];
             }
@@ -184,9 +191,12 @@ class PaymentService
 
                 // Update related booking if exists
                 if ($payment->booking) {
+                    app(\App\Services\Wallet\WalletService::class)->reverseBooking($payment->booking);
                     $payment->booking->update([
                         'status' => 'cancelled',
                         'cancelled_at' => now(),
+                        'payment_status' => 'refunded',
+                        'cancel_reason' => 'refunded',
                     ]);
 
                     // Release seats

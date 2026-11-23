@@ -2,6 +2,7 @@
 
 namespace App\Services\Payment;
 
+use App\Exceptions\MoyasarApiException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -94,6 +95,53 @@ class MoyasarClient
             $this->request()->post("{$this->baseUrl}/payments", $body),
             'create token payment'
         );
+    }
+
+    /** POST /payouts. Safe to repeat with the same given_id. */
+    public function createPayout(array $body): array
+    {
+        if (!config('services.moyasar.payouts_enabled')) {
+            throw new RuntimeException('Moyasar payouts are disabled (MOYASAR_PAYOUTS_ENABLED).');
+        }
+
+        return $this->handlePayout($this->request()->post("{$this->baseUrl}/payouts", $body), 'create payout');
+    }
+
+    /**
+     * Fetch one payout, or null if Moyasar has no such payout. The API reference
+     * writes this path as /payout/:id while every other endpoint is /payouts, so
+     * both are tried.
+     */
+    public function getPayout(string $id): ?array
+    {
+        foreach (["payouts/{$id}", "payout/{$id}"] as $path) {
+            $response = $this->request()->get("{$this->baseUrl}/{$path}");
+            if ($response->status() !== 404) {
+                return $this->handlePayout($response, 'fetch payout');
+            }
+        }
+
+        return null;
+    }
+
+    /** GET /payouts?page=N, for the nightly reconciliation. */
+    public function listPayouts(int $page = 1): array
+    {
+        return $this->handlePayout($this->request()->get("{$this->baseUrl}/payouts", ['page' => $page]), 'list payouts');
+    }
+
+    private function handlePayout($response, string $action): array
+    {
+        if ($response->successful()) {
+            return (array) $response->json();
+        }
+
+        $body = (array) $response->json();
+        $message = (string) ($body['message'] ?? "Moyasar {$action} failed.");
+        $type = $body['type'] ?? null;
+        Log::warning("Moyasar {$action} failed", ['status' => $response->status(), 'type' => $type, 'message' => $message]);
+
+        throw new MoyasarApiException($message, $response->status(), is_string($type) ? $type : null);
     }
 
     /**

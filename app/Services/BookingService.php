@@ -11,6 +11,9 @@ use App\Models\LoyaltyTransaction;
 use App\Models\Payment;
 use App\Models\Seat;
 use App\Models\User;
+use App\Services\Wallet\BookingPaymentService;
+use App\Services\Wallet\FeeSettingsService;
+use App\Services\Wallet\WalletService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -24,9 +27,16 @@ class BookingService
     public function createBooking(User $user, array $data): Booking
     {
         $booking = DB::transaction(function () use ($user, $data) {
-            // Get match with relationships
+            // Lock the match so two customers can't hold the same seat at once.
             $match = GameMatch::with(['branch.seatingSections'])
+                ->lockForUpdate()
                 ->findOrFail($data['match_id']);
+
+            // Retrying while a booking awaits payment returns that same booking.
+            $existing = Booking::openPendingFor($user->id, $match->id);
+            if ($existing) {
+                return $existing;
+            }
 
             // Get seats with sections
             $seats = Seat::with('section')
@@ -47,7 +57,10 @@ class BookingService
             }
 
             // Calculate costs
-            $costs = $this->calculateBookingCosts($match, $seats);
+            $guests = (int) ($data['guests_count'] ?? count($data['seat_ids']));
+            $fees = app(FeeSettingsService::class);
+            $online = $fees->onlineEnabled();
+            $costs = $fees->quote($match->branch->cafe, $this->calculateSubtotal($match, $seats), $guests, $online);
 
             // Generate booking code
             $bookingCode = $this->generateBookingCode();
@@ -58,14 +71,22 @@ class BookingService
                 'user_id' => $user->id,
                 'match_id' => $match->id,
                 'branch_id' => $match->branch_id,
-                'guests_count' => $data['guests_count'] ?? count($data['seat_ids']),
-                // Confirmed immediately while there is no live payment gateway;
-                // the Payment row below stays 'pending' until one is wired in.
-                'status' => 'confirmed',
+                'guests_count' => $guests,
+                // Pending until paid online, or until check-in in pay-at-cafe mode.
+                'status' => 'pending',
+                'payment_status' => 'unpaid',
+                'payment_method' => $online ? 'online' : 'pay_at_cafe',
+                'payment_expires_at' => $online
+                    ? now()->addMinutes((int) $fees->block('booking')['payment_hold_minutes'])
+                    : null,
                 'special_requests' => $data['special_requests'] ?? null,
                 'subtotal' => $costs['subtotal'],
                 'service_fee' => $costs['service_fee'],
                 'total_amount' => $costs['total_amount'],
+                'commission_amount' => $costs['commission_amount'],
+                'gateway_fee' => $costs['gateway_fee'],
+                'cafe_net_amount' => $costs['cafe_net_amount'],
+                'fees_snapshot' => $costs['fees_snapshot'],
                 'currency' => 'SAR',
             ]);
 
@@ -75,15 +96,9 @@ class BookingService
             // Decrement match seats_available
             $match->decrement('seats_available', count($data['seat_ids']));
 
-            // Generate QR code
-            $qrCode = $this->generateQrCode($booking);
-            $booking->update(['qr_code' => $qrCode]);
-
-            // Award loyalty points — a reward, never fatal to the booking itself.
-            try {
-                $this->awardLoyaltyPoints($user, $booking);
-            } catch (\Throwable $e) {
-                \Log::warning("Loyalty award failed for booking {$booking->id}: {$e->getMessage()}");
+            // Online bookings get their QR when paid; pay-at-cafe needs one to scan.
+            if (!$online) {
+                $booking->update(['qr_code' => $this->generateQrCode($booking)]);
             }
 
             // Create pending payment
@@ -94,19 +109,22 @@ class BookingService
 
         // Post-commit side effects. Notifications run synchronously (QUEUE_CONNECTION=sync),
         // so a send failure here must NOT roll back an already-committed booking (BUG-073).
-        try {
-            event(new BookingCreated($booking));
-        } catch (\Throwable $e) {
-            \Log::warning("BookingCreated side effects failed for booking {$booking->id}: {$e->getMessage()}");
+        // An online booking is announced when it is paid (BookingPaymentService).
+        if ($booking->wasRecentlyCreated && $booking->payment_method === 'pay_at_cafe') {
+            try {
+                event(new BookingCreated($booking));
+            } catch (\Throwable $e) {
+                \Log::warning("BookingCreated side effects failed for booking {$booking->id}: {$e->getMessage()}");
+            }
         }
 
         return $booking->load(['match.homeTeam', 'match.awayTeam', 'match.branch.cafe', 'seats.section', 'payment']);
     }
 
     /**
-     * Calculate booking costs
+     * Seat prices plus section extras, always from the database.
      */
-    protected function calculateBookingCosts(GameMatch $match, Collection $seats): array
+    protected function calculateSubtotal(GameMatch $match, Collection $seats): float
     {
         $subtotal = 0;
 
@@ -117,16 +135,7 @@ class BookingService
             $subtotal += ($basePrice + $extraCost);
         }
 
-        // Calculate service fee (5% minimum 5 SAR)
-        $serviceFee = max(5, $subtotal * 0.05);
-
-        $totalAmount = $subtotal + $serviceFee;
-
-        return [
-            'subtotal' => round($subtotal, 2),
-            'service_fee' => round($serviceFee, 2),
-            'total_amount' => round($totalAmount, 2),
-        ];
+        return round($subtotal, 2);
     }
 
     /**
@@ -144,7 +153,7 @@ class BookingService
     /**
      * Generate QR code for booking
      */
-    protected function generateQrCode(Booking $booking): string
+    public function generateQrCode(Booking $booking): string
     {
         $qrData = json_encode([
             'booking_id' => $booking->id,
@@ -163,8 +172,14 @@ class BookingService
     /**
      * Award loyalty points to user via loyalty card
      */
-    protected function awardLoyaltyPoints(User $user, Booking $booking): void
+    public function awardLoyaltyPoints(User $user, Booking $booking): void
     {
+        // Earned once per booking, when it is paid or checked in, so an abandoned
+        // booking can't farm points.
+        if (LoyaltyTransaction::where('booking_id', $booking->id)->where('type', 'earned')->exists()) {
+            return;
+        }
+
         $points = 10;
         
         // Find or create loyalty card for user
@@ -338,11 +353,13 @@ class BookingService
     public function cancelBooking(Booking $booking): Booking
     {
         return DB::transaction(function () use ($booking) {
-            // Check if match has not started (compare dates only)
-            $matchDateTime = \Carbon\Carbon::parse(
-                $booking->match->match_date->format('Y-m-d') . ' ' . $booking->match->kick_off->format('H:i:s')
-            );
-            
+            if ($booking->status === 'checked_in') {
+                throw new \Exception('Cannot cancel a booking after check-in.');
+            }
+
+            // Match times are stored in Riyadh time.
+            $matchDateTime = app(WalletService::class)->kickOff($booking->match);
+
             if ($matchDateTime->lte(now())) {
                 throw new \Exception('Cannot cancel booking for matches that have started or finished.');
             }
@@ -360,14 +377,17 @@ class BookingService
             // Release individual seats
             $booking->seats()->update(['is_available' => true]);
 
-            // Update payment status if exists
-            if ($booking->payment) {
+            // Reverse the ledger and refund a real charge through Moyasar. A charge
+            // still in 3DS keeps its status so a late success gets refunded too.
+            app(BookingPaymentService::class)->handleCancellation($booking);
+            if ($booking->payment && !$booking->payment->gateway_ref) {
                 $booking->payment->update(['status' => 'refunded']);
             }
 
-            // Deduct loyalty points if they were awarded
+            // Take back loyalty points only if this booking earned them
             $loyaltyCard = $booking->user->loyaltyCard;
-            if ($loyaltyCard && $loyaltyCard->points >= 10) {
+            $earnedPoints = LoyaltyTransaction::where('booking_id', $booking->id)->where('type', 'earned')->exists();
+            if ($earnedPoints && $loyaltyCard && $loyaltyCard->points >= 10) {
                 $loyaltyCard->decrement('points', 10);
                 
                 // Create transaction record for deduction

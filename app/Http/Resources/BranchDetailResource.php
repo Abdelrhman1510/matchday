@@ -43,7 +43,7 @@ class BranchDetailResource extends JsonResource
             
             // UI Helper Flags
             'status_badge' => $this->is_open ? 'ACTIVE' : 'CLOSED',
-            'can_delete' => $this->bookings()->where('status', 'confirmed')->count() === 0,
+            'can_delete' => $this->bookings()->where(\App\Models\Booking::activeConstraint(false))->count() === 0,
             'has_hours_configured' => $this->hours()->count() >= 7,
             'has_amenities' => $this->amenities()->count() > 0,
             'has_seating' => $this->seatingSections()->count() > 0,

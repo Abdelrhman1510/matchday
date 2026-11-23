@@ -22,11 +22,24 @@ class ReviewResource extends JsonResource
                 return [
                     'id' => $this->user->id,
                     'name' => $this->user->name,
-                    'profile_picture' => $this->user->profile_picture ? url('storage/' . $this->user->profile_picture) : null,
+                    'profile_picture' => $this->avatarUrl($this->user->avatar),
                 ];
             }),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];
+    }
+
+    private function avatarUrl($avatar): ?string
+    {
+        $path = is_array($avatar)
+            ? ($avatar['medium'] ?? $avatar['original'] ?? $avatar['url'] ?? $avatar['thumbnail'] ?? null)
+            : $avatar;
+
+        if (!is_string($path) || $path === '') {
+            return null;
+        }
+
+        return str_starts_with($path, 'http') ? $path : url('storage/' . ltrim($path, '/'));
     }
 }

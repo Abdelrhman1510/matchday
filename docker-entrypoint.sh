@@ -55,6 +55,14 @@ fi
 echo "==> Clearing application cache (so data changes show immediately)..."
 php artisan cache:clear 2>&1 || echo "WARNING: cache:clear failed"
 
+echo "==> Starting wallet jobs (wallet jobs only, not the full scheduler)..."
+(
+    while true; do
+        php artisan wallet:run tick --no-interaction 2>&1 | grep -v -E "^(Expired 0|Promoted 0|Checked 0)" || true
+        sleep 60
+    done
+) &
+
 PORT_NUM=$((${PORT:-8000}))
 echo "==> Starting server on port ${PORT_NUM}..."
 exec php -S 0.0.0.0:${PORT_NUM} -t public public/router.php

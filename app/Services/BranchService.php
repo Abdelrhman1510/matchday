@@ -78,7 +78,7 @@ class BranchService
 
         return $branch->reviews()
             ->with(['user' => function ($query) {
-                $query->select('id', 'name', 'profile_picture');
+                $query->select('id', 'name', 'avatar');
             }])
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);

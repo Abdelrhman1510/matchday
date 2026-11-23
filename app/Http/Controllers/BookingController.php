@@ -34,7 +34,8 @@ class BookingController extends Controller
     {
         // Subscription enforcement: check booking limit for the cafe
         $match = GameMatch::with('branch.cafe')->find($request->match_id);
-        if ($match && $match->branch && $match->branch->cafe) {
+        $isRetry = $match && Booking::openPendingFor($request->user()->id, $match->id);
+        if (!$isRetry && $match && $match->branch && $match->branch->cafe) {
             $check = $this->enforcement->canReceiveBooking($match->branch->cafe);
             if (!$check['allowed']) {
                 return response()->json([
@@ -56,7 +57,7 @@ class BookingController extends Controller
                 'success' => true,
                 'message' => 'Booking created successfully.',
                 'data' => new BookingDetailResource($booking),
-            ], Response::HTTP_CREATED);
+            ], $booking->wasRecentlyCreated ? Response::HTTP_CREATED : Response::HTTP_OK);
         } catch (\Exception $e) {
             // Return 400 so the frontend app displays the actual error message 
             // instead of treating a 500 status as a generic crash.
@@ -224,7 +225,7 @@ class BookingController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        if (!in_array($booking->status, ['confirmed', 'checked_in'])) {
+        if (!$booking->isActive()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Entry pass is only available for confirmed bookings.',
@@ -453,7 +454,7 @@ class BookingController extends Controller
         }
 
         // Only confirmed or checked_in bookings
-        if (!in_array($booking->status, ['confirmed', 'checked_in'])) {
+        if (!$booking->isActive()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Fan room is only available for confirmed or checked-in bookings.',
