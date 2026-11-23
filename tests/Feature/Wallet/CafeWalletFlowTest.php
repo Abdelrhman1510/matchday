@@ -811,6 +811,165 @@ class CafeWalletFlowTest extends TestCase
         $this->assertNull($this->cafe->fresh()->subscription_plan);
     }
 
+    private function fakeMoyasarPayment(string $id, int $amount, array &$refunds, string &$status): void
+    {
+        Http::fake(function ($request) use ($id, $amount, &$refunds, &$status) {
+            if (str_ends_with($request->url(), "/payments/{$id}/refund")) {
+                $refunds[] = $id;
+                $status = 'refunded';
+
+                return Http::response(['id' => $id, 'status' => 'refunded']);
+            }
+
+            return Http::response(['id' => $id, 'status' => $status, 'amount' => $amount, 'currency' => 'SAR']);
+        });
+    }
+
+    public function test_reconcile_webhook_and_charge_confirm_a_payment_only_once(): void
+    {
+        $this->goOnline();
+        $booking = Booking::findOrFail($this->book()['id']);
+        $payment = $booking->payment;
+        $payment->update(['gateway_ref' => 'pay_once', 'created_at' => now()->subMinutes(6)]);
+        $refunds = [];
+        $status = 'paid';
+        $this->fakeMoyasarPayment('pay_once', 9500, $refunds, $status);
+
+        $this->artisan('payments:reconcile')->assertSuccessful();
+        $this->artisan('payments:reconcile')->assertSuccessful();
+        $this->postJson('/api/v1/webhooks/payment/moyasar', [
+            'id' => 'evt_once', 'type' => 'payment_paid', 'secret_token' => 'whsec_test',
+            'data' => ['id' => 'pay_once'],
+        ])->assertOk();
+        app(BookingPaymentService::class)->confirmPaid($booking->fresh(), $payment->fresh());
+
+        $this->assertSame('confirmed', $booking->fresh()->status);
+        $this->assertSame(1, WalletTransaction::where('booking_id', $booking->id)->where('type', 'booking_earning')->count());
+        // One flat reward plus one amount-based award, and no more after the replays.
+        $earned = \App\Models\LoyaltyTransaction::where('booking_id', $booking->id)->where('type', 'earned');
+        $this->assertSame(2, (clone $earned)->count());
+        $this->assertSame(1, (clone $earned)->where('description', 'Booking reward')->count());
+        $this->assertSame([], $refunds);
+    }
+
+    public function test_reconcile_settles_a_late_payment_whose_seats_were_taken_with_one_refund(): void
+    {
+        $this->goOnline();
+        $seats = $this->seats();
+        $booking = Booking::findOrFail($this->book($seats)['id']);
+        $payment = $booking->payment;
+        $payment->update(['gateway_ref' => 'pay_taken']);
+        $this->travel(11)->minutes();
+        app(BookingPaymentService::class)->expireUnpaid();
+        $this->book($seats, User::factory()->create());
+
+        $refunds = [];
+        $status = 'paid';
+        $this->fakeMoyasarPayment('pay_taken', 9500, $refunds, $status);
+        $this->artisan('payments:reconcile')->assertSuccessful();
+        $this->artisan('payments:reconcile')->assertSuccessful();
+
+        $this->assertSame(['pay_taken'], $refunds);
+        $this->assertSame('refunded', $payment->fresh()->status);
+        $this->assertSame('cancelled', $booking->fresh()->status);
+        $this->assertSame(0, WalletTransaction::where('booking_id', $booking->id)->count());
+    }
+
+    public function test_reconcile_retries_a_failed_refund_but_never_touches_older_bookings(): void
+    {
+        $this->goOnline();
+        $booking = Booking::findOrFail($this->book()['id']);
+        $booking->update(['status' => 'cancelled', 'cancel_reason' => 'payment_timeout']);
+        $booking->payment->update(['status' => 'completed', 'gateway_ref' => 'pay_retry']);
+
+        $old = Booking::factory()->create(['status' => 'cancelled', 'match_id' => $this->match->id, 'branch_id' => $this->branch->id]);
+        $oldPayment = Payment::factory()->create(['booking_id' => $old->id, 'status' => 'completed', 'gateway_ref' => 'pay_old', 'type' => 'booking']);
+
+        $refunds = [];
+        $status = 'paid';
+        $this->fakeMoyasarPayment('pay_retry', 9500, $refunds, $status);
+        $this->artisan('payments:reconcile')->assertSuccessful();
+
+        $this->assertSame(['pay_retry'], $refunds);
+        $this->assertSame('completed', $oldPayment->fresh()->status);
+    }
+
+    public function test_refund_already_made_on_moyasar_is_not_sent_again(): void
+    {
+        $this->goOnline();
+        $booking = Booking::findOrFail($this->book()['id']);
+        $booking->update(['status' => 'cancelled', 'cancel_reason' => 'refunded']);
+        $booking->payment->update(['status' => 'completed', 'gateway_ref' => 'pay_done']);
+        $refunds = [];
+        $status = 'refunded';
+        $this->fakeMoyasarPayment('pay_done', 9500, $refunds, $status);
+
+        \App\Jobs\RefundBookingPayment::dispatchSync($booking->payment->id);
+
+        $this->assertSame([], $refunds);
+        $this->assertSame('refunded', $booking->payment->fresh()->status);
+    }
+
+    public function test_pay_at_cafe_earns_points_only_at_check_in_and_once(): void
+    {
+        $data = $this->book();
+        $earned = \App\Models\LoyaltyTransaction::where('booking_id', $data['id'])->where('type', 'earned');
+        $this->assertSame(0, (clone $earned)->count());
+
+        Sanctum::actingAs($this->owner);
+        $this->postJson("/api/v1/cafe-admin/bookings/{$data['id']}/check-in")->assertSuccessful();
+        $this->postJson("/api/v1/cafe-admin/bookings/{$data['id']}/check-in")->assertStatus(422);
+
+        $this->assertSame(2, (clone $earned)->count());
+    }
+
+    public function test_tick_runs_payments_reconcile_once_per_interval(): void
+    {
+        $this->artisan('wallet:run tick')->expectsOutputToContain('pending payment(s)')->assertSuccessful();
+        $this->artisan('wallet:run tick')->doesntExpectOutputToContain('pending payment(s)')->assertSuccessful();
+
+        $this->travel(10)->minutes();
+        $this->artisan('wallet:run tick')->expectsOutputToContain('pending payment(s)')->assertSuccessful();
+    }
+
+    public function test_daily_jobs_follow_riyadh_time(): void
+    {
+        $this->travelTo(\Carbon\Carbon::parse('2030-01-10 01:59:00', 'Asia/Riyadh')->utc());
+        $this->artisan('wallet:run tick')->assertSuccessful();
+        $this->assertNull(\App\Models\PlatformSetting::where('key', 'wallet_tick.reconcile')->value('value'));
+
+        $this->travelTo(\Carbon\Carbon::parse('2030-01-10 02:00:00', 'Asia/Riyadh')->utc());
+        $this->artisan('wallet:run tick')->assertSuccessful();
+        $this->assertSame('2030-01-10', \App\Models\PlatformSetting::where('key', 'wallet_tick.reconcile')->value('value'));
+        $this->assertNull(\App\Models\PlatformSetting::where('key', 'wallet_tick.notify-earnings')->value('value'));
+
+        $this->travelTo(\Carbon\Carbon::parse('2030-01-10 09:00:00', 'Asia/Riyadh')->utc());
+        $this->artisan('wallet:run tick')->assertSuccessful();
+        $this->assertSame('2030-01-10', \App\Models\PlatformSetting::where('key', 'wallet_tick.notify-earnings')->value('value'));
+    }
+
+    public function test_production_webhook_mode_must_match_the_key(): void
+    {
+        $event = fn (string $id, $live) => [
+            'id' => $id, 'type' => 'payment_failed', 'secret_token' => 'whsec_test', 'live' => $live, 'data' => ['id' => 'x'],
+        ];
+        $this->app['env'] = 'production';
+
+        config(['services.moyasar.secret_key' => 'sk_test_x']);
+        $this->postJson('/api/v1/webhooks/payment/moyasar', $event('t1', false))->assertOk();
+        $this->postJson('/api/v1/webhooks/payment/moyasar', $event('t2', true))->assertStatus(403);
+
+        config(['services.moyasar.secret_key' => 'sk_live_x']);
+        $this->postJson('/api/v1/webhooks/payment/moyasar', $event('l1', true))->assertOk();
+        $this->postJson('/api/v1/webhooks/payment/moyasar', $event('l2', false))->assertStatus(403);
+
+        $this->postJson('/api/v1/webhooks/payment/moyasar', [
+            'id' => 'v1', 'type' => 'webhook_verification', 'secret_token' => 'whsec_test', 'data' => ['verification_code' => '123456'],
+        ])->assertOk();
+        $this->assertSame(3, MoyasarWebhookEvent::count());
+        $this->app['env'] = 'testing';
+    }
+
     public function test_iban_reveal_is_logged(): void
     {
         $admin = User::factory()->create();

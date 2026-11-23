@@ -133,10 +133,15 @@ class CreateBookingTest extends TestCase
         $seat = Seat::factory()->create(['section_id' => $section->id, 'is_available' => true]);
         Sanctum::actingAs($user);
 
-        $this->postJson('/api/v1/bookings', [
+        $bookingId = $this->postJson('/api/v1/bookings', [
             'match_id' => $match->id,
             'seat_ids' => [$seat->id],
-        ]);
+        ])->json('data.id');
+
+        // Pay-at-cafe: nothing is earned until the customer actually shows up.
+        $this->assertSame(50, $loyaltyCard->fresh()->points);
+
+        app(\App\Services\Wallet\BookingPaymentService::class)->checkIn(Booking::findOrFail($bookingId));
 
         $loyaltyCard->refresh();
         $this->assertGreaterThan(50, $loyaltyCard->points);

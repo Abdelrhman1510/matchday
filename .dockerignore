@@ -1,0 +1,23 @@
+# Secrets must never enter an image. Runtime config comes from --env-file.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.sql
+*.sql.gz
+
+.git
+.github
+node_modules
+vendor
+tests
+storage/logs/*
+storage/app/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*.php
+*.log
+*.rar
+*.zip

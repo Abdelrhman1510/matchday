@@ -27,6 +27,16 @@ class AwardBookingPoints implements ShouldQueue
     public function handle(BookingCreated $event): void
     {
         $booking = $event->booking;
+
+        // Points are earned once the booking is paid or checked in, and only once.
+        $alreadyAwarded = \App\Models\LoyaltyTransaction::where('booking_id', $booking->id)
+            ->where('type', 'earned')
+            ->where('description', '!=', 'Booking reward')
+            ->exists();
+        if ($booking->status === 'pending' || $alreadyAwarded) {
+            return;
+        }
+
         $user = $booking->user;
 
         // Load necessary relationships

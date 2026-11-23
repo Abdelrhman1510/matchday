@@ -176,7 +176,7 @@ class BookingService
     {
         // Earned once per booking, when it is paid or checked in, so an abandoned
         // booking can't farm points.
-        if (LoyaltyTransaction::where('booking_id', $booking->id)->where('type', 'earned')->exists()) {
+        if (LoyaltyTransaction::where('booking_id', $booking->id)->where('type', 'earned')->where('description', 'Booking reward')->exists()) {
             return;
         }
 

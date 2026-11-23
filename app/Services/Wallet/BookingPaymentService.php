@@ -4,6 +4,7 @@ namespace App\Services\Wallet;
 
 use App\Events\BookingCreated;
 use App\Jobs\RefundBookingPayment;
+use App\Listeners\AwardBookingPoints;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Services\BookingService;
@@ -97,6 +98,13 @@ class BookingPaymentService
 
             if ($collectedAtCafe) {
                 $this->awardPoints($booking, app(BookingService::class));
+                DB::afterCommit(function () use ($booking) {
+                    try {
+                        app(AwardBookingPoints::class)->handle(new BookingCreated($booking->fresh()));
+                    } catch (\Throwable $e) {
+                        Log::warning("Loyalty award failed for booking {$booking->id}: {$e->getMessage()}");
+                    }
+                });
             }
             $this->wallet->onCheckIn($booking);
 

@@ -37,7 +37,25 @@ class ReconcileMoyasarPayments extends Command
             ->pluck('id')
             ->each(fn ($id) => \App\Jobs\ProcessMoyasarWebhookEvent::dispatchSync($id));
 
-        $this->info("Checked {$pending->count()} pending payment(s), settled {$applied}.");
+        // Money still held for a cancelled booking: a refund that failed earlier.
+        // cancel_reason and payment_method exist only on bookings from the wallet flow,
+        // so older cancelled bookings can never be refunded by this job.
+        $owed = Payment::where('type', 'booking')
+            ->whereIn('status', ['paid', 'completed'])
+            ->whereNotNull('gateway_ref')
+            ->whereHas('booking', function ($q) {
+                $q->where('status', 'cancelled')->whereNotNull('cancel_reason')->whereNotNull('payment_method');
+            })
+            ->pluck('id');
+        foreach ($owed as $paymentId) {
+            try {
+                \App\Jobs\RefundBookingPayment::dispatchSync($paymentId);
+            } catch (\Throwable $e) {
+                $this->warn("Payment {$paymentId}: refund still failing, will retry next run.");
+            }
+        }
+
+        $this->info("Checked {$pending->count()} pending payment(s), settled {$applied}, retried {$owed->count()} refund(s).");
 
         return Command::SUCCESS;
     }

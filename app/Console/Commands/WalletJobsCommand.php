@@ -10,12 +10,13 @@ use App\Services\Wallet\BookingPaymentService;
 use App\Services\Wallet\WalletService;
 use App\Services\Wallet\WithdrawalService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /** The scheduled money jobs, one command with a task argument. */
 class WalletJobsCommand extends Command
 {
-    protected $signature = 'wallet:run {task : tick|expire-bookings|promote-earnings|poll-payouts|reconcile|notify-earnings}';
+    protected $signature = 'wallet:run {task : tick|reconcile-payments|expire-bookings|promote-earnings|poll-payouts|reconcile|notify-earnings}';
 
     protected $description = 'Run a scheduled wallet job';
 
@@ -25,6 +26,8 @@ class WalletJobsCommand extends Command
             case 'tick':
                 $this->tick();
                 break;
+            case 'reconcile-payments':
+                return $this->call('payments:reconcile');
             case 'expire-bookings':
                 $this->info('Expired ' . $bookings->expireUnpaid() . ' unpaid booking(s).');
                 break;
@@ -52,11 +55,14 @@ class WalletJobsCommand extends Command
     {
         $now = now('Asia/Riyadh');
         $tasks = ['expire-bookings'];
-        if ($now->minute % 5 === 0) {
+        if ($this->dueEvery('promote-earnings', 300)) {
             $tasks[] = 'promote-earnings';
         }
-        if ($now->minute % 10 === 0) {
+        if ($this->dueEvery('poll-payouts', 600)) {
             $tasks[] = 'poll-payouts';
+        }
+        if ($this->dueEvery('reconcile-payments', 600)) {
+            $tasks[] = 'reconcile-payments';
         }
         if ($now->hour >= 2 && $this->firstRunToday('reconcile', $now->toDateString())) {
             $tasks[] = 'reconcile';
@@ -72,6 +78,12 @@ class WalletJobsCommand extends Command
                 Log::error("Wallet job {$task} failed: {$e->getMessage()}");
             }
         }
+    }
+
+    /** True once per interval, even if the minute loop drifts past an exact minute. */
+    private function dueEvery(string $task, int $seconds): bool
+    {
+        return Cache::add("wallet_tick_due.{$task}", 1, $seconds - 10);
     }
 
     /** Stored in the database so a container restart can't repeat a daily job. */

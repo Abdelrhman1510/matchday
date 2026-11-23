@@ -25,8 +25,11 @@ class MoyasarBookingWebhookController extends Controller
             return response()->json(['success' => false], 401);
         }
 
-        if (app()->environment('production') && $request->input('live') === false) {
-            Log::warning('Moyasar webhook rejected: test event sent to production');
+        // Test events are valid only while the server runs a test key, and live events
+        // only with a live key. webhook_verification carries no `live` field.
+        $keyIsLive = str_starts_with((string) config('services.moyasar.secret_key'), 'sk_live_');
+        if (app()->environment('production') && is_bool($request->input('live')) && $request->input('live') !== $keyIsLive) {
+            Log::warning('Moyasar webhook rejected: event mode does not match the configured key');
             return response()->json(['success' => false], 403);
         }
 

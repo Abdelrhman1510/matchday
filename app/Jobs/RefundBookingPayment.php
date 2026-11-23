@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -24,15 +25,23 @@ class RefundBookingPayment implements ShouldQueue
 
     public function handle(PaymentGatewayInterface $gateway): void
     {
+        // A concurrent run for the same payment finishes the work; this one stands down.
+        Cache::lock("refund-payment:{$this->paymentId}", 120)->get(fn () => $this->refund($gateway));
+    }
+
+    private function refund(PaymentGatewayInterface $gateway): void
+    {
         $payment = Payment::find($this->paymentId);
         if (!$payment || $payment->status === 'refunded' || !$payment->gateway_ref) {
             return;
         }
 
-        $result = $gateway->refund($payment);
-        if (!$result['success']) {
-            Log::critical("Refund failed for payment {$payment->id}: " . ($result['message'] ?? 'unknown'));
-            throw new \RuntimeException('Refund failed; will retry.');
+        if (($gateway->verify($payment->gateway_ref)['status'] ?? null) !== 'refunded') {
+            $result = $gateway->refund($payment);
+            if (!$result['success']) {
+                Log::critical("Refund failed for payment {$payment->id}: " . ($result['message'] ?? 'unknown'));
+                throw new \RuntimeException('Refund failed; will retry.');
+            }
         }
 
         DB::transaction(function () use ($payment) {
