@@ -923,6 +923,87 @@ class CafeWalletFlowTest extends TestCase
         $this->assertSame(2, (clone $earned)->count());
     }
 
+    public function test_booking_confirmation_is_sent_exactly_once(): void
+    {
+        $this->book();
+        Notification::assertSentToTimes($this->customer, \App\Notifications\BookingConfirmedNotification::class, 1);
+
+        $online = User::factory()->create();
+        LoyaltyCard::factory()->create(['user_id' => $online->id]);
+        $this->goOnline();
+        $booking = Booking::findOrFail($this->book($this->seats(), $online)['id']);
+        Notification::assertSentToTimes($online, \App\Notifications\BookingConfirmedNotification::class, 0);
+
+        $booking->payment->update(['status' => 'completed', 'gateway_ref' => 'pay_note']);
+        $service = app(BookingPaymentService::class);
+        $service->confirmPaid($booking, $booking->payment);
+        $service->confirmPaid($booking->fresh(), $booking->payment);
+
+        Notification::assertSentToTimes($online, \App\Notifications\BookingConfirmedNotification::class, 1);
+    }
+
+    private function loyaltyCard(): LoyaltyCard
+    {
+        return LoyaltyCard::where('user_id', $this->customer->id)->firstOrFail();
+    }
+
+    public function test_cancelling_a_booking_takes_back_all_its_points_once(): void
+    {
+        Http::fake(['api.moyasar.com/*' => Http::response(['id' => 'x', 'status' => 'refunded'])]);
+        $this->loyaltyCard()->update(['points' => 100, 'total_points_earned' => 100, 'tier' => 'bronze']);
+        $booking = $this->paidBooking();
+        $earned = (int) \App\Models\LoyaltyTransaction::where('booking_id', $booking->id)->where('type', 'earned')->sum('points');
+        $this->assertGreaterThan(10, $earned); // flat reward plus the amount-based award
+        $this->assertSame(100 + $earned, (int) $this->loyaltyCard()->points);
+
+        Sanctum::actingAs($this->customer);
+        $this->postJson("/api/v1/bookings/{$booking->id}/cancel")->assertOk();
+        app(BookingPaymentService::class)->handleCancellation($booking->fresh());
+
+        $card = $this->loyaltyCard();
+        $this->assertSame(100, (int) $card->points);
+        $this->assertSame(100, (int) $card->total_points_earned);
+        $this->assertSame(1, \App\Models\LoyaltyTransaction::where('booking_id', $booking->id)->where('type', 'redeemed')->count());
+    }
+
+    public function test_cancelling_never_makes_the_points_balance_negative(): void
+    {
+        Http::fake(['api.moyasar.com/*' => Http::response(['id' => 'x', 'status' => 'refunded'])]);
+        $this->loyaltyCard()->update(['points' => 0, 'total_points_earned' => 0]);
+        $booking = $this->paidBooking();
+        $this->loyaltyCard()->update(['points' => 3]); // the customer spent most of them
+
+        Sanctum::actingAs($this->customer);
+        $this->postJson("/api/v1/bookings/{$booking->id}/cancel")->assertOk();
+
+        $this->assertSame(0, (int) $this->loyaltyCard()->points);
+        $this->assertSame(-3, (int) \App\Models\LoyaltyTransaction::where('booking_id', $booking->id)->where('type', 'redeemed')->value('points'));
+    }
+
+    public function test_cancelling_a_booking_that_earned_nothing_takes_no_points(): void
+    {
+        $this->loyaltyCard()->update(['points' => 40]);
+        $data = $this->book();
+
+        Sanctum::actingAs($this->customer);
+        $this->postJson("/api/v1/bookings/{$data['id']}/cancel")->assertOk();
+
+        $this->assertSame(40, (int) $this->loyaltyCard()->points);
+        $this->assertSame(0, \App\Models\LoyaltyTransaction::where('booking_id', $data['id'])->count());
+    }
+
+    public function test_cafe_cancelling_a_booking_also_takes_back_points(): void
+    {
+        Http::fake(['api.moyasar.com/*' => Http::response(['id' => 'x', 'status' => 'refunded'])]);
+        $this->loyaltyCard()->update(['points' => 100, 'total_points_earned' => 100]);
+        $booking = $this->paidBooking();
+
+        Sanctum::actingAs($this->owner);
+        $this->postJson("/api/v1/cafe-admin/bookings/{$booking->id}/cancel")->assertSuccessful();
+
+        $this->assertSame(100, (int) $this->loyaltyCard()->points);
+    }
+
     public function test_tick_runs_payments_reconcile_once_per_interval(): void
     {
         $this->artisan('wallet:run tick')->expectsOutputToContain('pending payment(s)')->assertSuccessful();

@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 
 class LoyaltyService
 {
+    public const CANCELLATION_REVERSAL = 'Booking cancellation penalty';
+
     // Tier thresholds
     const TIERS = [
         'bronze' => 0,
@@ -56,6 +58,49 @@ class LoyaltyService
             $this->checkAchievements($user);
 
             return $transaction;
+        });
+    }
+
+    /**
+     * Take back every point a cancelled or refunded booking earned, once. The balance
+     * never goes below zero if the customer already spent those points.
+     */
+    public function reverseBookingPoints(\App\Models\Booking $booking): int
+    {
+        return DB::transaction(function () use ($booking) {
+            $earnedRows = LoyaltyTransaction::where('booking_id', $booking->id)->where('type', 'earned');
+            $earned = (int) (clone $earnedRows)->sum('points');
+            $alreadyReversed = LoyaltyTransaction::where('booking_id', $booking->id)
+                ->where('type', 'redeemed')
+                ->where('description', self::CANCELLATION_REVERSAL)
+                ->exists();
+            if ($earned <= 0 || $alreadyReversed) {
+                return 0;
+            }
+
+            $card = \App\Models\LoyaltyCard::whereKey((clone $earnedRows)->value('loyalty_card_id'))->lockForUpdate()->first();
+            if (!$card) {
+                return 0;
+            }
+
+            $amount = min($earned, max(0, (int) $card->points));
+            $balance = (int) $card->points - $amount;
+            // Silent on purpose: TierUpgraded would announce this as an upgrade.
+            $card->update([
+                'points' => $balance,
+                'total_points_earned' => max(0, (int) $card->total_points_earned - $earned),
+                'tier' => $this->calculateTier($balance),
+            ]);
+
+            LoyaltyTransaction::create([
+                'loyalty_card_id' => $card->id,
+                'booking_id' => $booking->id,
+                'points' => -$amount,
+                'type' => 'redeemed',
+                'description' => self::CANCELLATION_REVERSAL,
+            ]);
+
+            return $amount;
         });
     }
 

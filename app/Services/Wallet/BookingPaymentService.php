@@ -8,6 +8,7 @@ use App\Listeners\AwardBookingPoints;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Services\BookingService;
+use App\Services\LoyaltyService;
 use App\Services\Payment\MoyasarClient;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -148,6 +149,7 @@ class BookingPaymentService
     public function handleCancellation(Booking $booking): void
     {
         $this->wallet->reverseBooking($booking);
+        app(LoyaltyService::class)->reverseBookingPoints($booking);
 
         // Read from the payment row: bookings older than this flow have no payment_status.
         $payment = $booking->payment()->first();
@@ -170,6 +172,7 @@ class BookingPaymentService
         }
 
         $this->wallet->reverseBooking($booking);
+        app(LoyaltyService::class)->reverseBookingPoints($booking);
 
         $changes = ['payment_status' => 'refunded'];
         if (in_array($booking->status, ['pending', 'confirmed'], true)) {

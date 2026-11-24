@@ -5,11 +5,9 @@ namespace App\Providers;
 use App\Contracts\PaymentGatewayInterface;
 use App\Events\AchievementUnlocked;
 use App\Events\BookingCancelled;
-use App\Events\BookingCreated;
 use App\Events\PointsEarned;
 use App\Listeners\SendAchievementUnlockedNotification;
 use App\Listeners\SendBookingCancelledNotification;
-use App\Listeners\SendBookingConfirmedNotification;
 use App\Listeners\SendPointsEarnedNotification;
 use App\Services\Payment\SimulatedPaymentGateway;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -131,7 +129,6 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        Event::listen(BookingCreated::class, SendBookingConfirmedNotification::class);
         Event::listen(BookingCancelled::class, SendBookingCancelledNotification::class);
         Event::listen(AchievementUnlocked::class, SendAchievementUnlockedNotification::class);
         Event::listen(PointsEarned::class, SendPointsEarnedNotification::class);

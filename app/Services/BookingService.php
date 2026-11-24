@@ -384,22 +384,6 @@ class BookingService
                 $booking->payment->update(['status' => 'refunded']);
             }
 
-            // Take back loyalty points only if this booking earned them
-            $loyaltyCard = $booking->user->loyaltyCard;
-            $earnedPoints = LoyaltyTransaction::where('booking_id', $booking->id)->where('type', 'earned')->exists();
-            if ($earnedPoints && $loyaltyCard && $loyaltyCard->points >= 10) {
-                $loyaltyCard->decrement('points', 10);
-                
-                // Create transaction record for deduction
-                LoyaltyTransaction::create([
-                    'loyalty_card_id' => $loyaltyCard->id,
-                    'booking_id' => $booking->id,
-                    'points' => -10,
-                    'type' => 'redeemed',
-                    'description' => 'Booking cancellation penalty',
-                ]);
-            }
-
             // Dispatch event
             event(new BookingCancelled($booking));
 

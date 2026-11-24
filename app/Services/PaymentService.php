@@ -192,6 +192,7 @@ class PaymentService
                 // Update related booking if exists
                 if ($payment->booking) {
                     app(\App\Services\Wallet\WalletService::class)->reverseBooking($payment->booking);
+                    app(LoyaltyService::class)->reverseBookingPoints($payment->booking);
                     $payment->booking->update([
                         'status' => 'cancelled',
                         'cancelled_at' => now(),
